@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using VRageMath;
 using VRage.Game.ModAPI.Ingame;
 
-namespace SE_Welders
+namespace ScriptingClass
 {
 	public partial class Program : MyGridProgram
 	{
