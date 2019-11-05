@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29418.71
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoWelders", "AutoWelders\AutoWelders.csproj", "{E19D0871-D2E2-4B56-813F-E66FB532EF78}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoWeldersFromForum", "AutoWeldersFromForum\AutoWeldersFromForum.csproj", "{566D88D7-E22D-4B07-BFC7-FC29CC499020}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E19D0871-D2E2-4B56-813F-E66FB532EF78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E19D0871-D2E2-4B56-813F-E66FB532EF78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E19D0871-D2E2-4B56-813F-E66FB532EF78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E19D0871-D2E2-4B56-813F-E66FB532EF78}.Release|Any CPU.Build.0 = Release|Any CPU
+		{566D88D7-E22D-4B07-BFC7-FC29CC499020}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{566D88D7-E22D-4B07-BFC7-FC29CC499020}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{566D88D7-E22D-4B07-BFC7-FC29CC499020}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{566D88D7-E22D-4B07-BFC7-FC29CC499020}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {13C12833-B293-40F5-9030-C6FBC642FF17}
+	EndGlobalSection
+EndGlobal
