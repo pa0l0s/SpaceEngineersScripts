@@ -347,22 +347,35 @@ namespace ScriptingClass
 
 		public class DoorManager
 		{
+			private const int defautRunFrequency= 10;//runs every ten'th call
+			private int runNo;
+			private int runFrequency;
 			private Program _program;
 			public DoorManager(Program program)
 			{
 				_program = program;
+				runFrequency = defautRunFrequency;
+				runNo = 0;
 			}
 
 			public void ManageDoors()
 			{
-				List<IMyTerminalBlock> doors = new List<IMyTerminalBlock>();
-				_program.GridTerminalSystem.GetBlocksOfType<IMyDoor>(doors);
-				for (int i = 0; i < doors.Count; i++)
+				runNo++;
+				if (runNo >= runFrequency)
 				{
-					doors[i].ApplyAction("Open_Off");
+					runNo = 0;
+
+					List<IMyTerminalBlock> doors = new List<IMyTerminalBlock>();
+					_program.GridTerminalSystem.GetBlocksOfType<IMyDoor>(doors);
+					for (int i = 0; i < doors.Count; i++)
+					{
+						doors[i].ApplyAction("Open_Off");
+					}
 				}
 			}
 		}
+
+
 
 	}
 }

@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaoloSalvageDrone", "PaoloS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SamsAutopilotManager", "SamsAutopilotManager\SamsAutopilotManager.csproj", "{B5FDE852-3C79-4436-BE0E-E75A37D19659}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoManagr", "AutoManagr\AutoManagr.csproj", "{A5982F30-8D1E-41DE-90B1-5B05F2F257BC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{B5FDE852-3C79-4436-BE0E-E75A37D19659}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B5FDE852-3C79-4436-BE0E-E75A37D19659}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B5FDE852-3C79-4436-BE0E-E75A37D19659}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5982F30-8D1E-41DE-90B1-5B05F2F257BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5982F30-8D1E-41DE-90B1-5B05F2F257BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5982F30-8D1E-41DE-90B1-5B05F2F257BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5982F30-8D1E-41DE-90B1-5B05F2F257BC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
