@@ -421,6 +421,8 @@ namespace ScriptingClass
 		public class SimpleInventoryManager : IProgramTask
 		{
 			private const string defaultOreContainerNameTag = "Ore";
+			private const string defaultComponentsContainerNameTag = "Components";
+			private const string defaultIgnoreContainerNameTag = "Ignore";
 			private const int defautRunFrequency = 10;//runs every ten'th call
 
 
@@ -430,10 +432,12 @@ namespace ScriptingClass
 
 			private Program _program;
 			private string _oreContainerNameTag;
+			private string _componentsContainerNameTag;
 			public SimpleInventoryManager(Program program)
 			{
 				_program = program;
 				_oreContainerNameTag = defaultOreContainerNameTag;
+				_componentsContainerNameTag = defaultComponentsContainerNameTag;
 
 				_runFrequency = defautRunFrequency;
 				_runNo = 0;
@@ -445,17 +449,23 @@ namespace ScriptingClass
 				{
 					_runNo = 0;
 
-					ManageOre();
+					var blocks = new List<IMyTerminalBlock>();
+					_program.GridTerminalSystem.GetBlocksOfType<IMyCargoContainer>(blocks);
+					if (blocks == null) return;
+
+					var cargoContainers = blocks.Select(x => (IMyCargoContainer)x).ToList();
+
+					ManageOre(cargoContainers);
+
+					ManageComponents(cargoContainers);
 				}
 			}
-			public void ManageOre()
+			public void ManageOre(List<IMyCargoContainer> cargoContainers)
 			{
-				var cargoContainers = new List<IMyTerminalBlock>();
-				_program.GridTerminalSystem.GetBlocksOfType<IMyCargoContainer>(cargoContainers);
-				if (cargoContainers == null) return;
 
 
-				List<IMyCargoContainer> oreCargos = cargoContainers.Where(x => x.DisplayNameText.Contains(_oreContainerNameTag)).Select(x => (IMyCargoContainer)x).ToList();
+
+				List<IMyCargoContainer> oreCargos = cargoContainers.Where(x => x.DisplayNameText.Contains(_oreContainerNameTag)).ToList();
 				if (oreCargos == null || oreCargos.Count == 0)
 				{
 					_program.Echo(string.Format($"No cargo conteiner with {_oreContainerNameTag} in name."));
@@ -488,6 +498,66 @@ namespace ScriptingClass
 
 			}
 
+			private void ManageComponents(List<IMyCargoContainer> cargoContainers)
+			{
+
+				List<IMyCargoContainer> componentCargos = cargoContainers.Where(x => x.DisplayNameText.Contains(_componentsContainerNameTag)).Select(x => (IMyCargoContainer)x).ToList();
+				if (componentCargos == null || componentCargos.Count == 0)
+				{
+					_program.Echo(string.Format($"No cargo conteiner with {_oreContainerNameTag} in name."));
+					return;
+				}
+
+
+
+				_program.Echo(String.Format($"Found components containers count: {componentCargos.Count}"));
+
+				foreach (var cargoContainer in cargoContainers)
+				{
+					if (!componentCargos.Contains(cargoContainer))
+					{
+						var cargoContainerOwner = (IMyInventoryOwner)cargoContainer;
+
+						var inventoryItems = new List<MyInventoryItem>();
+						var inventory = (IMyInventory)cargoContainerOwner.GetInventory(0);
+						inventory.GetItems(inventoryItems);
+
+						foreach (var inventoryItem in inventoryItems)
+						{
+							if (IsItemComponent(inventoryItem))
+							{
+								_program.Echo(string.Format($"Moving items from: {cargoContainer.DisplayNameText}"));
+								MoveItemToFirstNotFullContainer(inventoryItem, inventory, componentCargos);
+							}
+						}
+					}
+
+				}
+
+				//add assemblers inventory
+
+				var blocks = new List<IMyTerminalBlock>();
+				_program.GridTerminalSystem.GetBlocksOfType<IMyAssembler>(blocks);
+				if (blocks == null) return;
+
+				List<IMyInventory> inventories = blocks.Select(x => ((IMyAssembler)x).OutputInventory).ToList();
+
+				foreach (var inventory in inventories)
+				{
+					var inventoryItems = new List<MyInventoryItem>();
+					inventory.GetItems(inventoryItems);
+					foreach (var inventoryItem in inventoryItems)
+					{
+						if (IsItemComponent(inventoryItem))
+						{
+							MoveItemToFirstNotFullContainer(inventoryItem, inventory, componentCargos);
+						}
+					}
+				}
+				
+
+			}
+
 			public int GetPriority()
 			{
 				return 1;
@@ -507,7 +577,7 @@ namespace ScriptingClass
 					}
 				}
 
-				_program.Echo("Ore cargo is full.");
+				_program.Echo("Cargo is full.");
 				return;
 			}
 
@@ -516,6 +586,16 @@ namespace ScriptingClass
 
 				return item.ToString().Contains("_Ore");
 			}
+
+
+			private bool IsItemComponent(MyInventoryItem item)
+			{
+
+				return item.ToString().Contains("_Component");
+			}
+
+
+			
 
 			private string GetItemType(MyInventoryItem item)
 			{
