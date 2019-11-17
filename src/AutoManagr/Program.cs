@@ -57,8 +57,15 @@ namespace ScriptingClass
 			else if (_taskQueue.Count == 0)
 			{
 				var manager = _managersQueue.Dequeue();
-
-				var tasks = manager.GetTasks().OrderBy(t => t.GetPriority()).ToArray();
+				var tasks = new List<IManagerTask>();
+				try
+				{
+					tasks = manager.GetTasks().OrderBy(t => t.GetPriority()).ToList();
+				}
+				catch (Exception ex)
+				{
+					Echo(ex.Message);
+				}
 
 				foreach (var task in tasks)
 				{
@@ -70,7 +77,14 @@ namespace ScriptingClass
 				var currentTask = _taskQueue.Dequeue();
 
 				Echo(string.Format($"Executing task: {currentTask.ToString()}"));
-				currentTask.DoTask();
+				try
+				{
+					currentTask.DoTask();
+				}
+				catch (Exception ex)
+				{
+					Echo(ex.Message);
+				}
 			}
 
 			Echo(string.Format($"Tasks in queue: {_taskQueue.Count}"));
@@ -579,7 +593,7 @@ namespace ScriptingClass
 
 				var tasks = new List<IManagerTask>();
 
-				tasks.AddRange(GetInventoryManagerTasks(cargoContainers, _toolsContainerNameTag, "_PhysicalGunObject"));
+				tasks.AddRange(GetInventoryManagerTasks(cargoContainers, _toolsContainerNameTag, "_PhysicalGunObject", addAssemblers: true));
 
 				//add assemblers inventory
 
@@ -622,7 +636,7 @@ namespace ScriptingClass
 				}
 			}
 
-			private IEnumerable<IManagerTask> GetInventoryManagerTasks(List<IMyCargoContainer> cargoContainers, string containerTag, string itemTag, bool addAssemblers = false, bool addRefieries = false)
+			private IEnumerable<IManagerTask> GetInventoryManagerTasks(List<IMyCargoContainer> cargoContainers, string containerTag, string itemTag, bool addAssemblers = false, bool addRefieries = false, bool addCockpit=true)
 			{
 
 				var tasks = new List<IManagerTask>();
@@ -668,6 +682,15 @@ namespace ScriptingClass
 
 					inventories.AddRange(blocks.Select(x => ((IMyRefinery)x).OutputInventory).ToList());
 
+				}
+
+				if (addCockpit)
+				{
+					var blocks = new List<IMyTerminalBlock>();
+					_program.GridTerminalSystem.GetBlocksOfType<IMyCockpit>(blocks);
+					if (blocks == null) return tasks;
+
+					inventories.AddRange(blocks.Select(x => ((IMyCockpit)x).GetInventory()).ToList());
 				}
 
 				tasks.AddRange(GetInventoryManagerTasks(inventories, destinationCargos, itemTag));
@@ -735,14 +758,14 @@ namespace ScriptingClass
 					_inventoryItem = inventoryItem;
 					_sourceInventory = sourceInventory;
 					_destinationContainersList = destinationContainersList;
-					
+
 				}
-				public  void DoTask()
+				public void DoTask()
 				{
 					MoveItemToFirstNotFullContainer(_inventoryItem, _sourceInventory, _destinationContainersList);
 				}
 
-				public  int GetPriority()
+				public int GetPriority()
 				{
 					return 1;
 				}
@@ -754,7 +777,7 @@ namespace ScriptingClass
 					{
 						if (!((IMyInventoryOwner)destinationContainer).GetInventory(0).IsFull)
 						{
-							_program.Echo(String.Format($"Transfering {inventoryItem.ToString()} from: {sourceInventory.Owner.DisplayName} to container {destinationContainer.DisplayNameText}"));
+							_program.Echo(String.Format($"Transfering {inventoryItem.ToString()} from: {sourceInventory.ToString()} to container {destinationContainer.DisplayNameText}"));
 							sourceInventory.TransferItemTo(((IMyInventoryOwner)destinationContainer).GetInventory(0), inventoryItem);
 							//throw new Exception("test");
 							return;
@@ -835,7 +858,7 @@ namespace ScriptingClass
 			int GetPriority();
 		}
 
-		public abstract class  BaseManagerTask : IManagerTask
+		public abstract class BaseManagerTask : IManagerTask
 		{
 			protected Program _program;
 			BaseManagerTask(Program program)
