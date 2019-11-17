@@ -1,28 +1,15 @@
-﻿using System;
+﻿using Sandbox.ModAPI.Ingame;
+using System;
 using System.Collections.Generic;
-using VRageMath;
-using VRage.Game;
-using VRage.Library;
-using System.Text;
-using Sandbox.ModAPI.Interfaces;
-using Sandbox.ModAPI.Ingame;
-using Sandbox.Common;
-using Sandbox.Game;
-using VRage.Collections;
-using VRage.Game.ModAPI.Ingame;
-using SpaceEngineers.Game.ModAPI.Ingame;
 using System.Linq;
+using System.Text;
+using VRage.Game.ModAPI.Ingame;
+using VRageMath;
 
 namespace ScriptingClass
 {
 	class Program : MyGridProgram
 	{
-
-
-
-
-		string[] statusChars = new string[] { "/", "-", @"\", "|" };
-		int statusCharPosition = 0;
 
 
 		/// <summary>
@@ -38,7 +25,9 @@ namespace ScriptingClass
 
 		List<MyRepairInfo> activeRepairs;
 
-		DoorManager doorManager;
+		private List<IProgramTask> _tasks;
+		private Queue<IProgramTask> _taskQueue;
+		private Rotator _rotator;
 
 		public Program()
 
@@ -47,13 +36,20 @@ namespace ScriptingClass
 			Runtime.UpdateFrequency = UpdateFrequency.Update100;
 
 			activeRepairs = new List<MyRepairInfo>();
+			_tasks = new List<IProgramTask>();
+			_taskQueue = new Queue<IProgramTask>();
 
-			doorManager = new DoorManager(this);
+			_rotator = new Rotator(this);
+
+
+			_tasks.Add(new DoorManager(this));
+			_tasks.Add(new SimpleInventoryManager(this));
 		}
 
 		void Main()
 		{
-			DisplayStatus();
+			_rotator.DoTask(); //rotator is done every step always.
+
 			GetDamagedBlocks();
 			DisableWeldersWhenRapairDone();
 			if (showDamagedOnHud)
@@ -62,17 +58,26 @@ namespace ScriptingClass
 			}
 			CleanupTimeouts();
 
-			doorManager.ManageDoors();
-		}
 
-		void DisplayStatus()
-		{
-			this.Echo(statusChars[statusCharPosition]);
-			statusCharPosition++;
-			if (statusCharPosition >= statusChars.Length)
+			var taskSorted = _tasks.OrderBy(t => t.GetPriority()).ToArray();
+
+			if (_taskQueue.Count == 0)
 			{
-				statusCharPosition = 0;
+				foreach (var task in taskSorted)
+				{
+					_taskQueue.Enqueue(task);
+				}
 			}
+
+			Echo(string.Format($"Tasks in queue: {_taskQueue.Count}"));
+
+			var currentTask = _taskQueue.Dequeue();
+
+			Echo(string.Format($"Executing task: {currentTask.ToString()}"));
+			currentTask.DoTask();
+
+
+
 		}
 
 		void GetDamagedBlocks()
@@ -250,8 +255,6 @@ namespace ScriptingClass
 			activeRepairs.RemoveAll(x => x.Timeout && (DateTime.UtcNow.Ticks - x.CreateDate.Ticks - timeoutDispose.Ticks) > 0);
 		}
 
-
-
 		private void ShowOnHud(IMyCubeBlock block, bool show)
 		{
 			if (block is IMyTerminalBlock)
@@ -345,9 +348,9 @@ namespace ScriptingClass
 			public float WelderDamagedDistance { get; set; }
 		}
 
-		public class DoorManager
+		public class DoorManager : IProgramTask
 		{
-			private const int defautRunFrequency= 10;//runs every ten'th call
+			private const int defautRunFrequency = 10;//runs every ten'th call
 			private int runNo;
 			private int runFrequency;
 			private Program _program;
@@ -356,6 +359,16 @@ namespace ScriptingClass
 				_program = program;
 				runFrequency = defautRunFrequency;
 				runNo = 0;
+			}
+
+			public void DoTask()
+			{
+				ManageDoors();
+			}
+
+			public int GetPriority()
+			{
+				return 1;
 			}
 
 			public void ManageDoors()
@@ -374,6 +387,158 @@ namespace ScriptingClass
 				}
 			}
 		}
+
+		public class Rotator : IProgramTask
+		{
+			private string[] statusChars = new string[] { "/", "-", @"\", "|" };
+			private int statusCharPosition = 0;
+			private Program _program;
+			public Rotator(Program program)
+			{
+				_program = program;
+				statusCharPosition = 0;
+			}
+
+			public void DoTask()
+			{
+
+				_program.Echo(statusChars[statusCharPosition]);
+				statusCharPosition++;
+				if (statusCharPosition >= statusChars.Length)
+				{
+					statusCharPosition = 0;
+				}
+
+			}
+
+			public int GetPriority()
+			{
+				return 100;
+			}
+
+		}
+
+		public class SimpleInventoryManager : IProgramTask
+		{
+			private const string defaultOreContainerNameTag = "Ore";
+			private const int defautRunFrequency = 10;//runs every ten'th call
+
+
+			private int _runNo;
+			private int _runFrequency;
+
+
+			private Program _program;
+			private string _oreContainerNameTag;
+			public SimpleInventoryManager(Program program)
+			{
+				_program = program;
+				_oreContainerNameTag = defaultOreContainerNameTag;
+
+				_runFrequency = defautRunFrequency;
+				_runNo = 0;
+			}
+			public void DoTask()
+			{
+				_runNo++;
+				if (_runNo >= _runFrequency)
+				{
+					_runNo = 0;
+
+					ManageOre();
+				}
+			}
+			public void ManageOre()
+			{
+				var cargoContainers = new List<IMyTerminalBlock>();
+				_program.GridTerminalSystem.GetBlocksOfType<IMyCargoContainer>(cargoContainers);
+				if (cargoContainers == null) return;
+
+
+				List<IMyCargoContainer> oreCargos = cargoContainers.Where(x => x.DisplayNameText.Contains(_oreContainerNameTag)).Select(x => (IMyCargoContainer)x).ToList();
+				if (oreCargos == null || oreCargos.Count == 0)
+				{
+					_program.Echo(string.Format($"No cargo conteiner with {_oreContainerNameTag} in name."));
+					return;
+				}
+
+				_program.Echo(String.Format($"Found ore containers count: {oreCargos.Count}"));
+
+				foreach (var cargoContainer in cargoContainers)
+				{
+					if (!oreCargos.Contains(cargoContainer))
+					{
+						var cargoContainerOwner = (IMyInventoryOwner)cargoContainer;
+
+						var inventoryItems = new List<MyInventoryItem>();
+						var inventory = (IMyInventory)cargoContainerOwner.GetInventory(0);
+						inventory.GetItems(inventoryItems);
+
+						foreach (var inventoryItem in inventoryItems)
+						{
+							if (IsItemOre(inventoryItem))
+							{
+								_program.Echo(string.Format($"Moving items from: {cargoContainer.DisplayNameText}"));
+								MoveItemToFirstNotFullContainer(inventoryItem, inventory, oreCargos);
+							}
+						}
+					}
+
+				}
+
+			}
+
+			public int GetPriority()
+			{
+				return 1;
+			}
+
+			private void MoveItemToFirstNotFullContainer(MyInventoryItem inventoryItem, IMyInventory sourceInventory, List<IMyCargoContainer> destinationContainersList)
+			{
+
+				foreach (var destinationContainer in destinationContainersList)
+				{
+					if (!((IMyInventoryOwner)destinationContainer).GetInventory(0).IsFull)
+					{
+						_program.Echo(String.Format($"Transfering {inventoryItem.ToString()} from: {sourceInventory.Owner.DisplayName} to container {destinationContainer.DisplayNameText}"));
+						sourceInventory.TransferItemTo(((IMyInventoryOwner)destinationContainer).GetInventory(0), inventoryItem);
+						//throw new Exception("test");
+						return;
+					}
+				}
+
+				_program.Echo("Ore cargo is full.");
+				return;
+			}
+
+			private bool IsItemOre(MyInventoryItem item)
+			{
+
+				return item.ToString().Contains("_Ore");
+			}
+
+			private string GetItemType(MyInventoryItem item)
+			{
+				string typeOfItem = item.Type.SubtypeId.ToString();
+				string contentDescr = item.ToString();
+				if (contentDescr.Contains("_Ore"))
+				{
+					if (typeOfItem != "Stone" && typeOfItem != "Ice")
+						typeOfItem = typeOfItem + " Ore";
+				}
+				if (typeOfItem == "Stone" && contentDescr.Contains("_Ingot"))
+					typeOfItem = "Gravel";
+				return typeOfItem;
+			}
+		}
+
+		public interface IProgramTask
+		{
+			void DoTask();
+
+			int GetPriority();
+		}
+
 
 
 
