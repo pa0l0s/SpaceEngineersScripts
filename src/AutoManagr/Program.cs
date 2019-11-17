@@ -40,6 +40,7 @@ namespace ScriptingClass
 			_managers.Add(new SimpleInventoryManager(this));
 			//_managers.Add(new TestManager(this));
 			_managers.Add(new DamageManager(this));
+			_managers.Add(new DelyManager());
 		}
 
 		void Main()
@@ -636,7 +637,7 @@ namespace ScriptingClass
 				}
 			}
 
-			private IEnumerable<IManagerTask> GetInventoryManagerTasks(List<IMyCargoContainer> cargoContainers, string containerTag, string itemTag, bool addAssemblers = false, bool addRefieries = false, bool addCockpit=true)
+			private IEnumerable<IManagerTask> GetInventoryManagerTasks(List<IMyCargoContainer> cargoContainers, string containerTag, string itemTag, bool addAssemblers = false, bool addRefieries = false, bool addCockpit = true)
 			{
 
 				var tasks = new List<IManagerTask>();
@@ -656,9 +657,9 @@ namespace ScriptingClass
 				{
 					if (!destinationCargos.Contains(cargoContainer))
 					{
-						var cargoContainerOwner = (IMyInventoryOwner)cargoContainer;
+						var cargoContainerEntity = (IMyEntity)cargoContainer;
 
-						inventories.Add((IMyInventory)cargoContainerOwner.GetInventory(0));
+						inventories.Add((IMyInventory)cargoContainerEntity.GetInventory(0));
 
 					}
 
@@ -775,10 +776,10 @@ namespace ScriptingClass
 
 					foreach (var destinationContainer in destinationContainersList)
 					{
-						if (!((IMyInventoryOwner)destinationContainer).GetInventory(0).IsFull)
+						if (!((IMyEntity)destinationContainer).GetInventory(0).IsFull)
 						{
-							_program.Echo(String.Format($"Transfering {inventoryItem.ToString()} from: {sourceInventory.ToString()} to container {destinationContainer.DisplayNameText}"));
-							sourceInventory.TransferItemTo(((IMyInventoryOwner)destinationContainer).GetInventory(0), inventoryItem);
+							_program.Echo(String.Format($"Transfering {inventoryItem.ToString()} from: { _program.GridTerminalSystem.GetBlockWithId(sourceInventory.Owner.EntityId).DisplayNameText} to container {destinationContainer.DisplayNameText}"));
+							sourceInventory.TransferItemTo(((IMyEntity)destinationContainer).GetInventory(0), inventoryItem);
 							//throw new Exception("test");
 							return;
 						}
@@ -822,7 +823,7 @@ namespace ScriptingClass
 
 					foreach (var cargoContainer in cargoContainers)
 					{
-						var inventory = ((IMyInventoryOwner)cargoContainer).GetInventory(0);
+						var inventory = ((IMyEntity)cargoContainer).GetInventory(0);
 
 						var inventoryItems = new List<MyInventoryItem>();
 						inventory.GetItems(inventoryItems);
@@ -836,6 +837,28 @@ namespace ScriptingClass
 
 					}
 
+
+				}
+
+				public int GetPriority()
+				{
+					return 1;
+				}
+			}
+		}
+
+		public class DelyManager : IManager
+		{
+			public IEnumerable<IManagerTask> GetTasks()
+			{
+				yield return new DelayTask();
+			}
+
+			public class DelayTask : IManagerTask
+			{
+				public void DoTask()
+				{
+					//nothing to do
 
 				}
 
