@@ -637,7 +637,7 @@ namespace ScriptingClass
 				}
 			}
 
-			private IEnumerable<IManagerTask> GetInventoryManagerTasks(List<IMyCargoContainer> cargoContainers, string containerTag, string itemTag, bool addAssemblers = false, bool addRefieries = false, bool addCockpit = true)
+			private IEnumerable<IManagerTask> GetInventoryManagerTasks(List<IMyCargoContainer> cargoContainers, string containerTag, string itemTag, bool addAssemblers = false, bool addRefieries = false, bool addCockpit = true, bool addConnectors = true)
 			{
 
 				var tasks = new List<IManagerTask>();
@@ -692,6 +692,15 @@ namespace ScriptingClass
 					if (blocks == null) return tasks;
 
 					inventories.AddRange(blocks.Select(x => ((IMyCockpit)x).GetInventory()).ToList());
+				}
+
+				if (addConnectors)
+				{
+					var blocks = new List<IMyTerminalBlock>();
+					_program.GridTerminalSystem.GetBlocksOfType<IMyShipConnector>(blocks);
+					if (blocks == null) return tasks;
+
+					inventories.AddRange(blocks.Select(x => ((IMyShipConnector)x).GetInventory()).ToList());
 				}
 
 				tasks.AddRange(GetInventoryManagerTasks(inventories, destinationCargos, itemTag));
