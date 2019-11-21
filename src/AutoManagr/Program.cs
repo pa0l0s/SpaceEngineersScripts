@@ -17,8 +17,8 @@ namespace ScriptingClass
 		/// </summary>
 		/// 
 		/// 1. SimpleInventoryManager
-		/// Moves resources to containers with tag in name. If more conteiners with same tag they will bee filled in alphabetical order.
-		/// Avalable tags for containers:
+		/// Moves resources to containers with tag in name. If more containers with same tag they will bee filled in alphabetical order.
+		/// Available tags for containers:
 		/// "Ore"
 		/// "Ingot"
 		/// "Tools"
@@ -26,13 +26,14 @@ namespace ScriptingClass
 		/// "Ignor" - this container will be ignored by script
 		/// 
 		/// 2. DamageManager 
-		/// Display damaged blocks on hud if anthenna avalable. If there is welder close by torns it on.
+		/// Display damaged blocks on Hud if antenna available. If there is welder close by turns it on.
 		/// 
 		/// 3. DoorManager
 		/// Simply closes all dorr once a while.
 		/// 
 		/// 4. More to be implemented
 		/// Copy code from here
+
 
 
 		private Queue<IManagerTask> _taskQueue;
