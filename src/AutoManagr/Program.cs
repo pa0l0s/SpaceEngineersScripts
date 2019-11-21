@@ -15,6 +15,23 @@ namespace ScriptingClass
 		/// <summary>
 		/// Grid Manager
 		/// </summary>
+		/// 
+		/// 1. SimpleInventoryManager
+		/// Moves resources to containers with tag in name. If more conteiners with same tag they will bee filled in alphabetical order.
+		/// Avalable tags for containers:
+		/// "Ore"
+		/// "Ingot"
+		/// "Tools"
+		/// "Components"
+		/// "Ignor" - this container will be ignored by script
+		/// 
+		/// 2. DamageManager 
+		/// Display damaged blocks on hud if anthenna avalable. If there is welder close by torns it on.
+		/// 
+		/// 3. DoorManager
+		/// Simply closes all dorr once a while.
+		/// 
+		/// 4. More to be implemented
 		/// Copy code from here
 
 
@@ -169,7 +186,7 @@ namespace ScriptingClass
 				_program.GridTerminalSystem.GetBlocksOfType<IMyShipWelder>(allWelders);
 
 				_program.Echo(string.Format($"Damaged block: {block.DisplayNameText}, {block.EntityId}"));
-				var nearestWelders = allWelders.OrderBy(welder => DistanceSquared(block.GetPosition(), welder.GetPosition())).Take(numberOfWeldersToFindNearest).ToList();
+				var nearestWelders = allWelders.OrderBy(welder => Vector3D.Distance(block.GetPosition(), welder.GetPosition())).Take(numberOfWeldersToFindNearest).ToList();
 				nearestWelders.ForEach(welder =>
 				{
 					RepairDamaged(block, welder);
@@ -184,7 +201,7 @@ namespace ScriptingClass
 				{
 					_program.Echo(string.Format($"Welder: {nearestWelder.DisplayNameText}, {nearestWelder.EntityId}"));
 
-					if (DistanceSquared(nearestWelder.GetPosition(), block.GetPosition()) < maximumWelderDamagedDistance)
+					if (Vector3D.Distance(nearestWelder.GetPosition(), block.GetPosition()) < maximumWelderDamagedDistance)
 					{
 
 						try
@@ -360,20 +377,14 @@ namespace ScriptingClass
 			}
 			//--------------- 
 
-			public float DistanceSquared(IMyCubeBlock block1, IMyCubeBlock block2)
+			public double DistanceSquared(IMyCubeBlock block1, IMyCubeBlock block2)
 			{
-				return DistanceSquared(block1.GetPosition(), block2.GetPosition());
-			}
-			public float DistanceSquared(Vector3D point1, Vector3D point2)
-			{
-				//var dist = Math.Sqrt(point1.Zip(point2, (a, b) => (a - b) * (a - b)).Sum());
-				float distance = (float)Math.Sqrt(Math.Pow(point1.X - point2.X, 2) + Math.Pow(point1.Y - point2.Y, 2) + Math.Pow(point1.Z - point2.Z, 2));
-				return distance;
+				return Vector3D.Distance(block1.GetPosition(), block2.GetPosition());
 			}
 
 			public class MyRepairInfo
 			{
-				public MyRepairInfo(IMyTerminalBlock welder, IMyCubeBlock damagedBlock, float welderDamagedDistance)
+				public MyRepairInfo(IMyTerminalBlock welder, IMyCubeBlock damagedBlock, double welderDamagedDistance)
 				{
 					Welder = welder;
 					DamagedBlock = damagedBlock;
@@ -388,7 +399,7 @@ namespace ScriptingClass
 				public DateTime CreateDate { get; set; }
 				public bool Timeout { get; set; }
 				public bool Done { get; set; }
-				public float WelderDamagedDistance { get; set; }
+				public double WelderDamagedDistance { get; set; }
 			}
 
 			public class RepairManagerTask : IManagerTask

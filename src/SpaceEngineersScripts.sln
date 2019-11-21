@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WhipsWeaponSalvoScript", "W
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CameraLongRangeScanner", "CameraLongRangeScanner\CameraLongRangeScanner.csproj", "{0DA0CED0-FA6D-482B-9BF2-38644D2BF51E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OreMap", "OreMap\OreMap.csproj", "{21D16CE5-3107-4413-AFC4-41728009C54D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +89,10 @@ Global
 		{0DA0CED0-FA6D-482B-9BF2-38644D2BF51E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0DA0CED0-FA6D-482B-9BF2-38644D2BF51E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0DA0CED0-FA6D-482B-9BF2-38644D2BF51E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21D16CE5-3107-4413-AFC4-41728009C54D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21D16CE5-3107-4413-AFC4-41728009C54D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21D16CE5-3107-4413-AFC4-41728009C54D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21D16CE5-3107-4413-AFC4-41728009C54D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
