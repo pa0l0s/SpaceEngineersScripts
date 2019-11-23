@@ -11,9 +11,12 @@ namespace ScriptingClass
 	class Program : MyGridProgram
 	{
 
+		/// Copy code from here
+
 
 		/// <summary>
 		/// Grid Manager
+		/// By Paolo
 		/// </summary>
 		/// 
 		/// 1. SimpleInventoryManager
@@ -29,12 +32,10 @@ namespace ScriptingClass
 		/// Display damaged blocks on Hud if antenna available. If there is welder close by turns it on.
 		/// 
 		/// 3. DoorManager
-		/// Simply closes all dorr once a while.
+		/// Simply closes all door once a while.
 		/// 
-		/// 4. More to be implemented
-		/// Copy code from here
-
-
+		/// 4. More to be implemented...
+		/// 
 
 		private Queue<IManagerTask> _taskQueue;
 		private List<IManager> _managers;
@@ -917,7 +918,9 @@ namespace ScriptingClass
 
 		}
 
-		//CUT HERE
+
+
+		//Copy to here
 
 
 	}
