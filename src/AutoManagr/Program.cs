@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using VRage;
 using VRage.Game.ModAPI.Ingame;
 using VRageMath;
 
@@ -67,6 +68,7 @@ namespace ScriptingClass
 		void Main()
 		{
 			_rotator.DoTask(); //rotator is done every step always.
+			Echo(string.Format($"Tasks in queue: {_taskQueue.Count}"));
 
 			if (_managersQueue.Count == 0)
 			{
@@ -109,7 +111,7 @@ namespace ScriptingClass
 				}
 			}
 
-			Echo(string.Format($"Tasks in queue: {_taskQueue.Count}"));
+
 		}
 
 		public class DamageManager : IManager
@@ -800,10 +802,10 @@ namespace ScriptingClass
 
 				private void MoveItemToFirstNotFullContainer(MyInventoryItem inventoryItem, IMyInventory sourceInventory, List<IMyCargoContainer> destinationContainersList)
 				{
-
+			
 					foreach (var destinationContainer in destinationContainersList)
 					{
-						if (!((IMyEntity)destinationContainer).GetInventory(0).IsFull)
+						if (WillItemFitToInventory(inventoryItem,destinationContainer.GetInventory(0)))
 						{
 							_program.Echo(String.Format($"Transfering {inventoryItem.ToString()} from: { _program.GridTerminalSystem.GetBlockWithId(sourceInventory.Owner.EntityId).DisplayNameText} to container {destinationContainer.DisplayNameText}"));
 							sourceInventory.TransferItemTo(((IMyEntity)destinationContainer).GetInventory(0), inventoryItem);
@@ -814,6 +816,14 @@ namespace ScriptingClass
 
 					_program.Echo("Cargo is full.");
 					return;
+				}
+
+				private bool WillItemFitToInventory(MyInventoryItem inventoryItem, IMyInventory inventory)
+				{
+					float itemVolume = inventoryItem.Type.GetItemInfo().Volume;
+					float inventoryFreeSpce = (float)inventory.MaxVolume - (float)inventory.CurrentVolume;
+
+					return itemVolume < inventoryFreeSpce;
 				}
 
 			}
