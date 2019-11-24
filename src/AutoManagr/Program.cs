@@ -60,6 +60,8 @@ namespace ScriptingClass
 			//_managers.Add(new TestManager(this));
 			_managers.Add(new DamageManager(this));
 			_managers.Add(new DelyManager());
+			_managers.Add(new TurnOnnBlocksDisabledBySerwerManager(this));
+			_managers.Add(new HydrogenManager(this));
 		}
 
 		void Main()
@@ -480,12 +482,15 @@ namespace ScriptingClass
 
 			public IEnumerable<IManagerTask> GetTasks()
 			{
-				List<IMyTerminalBlock> doors = new List<IMyTerminalBlock>();
+				var doors = new List<IMyDoor>();
 				_program.GridTerminalSystem.GetBlocksOfType<IMyDoor>(doors);
 
 				foreach (var door in doors)
 				{
-					yield return new DoorCloseTask(_program, door);
+					if (door.Status == DoorStatus.Open)
+					{
+						yield return new DoorCloseTask(_program, door);
+					}
 				}
 			}
 
@@ -888,6 +893,135 @@ namespace ScriptingClass
 				{
 					return 1;
 				}
+			}
+		}
+
+		public class TurnOnnBlocksDisabledBySerwerManager : IManager
+		{
+			private Program _program;
+			public TurnOnnBlocksDisabledBySerwerManager(Program program)
+			{
+				_program = program;
+			}
+
+			public IEnumerable<IManagerTask> GetTasks()
+			{
+				var assemblers = new List<IMyTerminalBlock>();
+				_program.GridTerminalSystem.GetBlocksOfType<IMyAssembler>(assemblers);
+
+				var refineries = new List<IMyTerminalBlock>();
+				_program.GridTerminalSystem.GetBlocksOfType<IMyRefinery>(refineries);
+
+				var blocks = new List<IMyTerminalBlock>();
+				blocks.AddRange(assemblers);
+				blocks.AddRange(refineries);
+
+				foreach (var block in blocks)
+				{
+					if (!block.IsWorking)
+					{
+						yield return new TurnOnTask(block);
+					}
+				}
+			}
+		}
+
+		public class HydrogenManager : IManager
+		{
+			Program _program;
+			double _turnOnO2H2GeneratorLevel = 0.2;
+			double _turnOffO2H2GeneratorLevel = 0.9;
+
+			public HydrogenManager(Program program)
+			{
+				_program = program;
+			}
+
+			public IEnumerable<IManagerTask> GetTasks()
+			{
+				var generators = new List<IMyGasGenerator>();
+				_program.GridTerminalSystem.GetBlocksOfType<IMyGasGenerator>(generators);
+
+				var avarangeTanksFillRatio = GetAvarangeTanksFillRatio();
+				if(avarangeTanksFillRatio < _turnOnO2H2GeneratorLevel)
+				{
+					foreach (var generator in generators)
+					{
+						if (!generator.IsWorking)
+						{
+							yield return new TurnOnTask(generator);
+						}
+					}
+				}
+
+				if (avarangeTanksFillRatio > _turnOffO2H2GeneratorLevel)
+				{
+					foreach (var generator in generators)
+					{
+						if (generator.IsWorking)
+						{
+							yield return new TurnOffTask(generator);
+						}
+					}
+				}
+			}
+
+			private double GetAvarangeTanksFillRatio()
+			{
+				var hydrogenTanks = new List<IMyGasTank>();
+				_program.GridTerminalSystem.GetBlocksOfType<IMyGasTank>(hydrogenTanks);
+
+				double fillRatioSum = 0;
+				int numberOfTanks = 0;
+				foreach (var tank in hydrogenTanks)
+				{
+					fillRatioSum = fillRatioSum + tank.FilledRatio;
+					numberOfTanks++;
+				}
+
+				if(numberOfTanks == 0)
+				{
+					return 0;
+				}
+
+				return  fillRatioSum / numberOfTanks;
+
+			}
+		}
+
+		public class TurnOnTask : IManagerTask
+		{
+			IMyTerminalBlock _block;
+			public TurnOnTask(IMyTerminalBlock block)
+			{
+				_block = block;
+			}
+			public void DoTask()
+			{
+				_block.ApplyAction("OnOff_On");
+			}
+
+			public int GetPriority()
+			{
+				return 1;
+			}
+		}
+
+		public class TurnOffTask : IManagerTask
+		{
+			IMyTerminalBlock _block;
+			public TurnOffTask(IMyTerminalBlock block)
+			{
+				_block = block;
+			}
+			public void DoTask()
+			{
+				_block.ApplyAction("OnOff_Off");
+			}
+
+			public int GetPriority()
+			{
+				return 1;
 			}
 		}
 
