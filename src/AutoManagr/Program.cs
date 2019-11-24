@@ -928,13 +928,24 @@ namespace ScriptingClass
 
 		public class HydrogenManager : IManager
 		{
-			Program _program;
-			double _turnOnO2H2GeneratorLevel = 0.2;
-			double _turnOffO2H2GeneratorLevel = 0.9;
+			private const double _DefaultTurnOnO2H2GeneratorLevel = 0.2;
+			private const double _DefaultTurnOffO2H2GeneratorLevel = 0.9;
+			private Program _program;
+			private double _turnOnO2H2GeneratorLevel;
+			private double _turnOffO2H2GeneratorLevel;
 
 			public HydrogenManager(Program program)
 			{
 				_program = program;
+				_turnOnO2H2GeneratorLevel = _DefaultTurnOnO2H2GeneratorLevel;
+				_turnOffO2H2GeneratorLevel = _DefaultTurnOffO2H2GeneratorLevel;
+			}
+
+			public HydrogenManager(Program program, double turnOnO2H2GeneratorLevel, double turnOffO2H2GeneratorLevel)
+			{
+				_program = program;
+				_turnOnO2H2GeneratorLevel = turnOnO2H2GeneratorLevel;
+				_turnOffO2H2GeneratorLevel = turnOffO2H2GeneratorLevel;
 			}
 
 			public IEnumerable<IManagerTask> GetTasks()
@@ -943,6 +954,8 @@ namespace ScriptingClass
 				_program.GridTerminalSystem.GetBlocksOfType<IMyGasGenerator>(generators);
 
 				var avarangeTanksFillRatio = GetAvarangeTanksFillRatio();
+
+				_program.Echo($"Avarange tanks fill ratio: {avarangeTanksFillRatio * 100:0.##}%");
 				if(avarangeTanksFillRatio < _turnOnO2H2GeneratorLevel)
 				{
 					foreach (var generator in generators)
