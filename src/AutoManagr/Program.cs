@@ -64,7 +64,7 @@ namespace ScriptingClass
 			_managers.Add(new SimpleInventoryManager(this));
 			//_managers.Add(new TestManager(this));
 			_managers.Add(new DamageManager(this));
-			_managers.Add(new HydrogenManager(this));
+			//_managers.Add(new HydrogenManager(this));
 			_managers.Add(new DelyManager());
 		}
 
@@ -173,14 +173,14 @@ namespace ScriptingClass
 						{
 							ShowOnHud(block, true);
 
-							GetWelsersAndStartRepair(block);
+							//GetWelsersAndStartRepair(block);
 						}
 
 						else if (!block.IsFunctional)
 						{
 							ShowOnHud(block, true);
 
-							GetWelsersAndStartRepair(block);
+							//GetWelsersAndStartRepair(block);
 						}
 
 						else
@@ -760,7 +760,7 @@ namespace ScriptingClass
 
 			private bool HasItemTagInName(MyInventoryItem item, string itemTag)
 			{
-				return item.ToString().Contains(itemTag);
+				return item.ToString().ToLower().Contains(itemTag.ToLower());
 			}
 
 			//private string GetItemType(MyInventoryItem item)
@@ -912,6 +912,7 @@ namespace ScriptingClass
 
 		public class TurnOnBlocksDisabledBySerwerManager : IManager
 		{
+			private const string LargeStoneCrusherSubtypeName = "LargeStoneCrusher";
 			private Program _program;
 			public TurnOnBlocksDisabledBySerwerManager(Program program)
 			{
@@ -920,8 +921,10 @@ namespace ScriptingClass
 
 			public IEnumerable<IManagerTask> GetTasks()
 			{
-				var assemblers = new List<IMyTerminalBlock>();
-				_program.GridTerminalSystem.GetBlocksOfType<IMyAssembler>(assemblers);
+				var assemblerTypeBlocks = new List<IMyTerminalBlock>();
+				_program.GridTerminalSystem.GetBlocksOfType<IMyAssembler>(assemblerTypeBlocks);
+
+				var assemblers = assemblerTypeBlocks.Where(x => !x.BlockDefinition.SubtypeName.ToLower().Contains(LargeStoneCrusherSubtypeName.ToLower())).ToList();
 
 				var refineries = new List<IMyTerminalBlock>();
 				_program.GridTerminalSystem.GetBlocksOfType<IMyRefinery>(refineries);
@@ -934,7 +937,7 @@ namespace ScriptingClass
 				{
 					if (!block.IsWorking)
 					{
-						yield return new TurnOnTask(block);
+						yield return new TurnOnTask(_program, block);
 					}
 				}
 			}
@@ -942,8 +945,8 @@ namespace ScriptingClass
 
 		public class HydrogenManager : IManager
 		{
-			private const double _DefaultTurnOnO2H2GeneratorLevel = 0.4;
-			private const double _DefaultTurnOffO2H2GeneratorLevel = 0.9;
+			private const double _DefaultTurnOnO2H2GeneratorLevel = 0.9;
+			private const double _DefaultTurnOffO2H2GeneratorLevel = 0.99;
 			private Program _program;
 			private double _turnOnO2H2GeneratorLevel;
 			private double _turnOffO2H2GeneratorLevel;
@@ -976,7 +979,7 @@ namespace ScriptingClass
 					{
 						if (!generator.IsWorking)
 						{
-							yield return new TurnOnTask(generator);
+							yield return new TurnOnTask(_program, generator);
 						}
 					}
 				}
@@ -1018,13 +1021,16 @@ namespace ScriptingClass
 
 		public class TurnOnTask : IManagerTask
 		{
+			Program _program;
 			IMyTerminalBlock _block;
-			public TurnOnTask(IMyTerminalBlock block)
+			public TurnOnTask(Program program, IMyTerminalBlock block)
 			{
-				_block = block;
+				_program = program;
+			_block = block;
 			}
 			public void DoTask()
 			{
+				_program.Echo($"Turn on: {_block.DefinitionDisplayNameText}");
 				_block.ApplyAction("OnOff_On");
 			}
 
