@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using VRage;
 using VRage.Game.ModAPI.Ingame;
 using VRageMath;
 
@@ -11,9 +12,12 @@ namespace ScriptingClass
 	class Program : MyGridProgram
 	{
 
+		/// Copy code from here
+
 
 		/// <summary>
 		/// Grid Manager
+		/// By Paolo
 		/// </summary>
 		/// 
 		/// 1. SimpleInventoryManager
@@ -29,12 +33,15 @@ namespace ScriptingClass
 		/// Display damaged blocks on Hud if antenna available. If there is welder close by turns it on.
 		/// 
 		/// 3. DoorManager
-		/// Simply closes all dorr once a while.
+		/// Simply closes all door once a while.
 		/// 
-		/// 4. More to be implemented
-		/// Copy code from here
-
-
+		/// 4. Hydrogen Manager
+		/// Turns on O2/H2 Generators when hydrogen level in tanks is below given level default 40%, turns of when above max level default 90%.
+		/// 
+		/// 5. Turn on block disabled by server
+		/// On UD server refineries, assemblesr and some other blocks are disables bedore restart. This manager enshures that refineries and assemblers are turned on again.
+		/// 
+		/// More to be implemented...
 
 		private Queue<IManagerTask> _taskQueue;
 		private List<IManager> _managers;
@@ -49,21 +56,22 @@ namespace ScriptingClass
 			Runtime.UpdateFrequency = UpdateFrequency.Update100;
 
 			_rotator = new Rotator(this);
-			_taskQueue = new Queue<IManagerTask>();
-
-			_managers = new List<IManager>();
 			_managersQueue = new Queue<IManager>();
-
+			_taskQueue = new Queue<IManagerTask>();
+			_managers = new List<IManager>();
+			_managers.Add(new TurnOnBlocksDisabledBySerwerManager(this));
 			_managers.Add(new DoorManager(this));
 			_managers.Add(new SimpleInventoryManager(this));
 			//_managers.Add(new TestManager(this));
 			_managers.Add(new DamageManager(this));
+			//_managers.Add(new HydrogenManager(this));
 			_managers.Add(new DelyManager());
 		}
 
 		void Main()
 		{
 			_rotator.DoTask(); //rotator is done every step always.
+			Echo(string.Format($"Tasks in queue: {_taskQueue.Count}"));
 
 			if (_managersQueue.Count == 0)
 			{
@@ -76,6 +84,8 @@ namespace ScriptingClass
 			else if (_taskQueue.Count == 0)
 			{
 				var manager = _managersQueue.Dequeue();
+				Echo($"Getting tasks from: {manager.ToString()}");
+
 				var tasks = new List<IManagerTask>();
 				try
 				{
@@ -106,7 +116,7 @@ namespace ScriptingClass
 				}
 			}
 
-			Echo(string.Format($"Tasks in queue: {_taskQueue.Count}"));
+
 		}
 
 		public class DamageManager : IManager
@@ -163,14 +173,14 @@ namespace ScriptingClass
 						{
 							ShowOnHud(block, true);
 
-							GetWelsersAndStartRepair(block);
+							//GetWelsersAndStartRepair(block);
 						}
 
 						else if (!block.IsFunctional)
 						{
 							ShowOnHud(block, true);
 
-							GetWelsersAndStartRepair(block);
+							//GetWelsersAndStartRepair(block);
 						}
 
 						else
@@ -479,12 +489,15 @@ namespace ScriptingClass
 
 			public IEnumerable<IManagerTask> GetTasks()
 			{
-				List<IMyTerminalBlock> doors = new List<IMyTerminalBlock>();
+				var doors = new List<IMyDoor>();
 				_program.GridTerminalSystem.GetBlocksOfType<IMyDoor>(doors);
 
 				foreach (var door in doors)
 				{
-					yield return new DoorCloseTask(_program, door);
+					if (door.Status == DoorStatus.Open)
+					{
+						yield return new DoorCloseTask(_program, door);
+					}
 				}
 			}
 
@@ -493,7 +506,7 @@ namespace ScriptingClass
 				private Program _program;
 				private IMyTerminalBlock _door;
 
-				public DoorCloseTask(Program program, IMyTerminalBlock door)
+				public DoorCloseTask(Program program, IMyDoor door)
 				{
 					_program = program;
 					_door = door;
@@ -721,49 +734,48 @@ namespace ScriptingClass
 
 			}
 
-			private bool IsItemOre(MyInventoryItem item)
-			{
+			//private bool IsItemOre(MyInventoryItem item)
+			//{
 
-				return item.ToString().Contains("_Ore");
-			}
+			//	return item.ToString().Contains("_Ore");
+			//}
 
-			private bool IsItemComponent(MyInventoryItem item)
-			{
+			//private bool IsItemComponent(MyInventoryItem item)
+			//{
 
-				return item.ToString().Contains("_Component");
-			}
+			//	return item.ToString().Contains("_Component");
+			//}
 
-			private bool IsItemTool(MyInventoryItem item)
-			{
+			//private bool IsItemTool(MyInventoryItem item)
+			//{
 
-				return item.ToString().Contains("_CaracterTool");
-			}
+			//	return item.ToString().Contains("_CaracterTool");
+			//}
 
-			private bool IsItemIngot(MyInventoryItem item)
-			{
+			//private bool IsItemIngot(MyInventoryItem item)
+			//{
 
-				return item.ToString().Contains("_Ingot");
-			}
+			//	return item.ToString().Contains("_Ingot");
+			//}
 
 			private bool HasItemTagInName(MyInventoryItem item, string itemTag)
 			{
-
-				return item.ToString().Contains(itemTag);
+				return item.ToString().ToLower().Contains(itemTag.ToLower());
 			}
 
-			private string GetItemType(MyInventoryItem item)
-			{
-				string typeOfItem = item.Type.SubtypeId.ToString();
-				string contentDescr = item.ToString();
-				if (contentDescr.Contains("_Ore"))
-				{
-					if (typeOfItem != "Stone" && typeOfItem != "Ice")
-						typeOfItem = typeOfItem + " Ore";
-				}
-				if (typeOfItem == "Stone" && contentDescr.Contains("_Ingot"))
-					typeOfItem = "Gravel";
-				return typeOfItem;
-			}
+			//private string GetItemType(MyInventoryItem item)
+			//{
+			//	string typeOfItem = item.Type.SubtypeId.ToString();
+			//	string contentDescr = item.ToString();
+			//	if (contentDescr.Contains("_Ore"))
+			//	{
+			//		if (typeOfItem != "Stone" && typeOfItem != "Ice")
+			//			typeOfItem = typeOfItem + " Ore";
+			//	}
+			//	if (typeOfItem == "Stone" && contentDescr.Contains("_Ingot"))
+			//		typeOfItem = "Gravel";
+			//	return typeOfItem;
+			//}
 
 			public class MoveItemTask : IManagerTask
 			{
@@ -794,10 +806,10 @@ namespace ScriptingClass
 
 				private void MoveItemToFirstNotFullContainer(MyInventoryItem inventoryItem, IMyInventory sourceInventory, List<IMyCargoContainer> destinationContainersList)
 				{
-
+			
 					foreach (var destinationContainer in destinationContainersList)
 					{
-						if (!((IMyEntity)destinationContainer).GetInventory(0).IsFull)
+						if (WillItemFitToInventory(inventoryItem,destinationContainer.GetInventory(0)))
 						{
 							_program.Echo(String.Format($"Transfering {inventoryItem.ToString()} from: { _program.GridTerminalSystem.GetBlockWithId(sourceInventory.Owner.EntityId).DisplayNameText} to container {destinationContainer.DisplayNameText}"));
 							sourceInventory.TransferItemTo(((IMyEntity)destinationContainer).GetInventory(0), inventoryItem);
@@ -808,6 +820,14 @@ namespace ScriptingClass
 
 					_program.Echo("Cargo is full.");
 					return;
+				}
+
+				private bool WillItemFitToInventory(MyInventoryItem inventoryItem, IMyInventory inventory)
+				{
+					float itemVolume = inventoryItem.Type.GetItemInfo().Volume;
+					float inventoryFreeSpce = (float)inventory.MaxVolume - (float)inventory.CurrentVolume;
+
+					return itemVolume < inventoryFreeSpce;
 				}
 
 			}
@@ -890,6 +910,154 @@ namespace ScriptingClass
 			}
 		}
 
+		public class TurnOnBlocksDisabledBySerwerManager : IManager
+		{
+			private const string LargeStoneCrusherSubtypeName = "LargeStoneCrusher";
+			private Program _program;
+			public TurnOnBlocksDisabledBySerwerManager(Program program)
+			{
+				_program = program;
+			}
+
+			public IEnumerable<IManagerTask> GetTasks()
+			{
+				var assemblerTypeBlocks = new List<IMyTerminalBlock>();
+				_program.GridTerminalSystem.GetBlocksOfType<IMyAssembler>(assemblerTypeBlocks);
+
+				var assemblers = assemblerTypeBlocks.Where(x => !x.BlockDefinition.SubtypeName.ToLower().Contains(LargeStoneCrusherSubtypeName.ToLower())).ToList();
+
+				var refineries = new List<IMyTerminalBlock>();
+				_program.GridTerminalSystem.GetBlocksOfType<IMyRefinery>(refineries);
+
+				var blocks = new List<IMyTerminalBlock>();
+				blocks.AddRange(assemblers);
+				blocks.AddRange(refineries);
+
+				foreach (var block in blocks)
+				{
+					if (!block.IsWorking)
+					{
+						yield return new TurnOnTask(_program, block);
+					}
+				}
+			}
+		}
+
+		public class HydrogenManager : IManager
+		{
+			private const double _DefaultTurnOnO2H2GeneratorLevel = 0.9;
+			private const double _DefaultTurnOffO2H2GeneratorLevel = 0.99;
+			private Program _program;
+			private double _turnOnO2H2GeneratorLevel;
+			private double _turnOffO2H2GeneratorLevel;
+
+			public HydrogenManager(Program program)
+			{
+				_program = program;
+				_turnOnO2H2GeneratorLevel = _DefaultTurnOnO2H2GeneratorLevel;
+				_turnOffO2H2GeneratorLevel = _DefaultTurnOffO2H2GeneratorLevel;
+			}
+
+			public HydrogenManager(Program program, double turnOnO2H2GeneratorLevel, double turnOffO2H2GeneratorLevel)
+			{
+				_program = program;
+				_turnOnO2H2GeneratorLevel = turnOnO2H2GeneratorLevel;
+				_turnOffO2H2GeneratorLevel = turnOffO2H2GeneratorLevel;
+			}
+
+			public IEnumerable<IManagerTask> GetTasks()
+			{
+				var generators = new List<IMyGasGenerator>();
+				_program.GridTerminalSystem.GetBlocksOfType<IMyGasGenerator>(generators);
+
+				var avarangeTanksFillRatio = GetAvarangeTanksFillRatio();
+
+				_program.Echo($"Avarange tanks fill ratio: {avarangeTanksFillRatio * 100:0.##}%");
+				if(avarangeTanksFillRatio < _turnOnO2H2GeneratorLevel)
+				{
+					foreach (var generator in generators)
+					{
+						if (!generator.IsWorking)
+						{
+							yield return new TurnOnTask(_program, generator);
+						}
+					}
+				}
+
+				if (avarangeTanksFillRatio > _turnOffO2H2GeneratorLevel)
+				{
+					foreach (var generator in generators)
+					{
+						if (generator.IsWorking)
+						{
+							yield return new TurnOffTask(generator);
+						}
+					}
+				}
+			}
+
+			private double GetAvarangeTanksFillRatio()
+			{
+				var hydrogenTanks = new List<IMyGasTank>();
+				_program.GridTerminalSystem.GetBlocksOfType<IMyGasTank>(hydrogenTanks);
+
+				double fillRatioSum = 0;
+				int numberOfTanks = 0;
+				foreach (var tank in hydrogenTanks)
+				{
+					fillRatioSum = fillRatioSum + tank.FilledRatio;
+					numberOfTanks++;
+				}
+
+				if(numberOfTanks == 0)
+				{
+					return 0;
+				}
+
+				return  fillRatioSum / numberOfTanks;
+
+			}
+		}
+
+		public class TurnOnTask : IManagerTask
+		{
+			Program _program;
+			IMyTerminalBlock _block;
+			public TurnOnTask(Program program, IMyTerminalBlock block)
+			{
+				_program = program;
+			_block = block;
+			}
+			public void DoTask()
+			{
+				_program.Echo($"Turn on: {_block.DefinitionDisplayNameText}");
+				_block.ApplyAction("OnOff_On");
+			}
+
+			public int GetPriority()
+			{
+				return 1;
+			}
+		}
+
+		public class TurnOffTask : IManagerTask
+		{
+			IMyTerminalBlock _block;
+			public TurnOffTask(IMyTerminalBlock block)
+			{
+				_block = block;
+			}
+			public void DoTask()
+			{
+				_block.ApplyAction("OnOff_Off");
+			}
+
+			public int GetPriority()
+			{
+				return 1;
+			}
+		}
+
 		public interface IManager
 		{
 			IEnumerable<IManagerTask> GetTasks();
@@ -917,7 +1085,9 @@ namespace ScriptingClass
 
 		}
 
-		//CUT HERE
+
+
+		//Copy to here
 
 
 	}
