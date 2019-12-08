@@ -59,12 +59,12 @@ namespace ScriptingClass
 			_managersQueue = new Queue<IManager>();
 			_taskQueue = new Queue<IManagerTask>();
 			_managers = new List<IManager>();
-			_managers.Add(new TurnOnBlocksDisabledBySerwerManager(this));
+			_managers.Add(new TurnOnBlocksDisabledBySerwerManager(this, Me));
 			_managers.Add(new DoorManager(this));
-			_managers.Add(new SimpleInventoryManager(this));
+			_managers.Add(new SimpleInventoryManager(this, Me));
 			//_managers.Add(new TestManager(this));
-			_managers.Add(new DamageManager(this));
-			//_managers.Add(new HydrogenManager(this));
+			_managers.Add(new DamageManager(this, Me));
+			_managers.Add(new HydrogenManager(this, Me));
 			_managers.Add(new DelyManager());
 		}
 
@@ -122,6 +122,7 @@ namespace ScriptingClass
 		public class DamageManager : IManager
 		{
 			private Program _program;
+			private IMyProgrammableBlock _me;
 			private List<MyRepairInfo> _activeRepairs;
 			float minimumBlockHealth = 0.85f;
 			float stopRepairHealth = 0.99f;
@@ -131,9 +132,10 @@ namespace ScriptingClass
 			bool showDamagedOnHud = true;
 			int numberOfWeldersToFindNearest = 3; //Will search for 3 nearest to damaged block welders and try run them all to spped up repair.
 
-			public DamageManager(Program program)
+			public DamageManager(Program program, IMyProgrammableBlock me)
 			{
 				_program = program;
+				_me = me;
 
 				_activeRepairs = new List<MyRepairInfo>();
 			}
@@ -158,6 +160,7 @@ namespace ScriptingClass
 
 				List<IMyCubeBlock> blocksCube = new List<IMyCubeBlock>();
 				_program.GridTerminalSystem.GetBlocksOfType<IMyCubeBlock>(blocksCube);
+				blocksCube = blocksCube.Where(x => x.CubeGrid == _me.CubeGrid).ToList();
 
 				var textSb = new StringBuilder();
 				textSb.AppendFormat($"Serching in {blocksCube.Count} blocks...");
@@ -562,15 +565,17 @@ namespace ScriptingClass
 			private const string defaultIgnoreContainerNameTag = "Ignor";
 
 			private Program _program;
+			private IMyProgrammableBlock _me;
 			private string _oreContainerNameTag;
 			private string _ingotContainerNameTag;
 			private string _toolsContainerNameTag;
 			private string _componentsContainerNameTag;
 			private string _ignoreContainerNameTag;
 
-			public SimpleInventoryManager(Program program)
+			public SimpleInventoryManager(Program program, IMyProgrammableBlock me)
 			{
 				_program = program;
+				_me = me;
 				_oreContainerNameTag = defaultOreContainerNameTag;
 				_ingotContainerNameTag = defaultIngotContainerNameTag;
 				_toolsContainerNameTag = defaultToolsContainerNameTag;
@@ -587,7 +592,7 @@ namespace ScriptingClass
 				_program.GridTerminalSystem.GetBlocksOfType<IMyCargoContainer>(blocks);
 				if (blocks == null) return tasks;
 
-				var cargoContainers = blocks.Select(x => (IMyCargoContainer)x).Where(x => !x.DisplayNameText.Contains(_ignoreContainerNameTag)).ToList();
+				var cargoContainers = blocks.Select(x => (IMyCargoContainer)x).Where(x => !x.DisplayNameText.ToLower().Contains(_ignoreContainerNameTag.ToLower()) && x.CubeGrid == _me.CubeGrid).ToList();
 
 
 				tasks.AddRange(GetOreTasks(cargoContainers));
@@ -647,6 +652,10 @@ namespace ScriptingClass
 
 			private IEnumerable<IManagerTask> GetInventoryManagerTasks(List<IMyInventory> inventories, List<IMyCargoContainer> destinationCargos, string itemTag)
 			{
+				if (itemTag == _toolsContainerNameTag || itemTag == _componentsContainerNameTag)
+				{
+					inventories = inventories.Where(x => _program.GridTerminalSystem.GetBlockWithId(x.Owner.EntityId).CubeGrid == _me.CubeGrid).ToList(); //Only inventories in local grid
+				}
 				foreach (var inventory in inventories)
 				{
 					var inventoryItems = new List<MyInventoryItem>();
@@ -806,10 +815,10 @@ namespace ScriptingClass
 
 				private void MoveItemToFirstNotFullContainer(MyInventoryItem inventoryItem, IMyInventory sourceInventory, List<IMyCargoContainer> destinationContainersList)
 				{
-			
+
 					foreach (var destinationContainer in destinationContainersList)
 					{
-						if (WillItemFitToInventory(inventoryItem,destinationContainer.GetInventory(0)))
+						if (WillItemFitToInventory(inventoryItem, destinationContainer.GetInventory(0)))
 						{
 							_program.Echo(String.Format($"Transfering {inventoryItem.ToString()} from: { _program.GridTerminalSystem.GetBlockWithId(sourceInventory.Owner.EntityId).DisplayNameText} to container {destinationContainer.DisplayNameText}"));
 							sourceInventory.TransferItemTo(((IMyEntity)destinationContainer).GetInventory(0), inventoryItem);
@@ -914,9 +923,11 @@ namespace ScriptingClass
 		{
 			private const string LargeStoneCrusherSubtypeName = "LargeStoneCrusher";
 			private Program _program;
-			public TurnOnBlocksDisabledBySerwerManager(Program program)
+			private IMyProgrammableBlock _me;
+			public TurnOnBlocksDisabledBySerwerManager(Program program, IMyProgrammableBlock me)
 			{
 				_program = program;
+				_me = me;
 			}
 
 			public IEnumerable<IManagerTask> GetTasks()
@@ -924,10 +935,12 @@ namespace ScriptingClass
 				var assemblerTypeBlocks = new List<IMyTerminalBlock>();
 				_program.GridTerminalSystem.GetBlocksOfType<IMyAssembler>(assemblerTypeBlocks);
 
-				var assemblers = assemblerTypeBlocks.Where(x => !x.BlockDefinition.SubtypeName.ToLower().Contains(LargeStoneCrusherSubtypeName.ToLower())).ToList();
+				var assemblers = assemblerTypeBlocks.Where(x => !x.BlockDefinition.SubtypeName.ToLower().Contains(LargeStoneCrusherSubtypeName.ToLower()) && x.CubeGrid == _me.CubeGrid).ToList(); //Only assemblers from current grid
 
-				var refineries = new List<IMyTerminalBlock>();
-				_program.GridTerminalSystem.GetBlocksOfType<IMyRefinery>(refineries);
+				var refineriesTypeBlocks = new List<IMyTerminalBlock>();
+				_program.GridTerminalSystem.GetBlocksOfType<IMyRefinery>(refineriesTypeBlocks);
+
+				var refineries = refineriesTypeBlocks.Where(x => x.CubeGrid == _me.CubeGrid).ToList(); //Only from current grid
 
 				var blocks = new List<IMyTerminalBlock>();
 				blocks.AddRange(assemblers);
@@ -948,32 +961,36 @@ namespace ScriptingClass
 			private const double _DefaultTurnOnO2H2GeneratorLevel = 0.9;
 			private const double _DefaultTurnOffO2H2GeneratorLevel = 0.99;
 			private Program _program;
+			private IMyProgrammableBlock _me;
 			private double _turnOnO2H2GeneratorLevel;
 			private double _turnOffO2H2GeneratorLevel;
 
-			public HydrogenManager(Program program)
+			public HydrogenManager(Program program, IMyProgrammableBlock me)
 			{
 				_program = program;
+				_me = me;
 				_turnOnO2H2GeneratorLevel = _DefaultTurnOnO2H2GeneratorLevel;
 				_turnOffO2H2GeneratorLevel = _DefaultTurnOffO2H2GeneratorLevel;
 			}
 
-			public HydrogenManager(Program program, double turnOnO2H2GeneratorLevel, double turnOffO2H2GeneratorLevel)
+			public HydrogenManager(Program program, IMyProgrammableBlock me, double turnOnO2H2GeneratorLevel, double turnOffO2H2GeneratorLevel)
 			{
 				_program = program;
+				_me = me;
 				_turnOnO2H2GeneratorLevel = turnOnO2H2GeneratorLevel;
 				_turnOffO2H2GeneratorLevel = turnOffO2H2GeneratorLevel;
 			}
 
 			public IEnumerable<IManagerTask> GetTasks()
 			{
-				var generators = new List<IMyGasGenerator>();
-				_program.GridTerminalSystem.GetBlocksOfType<IMyGasGenerator>(generators);
+				var generatorsTypeBlocks = new List<IMyGasGenerator>();
+				_program.GridTerminalSystem.GetBlocksOfType<IMyGasGenerator>(generatorsTypeBlocks);
+				var generators = generatorsTypeBlocks.Where(x => x.CubeGrid == _me.CubeGrid).ToList();
 
 				var avarangeTanksFillRatio = GetAvarangeTanksFillRatio();
 
 				_program.Echo($"Avarange tanks fill ratio: {avarangeTanksFillRatio * 100:0.##}%");
-				if(avarangeTanksFillRatio < _turnOnO2H2GeneratorLevel)
+				if (avarangeTanksFillRatio < _turnOnO2H2GeneratorLevel)
 				{
 					foreach (var generator in generators)
 					{
@@ -998,8 +1015,9 @@ namespace ScriptingClass
 
 			private double GetAvarangeTanksFillRatio()
 			{
-				var hydrogenTanks = new List<IMyGasTank>();
-				_program.GridTerminalSystem.GetBlocksOfType<IMyGasTank>(hydrogenTanks);
+				var hydrogenTanksTypeBlocks = new List<IMyGasTank>();
+				_program.GridTerminalSystem.GetBlocksOfType<IMyGasTank>(hydrogenTanksTypeBlocks);
+				var hydrogenTanks = hydrogenTanksTypeBlocks.Where(x => x.CubeGrid == _me.CubeGrid).ToList();
 
 				double fillRatioSum = 0;
 				int numberOfTanks = 0;
@@ -1009,12 +1027,12 @@ namespace ScriptingClass
 					numberOfTanks++;
 				}
 
-				if(numberOfTanks == 0)
+				if (numberOfTanks == 0)
 				{
 					return 0;
 				}
 
-				return  fillRatioSum / numberOfTanks;
+				return fillRatioSum / numberOfTanks;
 
 			}
 		}
@@ -1026,7 +1044,7 @@ namespace ScriptingClass
 			public TurnOnTask(Program program, IMyTerminalBlock block)
 			{
 				_program = program;
-			_block = block;
+				_block = block;
 			}
 			public void DoTask()
 			{
