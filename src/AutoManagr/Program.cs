@@ -667,7 +667,7 @@ namespace ScriptingClass
 
 				var tasks = new List<IManagerTask>();
 
-				List<IMyCargoContainer> destinationCargos = cargoContainers.Where(x => x.DisplayNameText.Contains(containerTag)).OrderBy(x => x.DisplayNameText).ToList();
+				List<IMyCargoContainer> destinationCargos = cargoContainers.Where(x => x.DisplayNameText.ToLower().Contains(containerTag.ToLower())).OrderBy(x => x.DisplayNameText).ToList();
 				if (destinationCargos == null || destinationCargos.Count == 0)
 				{
 					_program.Echo(string.Format($"No cargo conteiner with {containerTag} in name."));

@@ -37,6 +37,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeliosXR-5SRotorGun", "Heli
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RotorGunMp", "RotorGunMp\RotorGunMp.csproj", "{7EEB15A5-13FC-4F30-82B7-A462C33C4BFB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RdavsAIAutominer", "RdavsAIAutominer\RdavsAIAutominer.csproj", "{7ADB2039-7ECE-4A55-ABB1-0D46B7F7D3BF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -111,6 +113,10 @@ Global
 		{7EEB15A5-13FC-4F30-82B7-A462C33C4BFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7EEB15A5-13FC-4F30-82B7-A462C33C4BFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7EEB15A5-13FC-4F30-82B7-A462C33C4BFB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7ADB2039-7ECE-4A55-ABB1-0D46B7F7D3BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7ADB2039-7ECE-4A55-ABB1-0D46B7F7D3BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7ADB2039-7ECE-4A55-ABB1-0D46B7F7D3BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7ADB2039-7ECE-4A55-ABB1-0D46B7F7D3BF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
