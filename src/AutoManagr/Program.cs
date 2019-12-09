@@ -12,38 +12,39 @@ namespace ScriptingClass
 	class Program : MyGridProgram
 	{
 
-		/// Copy code from here
+        /// Copy code from here
 
 
-		/// <summary>
-		/// Grid Manager
-		/// By Paolo
-		/// </summary>
-		/// 
-		/// 1. SimpleInventoryManager
-		/// Moves resources to containers with tag in name. If more containers with same tag they will bee filled in alphabetical order.
-		/// Available tags for containers:
-		/// "Ore"
-		/// "Ingot"
-		/// "Tools"
-		/// "Components"
-		/// "Ignor" - this container will be ignored by script
-		/// 
-		/// 2. DamageManager 
-		/// Display damaged blocks on Hud if antenna available. If there is welder close by turns it on.
-		/// 
-		/// 3. DoorManager
-		/// Simply closes all door once a while.
-		/// 
-		/// 4. Hydrogen Manager
-		/// Turns on O2/H2 Generators when hydrogen level in tanks is below given level default 40%, turns of when above max level default 90%.
-		/// 
-		/// 5. Turn on block disabled by server
-		/// On UD server refineries, assemblesr and some other blocks are disables bedore restart. This manager enshures that refineries and assemblers are turned on again.
-		/// 
-		/// More to be implemented...
+        /// <summary>
+        /// Grid Manager
+        /// By Paolo
+        /// </summary>
+        /// 
+        /// 1. SimpleInventoryManager
+        /// Moves resources to containers with tag in name. If more containers with same tag they will bee filled in alphabetical order.
+        /// Available tags for containers:
+        /// "Ores"
+        /// "Ingots"
+        /// "Tools"
+        /// "Components"
+        /// "Ignore" - this container will be ignored by script
+        /// "ForceConnected" - will foce to manage inventorty in container on connected grid (ores by defaut are pulled also from connected inventories).
+        /// 
+        /// 2. DamageManager 
+        /// Display damaged blocks on Hud if antenna available. If there is welder close by turns it on.
+        /// 
+        /// 3. DoorManager
+        /// Simply closes all door once a while.
+        /// 
+        /// 4. Hydrogen Manager
+        /// Turns on O2/H2 Generators when hydrogen level in tanks is below given level default 40%, turns of when above max level default 90%.
+        /// 
+        /// 5. Turn on block disabled by server
+        /// On UD server refineries, assemblesr and some other blocks are disables bedore restart. This manager enshures that refineries and assemblers are turned on again.
+        /// 
+        /// More to be implemented...
 
-		private Queue<IManagerTask> _taskQueue;
+        private Queue<IManagerTask> _taskQueue;
 		private List<IManager> _managers;
 		private Queue<IManager> _managersQueue;
 
@@ -558,21 +559,23 @@ namespace ScriptingClass
 
 		public class SimpleInventoryManager : IManager
 		{
-			private const string defaultOreContainerNameTag = "Ore";
-			private const string defaultIngotContainerNameTag = "Ingot";
+			private const string defaultOreContainerNameTag = "Ores";
+			private const string defaultIngotContainerNameTag = "Ingots";
 			private const string defaultToolsContainerNameTag = "Tools";
 			private const string defaultComponentsContainerNameTag = "Components";
-			private const string defaultIgnoreContainerNameTag = "Ignor";
+			private const string defaultIgnoreContainerNameTag = "Ignore";
+            private const string defaultForceMoveFromConnectedGridContainerNameTag = "ForceConnected";
 
-			private Program _program;
+            private Program _program;
 			private IMyProgrammableBlock _me;
 			private string _oreContainerNameTag;
 			private string _ingotContainerNameTag;
 			private string _toolsContainerNameTag;
 			private string _componentsContainerNameTag;
 			private string _ignoreContainerNameTag;
+            private string _forceMoveFromConnectedGridContainerNameTag;
 
-			public SimpleInventoryManager(Program program, IMyProgrammableBlock me)
+            public SimpleInventoryManager(Program program, IMyProgrammableBlock me)
 			{
 				_program = program;
 				_me = me;
@@ -581,8 +584,10 @@ namespace ScriptingClass
 				_toolsContainerNameTag = defaultToolsContainerNameTag;
 				_componentsContainerNameTag = defaultComponentsContainerNameTag;
 				_ignoreContainerNameTag = defaultIgnoreContainerNameTag;
+                _forceMoveFromConnectedGridContainerNameTag = defaultForceMoveFromConnectedGridContainerNameTag;
 
-			}
+
+            }
 			public IEnumerable<IManagerTask> GetTasks()
 			{
 
@@ -592,7 +597,7 @@ namespace ScriptingClass
 				_program.GridTerminalSystem.GetBlocksOfType<IMyCargoContainer>(blocks);
 				if (blocks == null) return tasks;
 
-				var cargoContainers = blocks.Select(x => (IMyCargoContainer)x).Where(x => !x.DisplayNameText.ToLower().Contains(_ignoreContainerNameTag.ToLower()) && x.CubeGrid == _me.CubeGrid).ToList();
+				var cargoContainers = blocks.Select(x => (IMyCargoContainer)x).Where(x => !x.DisplayNameText.Contains(_ignoreContainerNameTag, StringComparison.InvariantCultureIgnoreCase)).ToList();
 
 
 				tasks.AddRange(GetOreTasks(cargoContainers));
@@ -654,7 +659,7 @@ namespace ScriptingClass
 			{
 				if (itemTag == _toolsContainerNameTag || itemTag == _componentsContainerNameTag)
 				{
-					inventories = inventories.Where(x => _program.GridTerminalSystem.GetBlockWithId(x.Owner.EntityId).CubeGrid == _me.CubeGrid).ToList(); //Only inventories in local grid
+					inventories = inventories.Where(x => _program.GridTerminalSystem.GetBlockWithId(x.Owner.EntityId).CubeGrid == _me.CubeGrid || _program.GridTerminalSystem.GetBlockWithId(x.Owner.EntityId).DisplayNameText.Contains(_forceMoveFromConnectedGridContainerNameTag,StringComparison.InvariantCultureIgnoreCase)).ToList(); //Tools and components are moved only from inventories in local grid to prevent moving stuff from connected ships 
 				}
 				foreach (var inventory in inventories)
 				{
@@ -676,7 +681,7 @@ namespace ScriptingClass
 
 				var tasks = new List<IManagerTask>();
 
-				List<IMyCargoContainer> destinationCargos = cargoContainers.Where(x => x.DisplayNameText.ToLower().Contains(containerTag.ToLower())).OrderBy(x => x.DisplayNameText).ToList();
+				List<IMyCargoContainer> destinationCargos = cargoContainers.Where(x => x.DisplayNameText.Contains(containerTag, StringComparison.InvariantCultureIgnoreCase) && x.CubeGrid == _me.CubeGrid).OrderBy(x => x.DisplayNameText).ToList();// destinationCargos cargos only on current grid not connected
 				if (destinationCargos == null || destinationCargos.Count == 0)
 				{
 					_program.Echo(string.Format($"No cargo conteiner with {containerTag} in name."));
@@ -743,48 +748,10 @@ namespace ScriptingClass
 
 			}
 
-			//private bool IsItemOre(MyInventoryItem item)
-			//{
-
-			//	return item.ToString().Contains("_Ore");
-			//}
-
-			//private bool IsItemComponent(MyInventoryItem item)
-			//{
-
-			//	return item.ToString().Contains("_Component");
-			//}
-
-			//private bool IsItemTool(MyInventoryItem item)
-			//{
-
-			//	return item.ToString().Contains("_CaracterTool");
-			//}
-
-			//private bool IsItemIngot(MyInventoryItem item)
-			//{
-
-			//	return item.ToString().Contains("_Ingot");
-			//}
-
 			private bool HasItemTagInName(MyInventoryItem item, string itemTag)
 			{
-				return item.ToString().ToLower().Contains(itemTag.ToLower());
+				return item.ToString().Contains(itemTag, StringComparison.InvariantCultureIgnoreCase);
 			}
-
-			//private string GetItemType(MyInventoryItem item)
-			//{
-			//	string typeOfItem = item.Type.SubtypeId.ToString();
-			//	string contentDescr = item.ToString();
-			//	if (contentDescr.Contains("_Ore"))
-			//	{
-			//		if (typeOfItem != "Stone" && typeOfItem != "Ice")
-			//			typeOfItem = typeOfItem + " Ore";
-			//	}
-			//	if (typeOfItem == "Stone" && contentDescr.Contains("_Ingot"))
-			//		typeOfItem = "Gravel";
-			//	return typeOfItem;
-			//}
 
 			public class MoveItemTask : IManagerTask
 			{
@@ -869,7 +836,7 @@ namespace ScriptingClass
 					_program.GridTerminalSystem.GetBlocksOfType<IMyCargoContainer>(blocks);
 					if (blocks == null) return;
 
-					var cargoContainers = blocks.Select(x => (IMyCargoContainer)x).Where(x => !x.DisplayNameText.Contains("Tools")).ToList();
+					var cargoContainers = blocks.Select(x => (IMyCargoContainer)x).Where(x => !x.DisplayNameText.Contains("Tools", StringComparison.InvariantCultureIgnoreCase)).ToList();
 
 					foreach (var cargoContainer in cargoContainers)
 					{
@@ -935,7 +902,7 @@ namespace ScriptingClass
 				var assemblerTypeBlocks = new List<IMyTerminalBlock>();
 				_program.GridTerminalSystem.GetBlocksOfType<IMyAssembler>(assemblerTypeBlocks);
 
-				var assemblers = assemblerTypeBlocks.Where(x => !x.BlockDefinition.SubtypeName.ToLower().Contains(LargeStoneCrusherSubtypeName.ToLower()) && x.CubeGrid == _me.CubeGrid).ToList(); //Only assemblers from current grid
+				var assemblers = assemblerTypeBlocks.Where(x => !x.BlockDefinition.SubtypeName.Contains(LargeStoneCrusherSubtypeName, StringComparison.InvariantCultureIgnoreCase) && x.CubeGrid == _me.CubeGrid).ToList(); //Only assemblers from current grid
 
 				var refineriesTypeBlocks = new List<IMyTerminalBlock>();
 				_program.GridTerminalSystem.GetBlocksOfType<IMyRefinery>(refineriesTypeBlocks);
