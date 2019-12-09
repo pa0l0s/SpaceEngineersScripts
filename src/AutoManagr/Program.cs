@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using VRage;
+using VRage.Game;
 using VRage.Game.ModAPI.Ingame;
 using VRageMath;
 
@@ -645,7 +646,7 @@ namespace ScriptingClass
 					inventory.GetItems(inventoryItems);
 					foreach (var inventoryItem in inventoryItems)
 					{
-						if (HasItemTagInName(inventoryItem, "_CaracterTool"))
+						if (HasTagInName(inventoryItem, "_CaracterTool"))
 						{
 							tasks.Add(new MoveItemTask(_program, inventoryItem, inventory, cargoContainers));
 						}
@@ -668,7 +669,7 @@ namespace ScriptingClass
 
 					foreach (var inventoryItem in inventoryItems)
 					{
-						if (HasItemTagInName(inventoryItem, itemTag))
+						if (HasTagInName(inventoryItem, itemTag))
 						{
 							yield return new MoveItemTask(_program, inventoryItem, inventory, destinationCargos);
 						}
@@ -746,11 +747,6 @@ namespace ScriptingClass
 
 				return tasks;
 
-			}
-
-			private bool HasItemTagInName(MyInventoryItem item, string itemTag)
-			{
-				return item.ToString().Contains(itemTag, StringComparison.InvariantCultureIgnoreCase);
 			}
 
 			public class MoveItemTask : IManagerTask
@@ -1004,6 +1000,178 @@ namespace ScriptingClass
 			}
 		}
 
+        public class AssemblerManager : IManager
+        {
+            private const string _componentsNameTag = "_Component";
+
+            //defaut components quantity to produce
+            private long _defautDesiredComponentQuantity = 1000;
+            private Dictionary<string, long> _desiredComponentsQuantity; 
+
+            private Program _program;
+            private IMyProgrammableBlock _me;
+
+            public AssemblerManager(Program program, IMyProgrammableBlock me)
+            {
+                _program = program;
+                _me = me;
+
+                _desiredComponentsQuantity = new Dictionary<string, long>();
+                _desiredComponentsQuantity.Add("QuantumComponents", 0); //TODO: use proper component name for quantum computers.
+                _desiredComponentsQuantity.Add("SteelPlates", 50000);
+            }
+
+            public IEnumerable<IManagerTask> GetTasks()
+            {
+                var countedComponents = CountComponents();
+                var tasks = new List<IManagerTask>();
+
+                tasks.AddRange(GetDisplayComponentsCountOnLCDTasks(countedComponents));
+
+                var assembler = ConfigureAssembler();
+
+                foreach (KeyValuePair<string, long> entry in countedComponents)
+                {
+                    // do something with entry.Value or entry.Key
+
+                if(entry.Value< GetDesiredQuantity(entry.Key))
+                    {
+                        tasks.Add(new AddToAssemblerQueueTask(_program, assembler, entry.Key, GetDesiredQuantity(entry.Key)- entry.Value));
+                    }
+
+                }
+
+                return tasks;
+            }
+
+            private Dictionary<string, long> CountComponents()
+            {
+                var result = new Dictionary<string, long>();
+
+
+                var blocks = new List<IMyTerminalBlock>();
+                _program.GridTerminalSystem.GetBlocksOfType<IMyCargoContainer>(blocks);
+                if (blocks == null) return result;
+
+                var localGridCargoContainers = blocks.Select(x => (IMyCargoContainer)x).Where(x => x.CubeGrid == _me.CubeGrid).ToList();
+
+                var inventories = new List<IMyInventory>();
+
+                foreach (var cargoContainer in localGridCargoContainers)
+                {
+                        var cargoContainerEntity = (IMyEntity)cargoContainer;
+
+                        inventories.Add((IMyInventory)cargoContainerEntity.GetInventory(0));
+                }
+
+                foreach (var inventory in inventories)
+                {
+                    var inventoryItems = new List<MyInventoryItem>();
+                    inventory.GetItems(inventoryItems);
+
+                    foreach (var inventoryItem in inventoryItems)
+                    {
+                        if (HasTagInName(inventoryItem, _componentsNameTag))
+                        {
+                            if(!result.ContainsKey(inventoryItem.ToString()))
+                            {
+                                result.Add(inventoryItem.ToString(), inventoryItem.Amount.RawValue);
+                            }
+                            else
+                            {
+                                result[inventoryItem.ToString()] += inventoryItem.Amount.RawValue;
+                            }
+                        }
+                    }
+                }
+
+                return result;
+            }
+
+            private IEnumerable<IManagerTask> GetDisplayComponentsCountOnLCDTasks(Dictionary<string, long> countedComponents)
+            {
+                //TODO: LCD display
+
+                yield return new DisplayOnLCDTask(_program, null, countedComponents);
+
+                yield break;
+            }
+
+            private IMyAssembler ConfigureAssembler()
+            {
+                var blocks = new List<IMyAssembler>();
+                _program.GridTerminalSystem.GetBlocksOfType<IMyAssembler>(blocks);
+                if (blocks == null) throw new Exception("Assembler not found!");
+
+                var assembler = blocks.OrderBy(x => x.DisplayNameText).FirstOrDefault(); //Select first assembler according to alphabetical order
+                //throw new Exception(assembler.GetProperty("slaveMode").ToString()); //debug to check if there is property
+
+                assembler.ApplyAction("slaveMode");
+
+                return assembler;
+            }
+
+            private long GetDesiredQuantity(string key)
+            {
+                if(_desiredComponentsQuantity.ContainsKey(key))
+                {
+                    return _desiredComponentsQuantity[key];
+                }
+                return _defautDesiredComponentQuantity;
+            }
+
+            public class AddToAssemblerQueueTask : IManagerTask
+            {
+                Program _program;
+                IMyAssembler _assembler;
+                string _itemName;
+                long _amount;
+
+                public AddToAssemblerQueueTask(Program program, IMyAssembler assembler, string itemName,long amount)
+                {
+                    _program = program;
+                    _assembler = assembler;
+                    _itemName = itemName;
+                    _amount = amount;
+                }
+                public void DoTask()
+                {
+                    var blueprint = MyDefinitionId.Parse($"MyObjectBuilder_BlueprintDefinition/{_itemName}"); //MyDefinitionId.Parse("MyObjectBuilder_BlueprintDefinition/Motor");
+
+                    _assembler.AddQueueItem(blueprint, (double)_amount);
+                }
+
+                public int GetPriority()
+                {
+                    return 10;
+                }
+            }
+
+            public class DisplayOnLCDTask : IManagerTask
+            {
+                Program _program;
+                IMyTextPanel _textPanel;
+                Dictionary<string, long> _countedComponents;
+
+
+                public DisplayOnLCDTask(Program program, IMyTextPanel textPanel, Dictionary<string, long> countedComponents)
+                {
+                    _program = program;
+                    _textPanel = textPanel;
+                    _countedComponents = countedComponents;
+                }
+                public void DoTask()
+                {
+                    //TODO: Display on LCD
+                }
+
+                public int GetPriority()
+                {
+                    return 10;
+                }
+            }
+        }
+
 		public class TurnOnTask : IManagerTask
 		{
 			Program _program;
@@ -1070,10 +1238,13 @@ namespace ScriptingClass
 
 		}
 
+        public static bool HasTagInName(MyInventoryItem item, string itemTag)
+        {
+            return item.ToString().Contains(itemTag, StringComparison.InvariantCultureIgnoreCase);
+        }
+
+        //Copy to here
 
 
-		//Copy to here
-
-
-	}
+    }
 }
