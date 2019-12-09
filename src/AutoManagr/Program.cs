@@ -1104,9 +1104,9 @@ namespace ScriptingClass
                 if (blocks == null) throw new Exception("Assembler not found!");
 
                 var assembler = blocks.OrderBy(x => x.DisplayNameText).FirstOrDefault(); //Select first assembler according to alphabetical order
-                //throw new Exception(assembler.GetProperty("slaveMode").ToString()); //debug to check if there is property
 
-                assembler.ApplyAction("slaveMode");
+                assembler.Mode = MyAssemblerMode.Assembly;
+                assembler.CooperativeMode = true;
 
                 return assembler;
             }
