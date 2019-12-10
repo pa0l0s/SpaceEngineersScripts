@@ -61,8 +61,9 @@ namespace ScriptingClass
 			_managersQueue = new Queue<IManager>();
 			_taskQueue = new Queue<IManagerTask>();
 			_managers = new List<IManager>();
-			_managers.Add(new AssemblerManager(this, Me));
+
 			_managers.Add(new TurnOnBlocksDisabledBySerwerManager(this, Me));
+			_managers.Add(new AssemblerManager(this, Me));
 			_managers.Add(new DoorManager(this));
 			_managers.Add(new SimpleInventoryManager(this, Me));
 			//_managers.Add(new TestManager(this));
@@ -1022,8 +1023,19 @@ namespace ScriptingClass
 				_me = me;
 
 				_desiredComponentsQuantity = new Dictionary<string, long>();
-				_desiredComponentsQuantity.Add("SuperComputer", 0); //TODO: use proper component name for quantum computers.
-				_desiredComponentsQuantity.Add("SteelPlate", 50000);
+				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/SuperComputer", 0); //TODO: use proper component name for quantum computers.
+				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/SteelPlate", 50000);
+				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/MetalGrid", 25000);
+				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/InteriorPlate", 20000);
+				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/Construction", 25000);
+				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/Motor", 20000);
+				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/Thrust", 10000);
+				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/LargeTube", 15000);
+				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/SmallTube", 25000);
+				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/Reactor", 10000);
+				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/Superconductor", 10000);
+				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/GravityGenerator", 7000);
+				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/PowerCell", 5000);
 			}
 
 			public IEnumerable<IManagerTask> GetTasks()
@@ -1208,9 +1220,12 @@ namespace ScriptingClass
 					if (_assembler.CanUseBlueprint(_itemTypeDefinition))
 					{
 						_assembler.AddQueueItem(_itemTypeDefinition, amount);
+						_program.Echo($"Add to prtoduction queue:{amount} x {_itemTypeDefinition} ");
 					}
-
-					//throw new Exception("debug");
+					else
+					{
+						_program.Echo($"Unable to build {_itemTypeDefinition} on assembler {_assembler.DisplayNameText}");
+					}
 				}
 
 				public int GetPriority()
