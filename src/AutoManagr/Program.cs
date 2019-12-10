@@ -48,6 +48,7 @@ namespace ScriptingClass
 		private Queue<IManagerTask> _taskQueue;
 		private List<IManager> _managers;
 		private Queue<IManager> _managersQueue;
+		private bool HoldOnException = false;
 
 		private Rotator _rotator;
 
@@ -99,7 +100,8 @@ namespace ScriptingClass
 				catch (Exception ex)
 				{
 					Echo(ex.Message);
-					//throw ex;
+
+					if (HoldOnException) throw ex;
 				}
 
 				foreach (var task in tasks)
@@ -119,7 +121,7 @@ namespace ScriptingClass
 				catch (Exception ex)
 				{
 					Echo(ex.Message);
-					//throw ex;
+					if (HoldOnException) throw ex;
 				}
 			}
 
@@ -1010,9 +1012,25 @@ namespace ScriptingClass
 			private const string _componentsNameTag = "_Component";
 			private const string _lcdNameTag = "Components";
 
+			private static Dictionary<string, long> _desiredComponentsQuantity = new Dictionary<string, long>
+			{
+				{ "MyObjectBuilder_Component/SuperComputer", 0 },
+				{ "MyObjectBuilder_Component/SteelPlate", 50000},
+				{ "MyObjectBuilder_Component/MetalGrid", 25000},
+				{ "MyObjectBuilder_Component/InteriorPlate", 20000 },
+				{ "MyObjectBuilder_Component/Construction", 25000},
+				{ "MyObjectBuilder_Component/Motor", 20000},
+				{ "MyObjectBuilder_Component/Thrust", 10000},
+				{ "MyObjectBuilder_Component/LargeTube", 15000},
+				{ "MyObjectBuilder_Component/SmallTube", 25000},
+				{ "MyObjectBuilder_Component/Reactor", 10000},
+				{ "MyObjectBuilder_Component/Superconductor", 10000},
+				{ "MyObjectBuilder_Component/GravityGenerator", 7000},
+				{ "MyObjectBuilder_Component/PowerCell", 5000}
+			};
+
 			//defaut components quantity to produce
-			private long _defautDesiredComponentQuantity = 1000;
-			private Dictionary<string, long> _desiredComponentsQuantity;
+			private const long _defautDesiredComponentQuantity = 1000;
 
 			private Program _program;
 			private IMyProgrammableBlock _me;
@@ -1021,21 +1039,6 @@ namespace ScriptingClass
 			{
 				_program = program;
 				_me = me;
-
-				_desiredComponentsQuantity = new Dictionary<string, long>();
-				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/SuperComputer", 0); //TODO: use proper component name for quantum computers.
-				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/SteelPlate", 50000);
-				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/MetalGrid", 25000);
-				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/InteriorPlate", 20000);
-				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/Construction", 25000);
-				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/Motor", 20000);
-				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/Thrust", 10000);
-				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/LargeTube", 15000);
-				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/SmallTube", 25000);
-				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/Reactor", 10000);
-				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/Superconductor", 10000);
-				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/GravityGenerator", 7000);
-				_desiredComponentsQuantity.Add("MyObjectBuilder_Component/PowerCell", 5000);
 			}
 
 			public IEnumerable<IManagerTask> GetTasks()
@@ -1079,7 +1082,6 @@ namespace ScriptingClass
 
 				var blocks = new List<IMyTerminalBlock>();
 				_program.GridTerminalSystem.GetBlocksOfType<IMyCargoContainer>(blocks);
-				if (blocks == null) return result;
 
 				var localGridCargoContainers = blocks.Select(x => (IMyCargoContainer)x).Where(x => x.CubeGrid == _me.CubeGrid).ToList();
 
@@ -1091,6 +1093,12 @@ namespace ScriptingClass
 
 					inventories.Add((IMyInventory)cargoContainerEntity.GetInventory(0));
 				}
+
+				//Add assemblers
+				blocks = new List<IMyTerminalBlock>();
+				_program.GridTerminalSystem.GetBlocksOfType<IMyAssembler>(blocks);
+				inventories.AddRange(blocks.Select(x => ((IMyAssembler)x).OutputInventory).ToList());
+
 
 				foreach (var inventory in inventories)
 				{
@@ -1152,7 +1160,7 @@ namespace ScriptingClass
 				return assembler;
 			}
 
-			private long GetDesiredQuantity(string key)
+			private static long GetDesiredQuantity(string key)
 			{
 				if (_desiredComponentsQuantity.ContainsKey(key))
 				{
@@ -1252,10 +1260,11 @@ namespace ScriptingClass
 					//TODO: Display on LCD
 
 					var sb = new StringBuilder();
+					sb.AppendLine($"Last update: {DateTime.Now}");
 
 					foreach (KeyValuePair<string, long> entry in _countedComponents)
 					{
-						sb.AppendLine($"{entry.Key} - {entry.Value}");
+						sb.AppendLine($"{entry.Key.Split('/')[1]} - {entry.Value} - {((double)entry.Value)/((double)GetDesiredQuantity(entry.Key)) * 100:0.##}%");
 
 						_textPanel.WritePublicText(sb.ToString());
 						_textPanel.ShowPublicTextOnScreen();
