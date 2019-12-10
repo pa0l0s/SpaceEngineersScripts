@@ -13,39 +13,39 @@ namespace ScriptingClass
 	class Program : MyGridProgram
 	{
 
-        /// Copy code from here
+		/// Copy code from here
 
 
-        /// <summary>
-        /// Grid Manager
-        /// By Paolo
-        /// </summary>
-        /// 
-        /// 1. SimpleInventoryManager
-        /// Moves resources to containers with tag in name. If more containers with same tag they will bee filled in alphabetical order.
-        /// Available tags for containers:
-        /// "Ores"
-        /// "Ingots"
-        /// "Tools"
-        /// "Components"
-        /// "Ignore" - this container will be ignored by script
-        /// "ForceConnected" - will foce to manage inventorty in container on connected grid (ores by defaut are pulled also from connected inventories).
-        /// 
-        /// 2. DamageManager 
-        /// Display damaged blocks on Hud if antenna available. If there is welder close by turns it on.
-        /// 
-        /// 3. DoorManager
-        /// Simply closes all door once a while.
-        /// 
-        /// 4. Hydrogen Manager
-        /// Turns on O2/H2 Generators when hydrogen level in tanks is below given level default 40%, turns of when above max level default 90%.
-        /// 
-        /// 5. Turn on block disabled by server
-        /// On UD server refineries, assemblesr and some other blocks are disables bedore restart. This manager enshures that refineries and assemblers are turned on again.
-        /// 
-        /// More to be implemented...
+		/// <summary>
+		/// Grid Manager
+		/// By Paolo
+		/// </summary>
+		/// 
+		/// 1. SimpleInventoryManager
+		/// Moves resources to containers with tag in name. If more containers with same tag they will bee filled in alphabetical order.
+		/// Available tags for containers:
+		/// "Ores"
+		/// "Ingots"
+		/// "Tools"
+		/// "Components"
+		/// "Ignore" - this container will be ignored by script
+		/// "ForceConnected" - will foce to manage inventorty in container on connected grid (ores by defaut are pulled also from connected inventories).
+		/// 
+		/// 2. DamageManager 
+		/// Display damaged blocks on Hud if antenna available. If there is welder close by turns it on.
+		/// 
+		/// 3. DoorManager
+		/// Simply closes all door once a while.
+		/// 
+		/// 4. Hydrogen Manager
+		/// Turns on O2/H2 Generators when hydrogen level in tanks is below given level default 40%, turns of when above max level default 90%.
+		/// 
+		/// 5. Turn on block disabled by server
+		/// On UD server refineries, assemblesr and some other blocks are disables bedore restart. This manager enshures that refineries and assemblers are turned on again.
+		/// 
+		/// More to be implemented...
 
-        private Queue<IManagerTask> _taskQueue;
+		private Queue<IManagerTask> _taskQueue;
 		private List<IManager> _managers;
 		private Queue<IManager> _managersQueue;
 
@@ -61,6 +61,7 @@ namespace ScriptingClass
 			_managersQueue = new Queue<IManager>();
 			_taskQueue = new Queue<IManagerTask>();
 			_managers = new List<IManager>();
+			_managers.Add(new AssemblerManager(this, Me));
 			_managers.Add(new TurnOnBlocksDisabledBySerwerManager(this, Me));
 			_managers.Add(new DoorManager(this));
 			_managers.Add(new SimpleInventoryManager(this, Me));
@@ -68,6 +69,7 @@ namespace ScriptingClass
 			_managers.Add(new DamageManager(this, Me));
 			_managers.Add(new HydrogenManager(this, Me));
 			_managers.Add(new DelyManager());
+
 		}
 
 		void Main()
@@ -96,6 +98,7 @@ namespace ScriptingClass
 				catch (Exception ex)
 				{
 					Echo(ex.Message);
+					//throw ex;
 				}
 
 				foreach (var task in tasks)
@@ -115,6 +118,7 @@ namespace ScriptingClass
 				catch (Exception ex)
 				{
 					Echo(ex.Message);
+					//throw ex;
 				}
 			}
 
@@ -565,18 +569,18 @@ namespace ScriptingClass
 			private const string defaultToolsContainerNameTag = "Tools";
 			private const string defaultComponentsContainerNameTag = "Components";
 			private const string defaultIgnoreContainerNameTag = "Ignore";
-            private const string defaultForceMoveFromConnectedGridContainerNameTag = "ForceConnected";
+			private const string defaultForceMoveFromConnectedGridContainerNameTag = "ForceConnected";
 
-            private Program _program;
+			private Program _program;
 			private IMyProgrammableBlock _me;
 			private string _oreContainerNameTag;
 			private string _ingotContainerNameTag;
 			private string _toolsContainerNameTag;
 			private string _componentsContainerNameTag;
 			private string _ignoreContainerNameTag;
-            private string _forceMoveFromConnectedGridContainerNameTag;
+			private string _forceMoveFromConnectedGridContainerNameTag;
 
-            public SimpleInventoryManager(Program program, IMyProgrammableBlock me)
+			public SimpleInventoryManager(Program program, IMyProgrammableBlock me)
 			{
 				_program = program;
 				_me = me;
@@ -585,10 +589,10 @@ namespace ScriptingClass
 				_toolsContainerNameTag = defaultToolsContainerNameTag;
 				_componentsContainerNameTag = defaultComponentsContainerNameTag;
 				_ignoreContainerNameTag = defaultIgnoreContainerNameTag;
-                _forceMoveFromConnectedGridContainerNameTag = defaultForceMoveFromConnectedGridContainerNameTag;
+				_forceMoveFromConnectedGridContainerNameTag = defaultForceMoveFromConnectedGridContainerNameTag;
 
 
-            }
+			}
 			public IEnumerable<IManagerTask> GetTasks()
 			{
 
@@ -598,7 +602,7 @@ namespace ScriptingClass
 				_program.GridTerminalSystem.GetBlocksOfType<IMyCargoContainer>(blocks);
 				if (blocks == null) return tasks;
 
-				var cargoContainers = blocks.Select(x => (IMyCargoContainer)x).Where(x => !x.DisplayNameText.Contains(_ignoreContainerNameTag, StringComparison.InvariantCultureIgnoreCase)).ToList();
+				var cargoContainers = blocks.Select(x => (IMyCargoContainer)x).Where(x => !x.DisplayNameText.ToLower().Contains(_ignoreContainerNameTag.ToLower())).ToList();
 
 
 				tasks.AddRange(GetOreTasks(cargoContainers));
@@ -660,7 +664,7 @@ namespace ScriptingClass
 			{
 				if (itemTag == _toolsContainerNameTag || itemTag == _componentsContainerNameTag)
 				{
-					inventories = inventories.Where(x => _program.GridTerminalSystem.GetBlockWithId(x.Owner.EntityId).CubeGrid == _me.CubeGrid || _program.GridTerminalSystem.GetBlockWithId(x.Owner.EntityId).DisplayNameText.Contains(_forceMoveFromConnectedGridContainerNameTag,StringComparison.InvariantCultureIgnoreCase)).ToList(); //Tools and components are moved only from inventories in local grid to prevent moving stuff from connected ships 
+					inventories = inventories.Where(x => _program.GridTerminalSystem.GetBlockWithId(x.Owner.EntityId).CubeGrid == _me.CubeGrid || _program.GridTerminalSystem.GetBlockWithId(x.Owner.EntityId).DisplayNameText.ToLower().Contains(_forceMoveFromConnectedGridContainerNameTag.ToLower())).ToList(); //Tools and components are moved only from inventories in local grid to prevent moving stuff from connected ships 
 				}
 				foreach (var inventory in inventories)
 				{
@@ -682,7 +686,7 @@ namespace ScriptingClass
 
 				var tasks = new List<IManagerTask>();
 
-				List<IMyCargoContainer> destinationCargos = cargoContainers.Where(x => x.DisplayNameText.Contains(containerTag, StringComparison.InvariantCultureIgnoreCase) && x.CubeGrid == _me.CubeGrid).OrderBy(x => x.DisplayNameText).ToList();// destinationCargos cargos only on current grid not connected
+				List<IMyCargoContainer> destinationCargos = cargoContainers.Where(x => x.DisplayNameText.ToLower().Contains(containerTag.ToLower()) && x.CubeGrid == _me.CubeGrid).OrderBy(x => x.DisplayNameText).ToList();// destinationCargos cargos only on current grid not connected
 				if (destinationCargos == null || destinationCargos.Count == 0)
 				{
 					_program.Echo(string.Format($"No cargo conteiner with {containerTag} in name."));
@@ -832,7 +836,7 @@ namespace ScriptingClass
 					_program.GridTerminalSystem.GetBlocksOfType<IMyCargoContainer>(blocks);
 					if (blocks == null) return;
 
-					var cargoContainers = blocks.Select(x => (IMyCargoContainer)x).Where(x => !x.DisplayNameText.Contains("Tools", StringComparison.InvariantCultureIgnoreCase)).ToList();
+					var cargoContainers = blocks.Select(x => (IMyCargoContainer)x).Where(x => !x.DisplayNameText.ToLower().Contains("Tools".ToLower())).ToList();
 
 					foreach (var cargoContainer in cargoContainers)
 					{
@@ -898,7 +902,7 @@ namespace ScriptingClass
 				var assemblerTypeBlocks = new List<IMyTerminalBlock>();
 				_program.GridTerminalSystem.GetBlocksOfType<IMyAssembler>(assemblerTypeBlocks);
 
-				var assemblers = assemblerTypeBlocks.Where(x => !x.BlockDefinition.SubtypeName.Contains(LargeStoneCrusherSubtypeName, StringComparison.InvariantCultureIgnoreCase) && x.CubeGrid == _me.CubeGrid).ToList(); //Only assemblers from current grid
+				var assemblers = assemblerTypeBlocks.Where(x => !x.BlockDefinition.SubtypeName.ToLower().Contains(LargeStoneCrusherSubtypeName.ToLower()) && x.CubeGrid == _me.CubeGrid).ToList(); //Only assemblers from current grid
 
 				var refineriesTypeBlocks = new List<IMyTerminalBlock>();
 				_program.GridTerminalSystem.GetBlocksOfType<IMyRefinery>(refineriesTypeBlocks);
@@ -1000,177 +1004,282 @@ namespace ScriptingClass
 			}
 		}
 
-        public class AssemblerManager : IManager
-        {
-            private const string _componentsNameTag = "_Component";
+		public class AssemblerManager : IManager
+		{
+			private const string _componentsNameTag = "_Component";
+			private const string _lcdNameTag = "Components";
 
-            //defaut components quantity to produce
-            private long _defautDesiredComponentQuantity = 1000;
-            private Dictionary<string, long> _desiredComponentsQuantity; 
+			//defaut components quantity to produce
+			private long _defautDesiredComponentQuantity = 1000;
+			private Dictionary<string, long> _desiredComponentsQuantity;
 
-            private Program _program;
-            private IMyProgrammableBlock _me;
+			private Program _program;
+			private IMyProgrammableBlock _me;
 
-            public AssemblerManager(Program program, IMyProgrammableBlock me)
-            {
-                _program = program;
-                _me = me;
+			public AssemblerManager(Program program, IMyProgrammableBlock me)
+			{
+				_program = program;
+				_me = me;
 
-                _desiredComponentsQuantity = new Dictionary<string, long>();
-                _desiredComponentsQuantity.Add("QuantumComponents", 0); //TODO: use proper component name for quantum computers.
-                _desiredComponentsQuantity.Add("SteelPlates", 50000);
-            }
+				_desiredComponentsQuantity = new Dictionary<string, long>();
+				_desiredComponentsQuantity.Add("SuperComputer", 0); //TODO: use proper component name for quantum computers.
+				_desiredComponentsQuantity.Add("SteelPlate", 50000);
+			}
 
-            public IEnumerable<IManagerTask> GetTasks()
-            {
-                var countedComponents = CountComponents();
-                var tasks = new List<IManagerTask>();
+			public IEnumerable<IManagerTask> GetTasks()
+			{
+				var countedComponents = CountComponents();
+				var tasks = new List<IManagerTask>();
 
-                tasks.AddRange(GetDisplayComponentsCountOnLCDTasks(countedComponents));
+				tasks.AddRange(GetDisplayComponentsCountOnLCDTasks(countedComponents));
 
-                var assembler = ConfigureAssembler();
+				var assembler = ConfigureAssembler();
 
-                foreach (KeyValuePair<string, long> entry in countedComponents)
-                {
-                    // do something with entry.Value or entry.Key
+				foreach (KeyValuePair<string, long> entry in countedComponents)
+				{
+					// do something with entry.Value or entry.Key
+					var queueProductionItems = new List<MyProductionItem>();
+					assembler.GetQueue(queueProductionItems);
 
-                if(entry.Value< GetDesiredQuantity(entry.Key))
-                    {
-                        tasks.Add(new AddToAssemblerQueueTask(_program, assembler, entry.Key, GetDesiredQuantity(entry.Key)- entry.Value));
-                    }
+					var queueProductionItemsDefinitions = queueProductionItems.Select(x => x.BlueprintId).ToList();
+					var blueprintNullable = GetItemDefinition(_program, entry.Key);
+					if (blueprintNullable.HasValue)
+					{
+						var blueprint = blueprintNullable.Value;
+						if (!queueProductionItemsDefinitions.Contains(blueprint))
+						{
+							if (entry.Value < GetDesiredQuantity(entry.Key))
+							{
+								tasks.Add(new AddToAssemblerQueueTask(_program, assembler, blueprint, GetDesiredQuantity(entry.Key) - entry.Value));
+							}
+						}
+					}
 
-                }
+				}
 
-                return tasks;
-            }
+				return tasks;
+			}
 
-            private Dictionary<string, long> CountComponents()
-            {
-                var result = new Dictionary<string, long>();
-
-
-                var blocks = new List<IMyTerminalBlock>();
-                _program.GridTerminalSystem.GetBlocksOfType<IMyCargoContainer>(blocks);
-                if (blocks == null) return result;
-
-                var localGridCargoContainers = blocks.Select(x => (IMyCargoContainer)x).Where(x => x.CubeGrid == _me.CubeGrid).ToList();
-
-                var inventories = new List<IMyInventory>();
-
-                foreach (var cargoContainer in localGridCargoContainers)
-                {
-                        var cargoContainerEntity = (IMyEntity)cargoContainer;
-
-                        inventories.Add((IMyInventory)cargoContainerEntity.GetInventory(0));
-                }
-
-                foreach (var inventory in inventories)
-                {
-                    var inventoryItems = new List<MyInventoryItem>();
-                    inventory.GetItems(inventoryItems);
-
-                    foreach (var inventoryItem in inventoryItems)
-                    {
-                        if (HasTagInName(inventoryItem, _componentsNameTag))
-                        {
-                            if(!result.ContainsKey(inventoryItem.ToString()))
-                            {
-                                result.Add(inventoryItem.ToString(), inventoryItem.Amount.RawValue);
-                            }
-                            else
-                            {
-                                result[inventoryItem.ToString()] += inventoryItem.Amount.RawValue;
-                            }
-                        }
-                    }
-                }
-
-                return result;
-            }
-
-            private IEnumerable<IManagerTask> GetDisplayComponentsCountOnLCDTasks(Dictionary<string, long> countedComponents)
-            {
-                //TODO: LCD display
-
-                yield return new DisplayOnLCDTask(_program, null, countedComponents);
-
-                yield break;
-            }
-
-            private IMyAssembler ConfigureAssembler()
-            {
-                var blocks = new List<IMyAssembler>();
-                _program.GridTerminalSystem.GetBlocksOfType<IMyAssembler>(blocks);
-                if (blocks == null) throw new Exception("Assembler not found!");
-
-                var assembler = blocks.OrderBy(x => x.DisplayNameText).FirstOrDefault(); //Select first assembler according to alphabetical order
-
-                assembler.Mode = MyAssemblerMode.Assembly;
-                assembler.CooperativeMode = true;
-
-                return assembler;
-            }
-
-            private long GetDesiredQuantity(string key)
-            {
-                if(_desiredComponentsQuantity.ContainsKey(key))
-                {
-                    return _desiredComponentsQuantity[key];
-                }
-                return _defautDesiredComponentQuantity;
-            }
-
-            public class AddToAssemblerQueueTask : IManagerTask
-            {
-                Program _program;
-                IMyAssembler _assembler;
-                string _itemName;
-                long _amount;
-
-                public AddToAssemblerQueueTask(Program program, IMyAssembler assembler, string itemName,long amount)
-                {
-                    _program = program;
-                    _assembler = assembler;
-                    _itemName = itemName;
-                    _amount = amount;
-                }
-                public void DoTask()
-                {
-                    var blueprint = MyDefinitionId.Parse($"MyObjectBuilder_BlueprintDefinition/{_itemName}"); //MyDefinitionId.Parse("MyObjectBuilder_BlueprintDefinition/Motor");
-
-                    _assembler.AddQueueItem(blueprint, (double)_amount);
-                }
-
-                public int GetPriority()
-                {
-                    return 10;
-                }
-            }
-
-            public class DisplayOnLCDTask : IManagerTask
-            {
-                Program _program;
-                IMyTextPanel _textPanel;
-                Dictionary<string, long> _countedComponents;
+			private Dictionary<string, long> CountComponents()
+			{
+				var result = new Dictionary<string, long>();
 
 
-                public DisplayOnLCDTask(Program program, IMyTextPanel textPanel, Dictionary<string, long> countedComponents)
-                {
-                    _program = program;
-                    _textPanel = textPanel;
-                    _countedComponents = countedComponents;
-                }
-                public void DoTask()
-                {
-                    //TODO: Display on LCD
-                }
+				var blocks = new List<IMyTerminalBlock>();
+				_program.GridTerminalSystem.GetBlocksOfType<IMyCargoContainer>(blocks);
+				if (blocks == null) return result;
 
-                public int GetPriority()
-                {
-                    return 10;
-                }
-            }
-        }
+				var localGridCargoContainers = blocks.Select(x => (IMyCargoContainer)x).Where(x => x.CubeGrid == _me.CubeGrid).ToList();
+
+				var inventories = new List<IMyInventory>();
+
+				foreach (var cargoContainer in localGridCargoContainers)
+				{
+					var cargoContainerEntity = (IMyEntity)cargoContainer;
+
+					inventories.Add((IMyInventory)cargoContainerEntity.GetInventory(0));
+				}
+
+				foreach (var inventory in inventories)
+				{
+					var inventoryItems = new List<MyInventoryItem>();
+					inventory.GetItems(inventoryItems);
+
+					foreach (var inventoryItem in inventoryItems)
+					{
+						if (HasTagInName(inventoryItem, _componentsNameTag))
+						{
+							if (!result.ContainsKey(GetInventoryTypeName(inventoryItem)))
+							{
+								result.Add(GetInventoryTypeName(inventoryItem), inventoryItem.Amount.ToIntSafe());
+							}
+							else
+							{
+								result[GetInventoryTypeName(inventoryItem)] += inventoryItem.Amount.ToIntSafe();
+							}
+						}
+					}
+				}
+
+				return result;
+			}
+
+			private IEnumerable<IManagerTask> GetDisplayComponentsCountOnLCDTasks(Dictionary<string, long> countedComponents)
+			{
+				//TODO: LCD display
+
+				var blocks = new List<IMyTextPanel>();
+				_program.GridTerminalSystem.GetBlocksOfType<IMyTextPanel>(blocks);
+				if (blocks == null) throw new Exception("LCD display not found!");
+
+				var lcds = blocks.Where(x => x.DisplayNameText.ToLower().Contains(_lcdNameTag.ToLower())).ToList();
+
+				foreach (var lcd in lcds)
+				{
+					yield return new DisplayOnLCDTask(_program, lcd, countedComponents);
+				}
+
+				yield break;
+			}
+
+			private IMyAssembler ConfigureAssembler()
+			{
+				var blocks = new List<IMyAssembler>();
+				_program.GridTerminalSystem.GetBlocksOfType<IMyAssembler>(blocks);
+				if (blocks == null) throw new Exception("Assembler not found!");
+
+				var assembler = blocks.OrderBy(x => x.DisplayNameText).FirstOrDefault(x => x.BlockDefinition.TypeIdString == "MyObjectBuilder_Assembler"); //Select first assembler according to alphabetical order
+
+				//_program.Echo($"assembler.Name: {assembler.Name} assembler.BlockDefinition: {assembler.BlockDefinition}");
+
+				_program.Echo($"assembler.Name: {assembler.DisplayNameText}");
+
+				assembler.Mode = MyAssemblerMode.Assembly;
+				assembler.CooperativeMode = true;
+
+				return assembler;
+			}
+
+			private long GetDesiredQuantity(string key)
+			{
+				if (_desiredComponentsQuantity.ContainsKey(key))
+				{
+					return _desiredComponentsQuantity[key];
+				}
+				return _defautDesiredComponentQuantity;
+			}
+
+			private static string GetInventoryTypeName(MyInventoryItem inventoryItem)
+			{
+				return $"{inventoryItem.Type.TypeId}/{inventoryItem.Type.SubtypeId}";
+
+				//return inventoryItem.Type.SubtypeId;
+			}
+
+			private static MyDefinitionId? GetItemDefinition(Program program, string itemTypeName)
+			{
+				string blueprintIdString;
+				MyDefinitionId blueprint;
+
+				if (ItemNameToBlueprintDefinitionDictionary.ContainsKey(itemTypeName))
+				{
+					blueprintIdString = ItemNameToBlueprintDefinitionDictionary[itemTypeName];
+					if (MyDefinitionId.TryParse(blueprintIdString, out blueprint))
+					{
+						return blueprint;
+					}
+				}
+
+				blueprintIdString = "MyObjectBuilder_BlueprintDefinition" + itemTypeName.Split('/')[1];
+
+				if (MyDefinitionId.TryParse(blueprintIdString, out blueprint))
+				{
+					return blueprint;
+				}
+				else if (MyDefinitionId.TryParse(blueprintIdString + "Component", out blueprint))
+				{
+					return blueprint;
+				}
+
+				program.Echo($"No blueprint definition for {itemTypeName}");
+
+				return null;
+				//throw new Exception($"No blueprint definition for {itemTypeName}");
+			}
+
+			public class AddToAssemblerQueueTask : IManagerTask
+			{
+				Program _program;
+				IMyAssembler _assembler;
+				MyDefinitionId _itemTypeDefinition;
+				long _amount;
+
+				public AddToAssemblerQueueTask(Program program, IMyAssembler assembler, MyDefinitionId itemTypeDefinition, long amount)
+				{
+					_program = program;
+					_assembler = assembler;
+					_itemTypeDefinition = itemTypeDefinition;
+					_amount = amount;
+				}
+				public void DoTask()
+				{
+					var amount = (VRage.MyFixedPoint)(double)_amount;
+
+					if (_assembler.CanUseBlueprint(_itemTypeDefinition))
+					{
+						_assembler.AddQueueItem(_itemTypeDefinition, amount);
+					}
+
+					//throw new Exception("debug");
+				}
+
+				public int GetPriority()
+				{
+					return 10;
+				}
+			}
+
+			public class DisplayOnLCDTask : IManagerTask
+			{
+				Program _program;
+				IMyTextPanel _textPanel;
+				Dictionary<string, long> _countedComponents;
+
+
+				public DisplayOnLCDTask(Program program, IMyTextPanel textPanel, Dictionary<string, long> countedComponents)
+				{
+					_program = program;
+					_textPanel = textPanel;
+					_countedComponents = countedComponents;
+				}
+				public void DoTask()
+				{
+					//TODO: Display on LCD
+
+					var sb = new StringBuilder();
+
+					foreach (KeyValuePair<string, long> entry in _countedComponents)
+					{
+						sb.AppendLine($"{entry.Key} - {entry.Value}");
+
+						_textPanel.WritePublicText(sb.ToString());
+						_textPanel.ShowPublicTextOnScreen();
+					}
+				}
+
+				public int GetPriority()
+				{
+					return 10;
+				}
+			}
+
+			public static Dictionary<string, string> ItemNameToBlueprintDefinitionDictionary = new Dictionary<string, string> {
+				{ "MyObjectBuilder_Component/Superconductor","MyObjectBuilder_BlueprintDefinition/Superconductor" },
+				{"MyObjectBuilder_Component/BulletproofGlass", "MyObjectBuilder_BlueprintDefinition/BulletproofGlass" },
+				{"MyObjectBuilder_Component/LargeTube", "MyObjectBuilder_BlueprintDefinition/LargeTube" },
+				{"MyObjectBuilder_Component/Explosives","MyObjectBuilder_BlueprintDefinition/ExplosivesComponent" },
+				{ "MyObjectBuilder_Component/Thrust","MyObjectBuilder_BlueprintDefinition/ThrustComponent"},
+				{ "MyObjectBuilder_Component/Detector","MyObjectBuilder_BlueprintDefinition/DetectorComponent"},
+				{ "MyObjectBuilder_Component/Display","MyObjectBuilder_BlueprintDefinition/Display"},
+				{ "MyObjectBuilder_Component/Girder","MyObjectBuilder_BlueprintDefinition/GirderComponent"},
+				{"MyObjectBuilder_Component/Medical", "MyObjectBuilder_BlueprintDefinition/MedicalComponent"},
+				{"MyObjectBuilder_Component/InteriorPlate", "MyObjectBuilder_BlueprintDefinition/InteriorPlate"},
+				{ "MyObjectBuilder_Component/RadioCommunication","MyObjectBuilder_BlueprintDefinition/RadioCommunicationComponent"},
+				//{"MyObjectBuilder_Component/Canvas", }
+				{ "MyObjectBuilder_Component/SolarCell","MyObjectBuilder_BlueprintDefinition/SolarCell"},
+				{"MyObjectBuilder_Component/Motor", "MyObjectBuilder_BlueprintDefinition/MotorComponent"},
+				{"MyObjectBuilder_Component/GravityGenerator", "MyObjectBuilder_BlueprintDefinition/GravityGeneratorComponent"},
+				{ "MyObjectBuilder_Component/Computer","MyObjectBuilder_BlueprintDefinition/ComputerComponent" },
+				{ "MyObjectBuilder_Component/SmallTube","MyObjectBuilder_BlueprintDefinition/SmallTube"},
+				{ "MyObjectBuilder_Component/SteelPlate","MyObjectBuilder_BlueprintDefinition/SteelPlate"},
+				{ "MyObjectBuilder_Component/PowerCell", "MyObjectBuilder_BlueprintDefinition/PowerCell"},
+				{ "MyObjectBuilder_Component/Construction", "MyObjectBuilder_BlueprintDefinition/ConstructionComponent"},
+				{"MyObjectBuilder_Component/Reactor", "MyObjectBuilder_BlueprintDefinition/ReactorComponent"},
+				{"MyObjectBuilder_Component/MetalGrid", "MyObjectBuilder_BlueprintDefinition/MetalGrid" }
+
+
+   };
+		}
 
 		public class TurnOnTask : IManagerTask
 		{
@@ -1238,13 +1347,13 @@ namespace ScriptingClass
 
 		}
 
-        public static bool HasTagInName(MyInventoryItem item, string itemTag)
-        {
-            return item.ToString().Contains(itemTag, StringComparison.InvariantCultureIgnoreCase);
-        }
+		public static bool HasTagInName(MyInventoryItem item, string itemTag)
+		{
+			return item.ToString().ToLower().Contains(itemTag.ToLower());
+		}
 
-        //Copy to here
+		//Copy to here
 
 
-    }
+	}
 }
