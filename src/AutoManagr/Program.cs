@@ -1032,6 +1032,7 @@ namespace ScriptingClass
 
 			//defaut components quantity to produce
 			private const long _defautDesiredComponentQuantity = 1000;
+			private const long _defaultMaxSingleItemAddToQueueAmmount = 1000;
 
 			private Program _program;
 			private IMyProgrammableBlock _me;
@@ -1066,7 +1067,9 @@ namespace ScriptingClass
 						{
 							if (entry.Value < GetDesiredQuantity(entry.Key))
 							{
-								tasks.Add(new AddToAssemblerQueueTask(_program, assembler, blueprint, GetDesiredQuantity(entry.Key) - entry.Value));
+								var ammoutToBuild = GetDesiredQuantity(entry.Key) - entry.Value;
+								if (ammoutToBuild > _defaultMaxSingleItemAddToQueueAmmount) { ammoutToBuild = _defaultMaxSingleItemAddToQueueAmmount; }
+								tasks.Add(new AddToAssemblerQueueTask(_program, assembler, blueprint, ammoutToBuild));
 							}
 						}
 					}
@@ -1119,6 +1122,14 @@ namespace ScriptingClass
 								result[GetInventoryTypeName(inventoryItem)] += inventoryItem.Amount.ToIntSafe();
 							}
 						}
+					}
+				}
+
+				foreach (KeyValuePair<string, long> entry in _desiredComponentsQuantity )
+				{
+					if(!result.ContainsKey(entry.Key))
+					{
+						result.Add(entry.Key, 0);
 					}
 				}
 
