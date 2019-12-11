@@ -1019,13 +1019,14 @@ namespace ScriptingClass
 				{ "MyObjectBuilder_Component/MetalGrid", 25000},
 				{ "MyObjectBuilder_Component/InteriorPlate", 20000 },
 				{ "MyObjectBuilder_Component/Construction", 25000},
+				{ "MyObjectBuilder_Component/Computer", 15000},
 				{ "MyObjectBuilder_Component/Motor", 20000},
 				{ "MyObjectBuilder_Component/Thrust", 10000},
 				{ "MyObjectBuilder_Component/LargeTube", 15000},
 				{ "MyObjectBuilder_Component/SmallTube", 25000},
 				{ "MyObjectBuilder_Component/Reactor", 10000},
 				{ "MyObjectBuilder_Component/Superconductor", 10000},
-				{ "MyObjectBuilder_Component/GravityGenerator", 7000},
+				{ "MyObjectBuilder_Component/GravityGenerator", 4000},
 				{ "MyObjectBuilder_Component/PowerCell", 5000}
 			};
 
