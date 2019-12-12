@@ -1167,6 +1167,7 @@ namespace ScriptingClass
 				{
 					assembler.Mode = MyAssemblerMode.Assembly;
 					assembler.CooperativeMode = true;
+					assembler.Repeating = false;
 				}
 
 				
@@ -1175,7 +1176,8 @@ namespace ScriptingClass
 				_program.Echo($"Main assembler name: {mainAssembler.DisplayNameText}");
 
 				mainAssembler.CooperativeMode = false;
-				mainAssembler.Mode = MyAssemblerMode.Assembly;	
+				mainAssembler.Mode = MyAssemblerMode.Assembly;
+				mainAssembler.Repeating = false;
 
 				return mainAssembler;
 			}
