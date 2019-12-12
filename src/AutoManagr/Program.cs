@@ -1160,7 +1160,7 @@ namespace ScriptingClass
 				_program.GridTerminalSystem.GetBlocksOfType<IMyAssembler>(blocks);
 				if (blocks == null) throw new Exception("Assembler not found!");
 
-				var mainAssembler = blocks.OrderBy(x => x.DisplayNameText).FirstOrDefault(x => x.BlockDefinition.TypeIdString == "MyObjectBuilder_Assembler"); //Select first assembler according to alphabetical order
+				var mainAssembler = blocks.OrderBy(x => x.DisplayNameText).FirstOrDefault(x => x.BlockDefinition.TypeIdString == "MyObjectBuilder_Assembler"&& x.CubeGrid == _me.CubeGrid); //Select first assembler according to alphabetical order
 				blocks.Remove(mainAssembler);
 
 				foreach (var assembler in blocks)
