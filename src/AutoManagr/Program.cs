@@ -1036,11 +1036,13 @@ namespace ScriptingClass
 
 			private Program _program;
 			private IMyProgrammableBlock _me;
+			private IMyAssembler _mainAssembler;
 
 			public AssemblerManager(Program program, IMyProgrammableBlock me)
 			{
 				_program = program;
 				_me = me;
+				_mainAssembler = ConfigureAssemblers();
 			}
 
 			public IEnumerable<IManagerTask> GetTasks()
@@ -1050,13 +1052,11 @@ namespace ScriptingClass
 
 				tasks.AddRange(GetDisplayComponentsCountOnLCDTasks(countedComponents));
 
-				var assembler = ConfigureAssembler();
-
 				foreach (KeyValuePair<string, long> entry in countedComponents)
 				{
 					// do something with entry.Value or entry.Key
 					var queueProductionItems = new List<MyProductionItem>();
-					assembler.GetQueue(queueProductionItems);
+					_mainAssembler.GetQueue(queueProductionItems);
 
 					var queueProductionItemsDefinitions = queueProductionItems.Select(x => x.BlueprintId).ToList();
 					var blueprintNullable = GetItemDefinition(_program, entry.Key);
@@ -1069,7 +1069,7 @@ namespace ScriptingClass
 							{
 								var ammoutToBuild = GetDesiredQuantity(entry.Key) - entry.Value;
 								if (ammoutToBuild > _defaultMaxSingleItemAddToQueueAmmount) { ammoutToBuild = _defaultMaxSingleItemAddToQueueAmmount; }
-								tasks.Add(new AddToAssemblerQueueTask(_program, assembler, blueprint, ammoutToBuild));
+								tasks.Add(new AddToAssemblerQueueTask(_program, _mainAssembler, blueprint, ammoutToBuild));
 							}
 						}
 					}
@@ -1154,22 +1154,30 @@ namespace ScriptingClass
 				yield break;
 			}
 
-			private IMyAssembler ConfigureAssembler()
+			private IMyAssembler ConfigureAssemblers()
 			{
 				var blocks = new List<IMyAssembler>();
 				_program.GridTerminalSystem.GetBlocksOfType<IMyAssembler>(blocks);
 				if (blocks == null) throw new Exception("Assembler not found!");
 
-				var assembler = blocks.OrderBy(x => x.DisplayNameText).FirstOrDefault(x => x.BlockDefinition.TypeIdString == "MyObjectBuilder_Assembler"); //Select first assembler according to alphabetical order
+				var mainAssembler = blocks.OrderBy(x => x.DisplayNameText).FirstOrDefault(x => x.BlockDefinition.TypeIdString == "MyObjectBuilder_Assembler"); //Select first assembler according to alphabetical order
+				blocks.Remove(mainAssembler);
 
+				foreach (var assembler in blocks)
+				{
+					assembler.Mode = MyAssemblerMode.Assembly;
+					assembler.CooperativeMode = true;
+				}
+
+				
 				//_program.Echo($"assembler.Name: {assembler.Name} assembler.BlockDefinition: {assembler.BlockDefinition}");
 
-				_program.Echo($"assembler.Name: {assembler.DisplayNameText}");
+				_program.Echo($"Main assembler name: {mainAssembler.DisplayNameText}");
 
-				assembler.Mode = MyAssemblerMode.Assembly;
-				assembler.CooperativeMode = true;
+				mainAssembler.CooperativeMode = false;
+				mainAssembler.Mode = MyAssemblerMode.Assembly;	
 
-				return assembler;
+				return mainAssembler;
 			}
 
 			private static long GetDesiredQuantity(string key)
