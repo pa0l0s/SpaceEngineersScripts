@@ -43,6 +43,25 @@ namespace ScriptingClass
 		/// 5. Turn on block disabled by server
 		/// On UD server refineries, assemblesr and some other blocks are disables bedore restart. This manager enshures that refineries and assemblers are turned on again.
 		/// 
+		/// 6. Assembler production manager
+		/// Configures assemblers to work in cooperative mode.
+		/// Displays components ammounts on LCD with Components tak in name.
+		/// Adds components to build queue ammounts like below:
+		/// 	{ "MyObjectBuilder_Component/SuperComputer", 0 },
+		///		{ "MyObjectBuilder_Component/SteelPlate", 50000},
+		///		{ "MyObjectBuilder_Component/MetalGrid", 25000},
+		///		{ "MyObjectBuilder_Component/InteriorPlate", 20000 },
+		///		{ "MyObjectBuilder_Component/Construction", 25000},
+		///		{ "MyObjectBuilder_Component/Computer", 15000},
+		///		{ "MyObjectBuilder_Component/Motor", 20000},
+		///		{ "MyObjectBuilder_Component/Thrust", 10000},
+		///		{ "MyObjectBuilder_Component/LargeTube", 15000},
+		///		{ "MyObjectBuilder_Component/SmallTube", 25000},
+		///		{ "MyObjectBuilder_Component/Reactor", 10000},
+		///		{ "MyObjectBuilder_Component/Superconductor", 10000},
+		///		{ "MyObjectBuilder_Component/GravityGenerator", 4000},
+		///		{ "MyObjectBuilder_Component/PowerCell", 5000}
+		/// 
 		/// More to be implemented...
 
 		private Queue<IManagerTask> _taskQueue;
