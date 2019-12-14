@@ -59,19 +59,6 @@ namespace ScriptingClass
 		}
 
 		// Camera Scan script
-		// BY DerLaCroix  
-		// Version 0.1 (17.12.2016)   
-		// Script will scan for targets at given range (20000m default)
-		//If different range is wanted (faster scanning, less power), set the Run parameter to distance,
-		//and trigger Timer block with settings "Run with default parameter" - it will then always use the
-		//range indicated in the Run textbox.
-		//NEEDS 
-		//"SCAN_CAMERA" Specify Camera name here;  
-		//"SCAN_INFO" Specify Lcd name here; 
-		//Timer block to run with deault settings
-		//Optional:
-		//Second Timer block to be triggererd on detection - specify name in variable TIMERBLOCKTRIGGER
-
 		//New wey to setup
 		//Add all cammeras and lcds you wont to use to group with name "ScanSystem"
 
