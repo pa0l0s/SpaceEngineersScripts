@@ -535,4 +535,51 @@ void GetPredictedTargetPosition(Entity target, Turret turret, out Vector3D inter
 That's my prediction algo
 well, the setup for it
 
-	*/
+}
+
+
+
+/*
+ * MatrixD GetGrid2WorldTransform(IMyCubeGrid grid)
+{
+    Vector3D origin=grid.GridIntegerToWorld(new Vector3I(0,0,0));
+    Vector3D plusY=grid.GridIntegerToWorld(new Vector3I(0,1,0))-origin;
+    Vector3D plusZ=grid.GridIntegerToWorld(new Vector3I(0,0,1))-origin;
+    return MatrixD.CreateScale(grid.GridSize)*MatrixD.CreateWorld(origin,-plusZ,plusY);
+}
+
+MatrixD GetBlock2WorldTransform(IMyCubeBlock blk)
+{
+    Matrix blk2grid;
+    blk.Orientation.GetMatrix(out blk2grid);
+    return blk2grid*
+           MatrixD.CreateTranslation(((Vector3D)new Vector3D(blk.Min+blk.Max))/2.0)*
+           GetGrid2WorldTransform(blk.CubeGrid);
+}
+
+//Example
+void Main(string argument)
+{
+    var l=new List<IMyTerminalBlock>();
+    GridTerminalSystem.GetBlocksOfType<IMyTextPanel>(l);
+    var lcd=l[0] as IMyTextPanel;
+
+    lcd.WritePublicText("");
+    GridTerminalSystem.GetBlocks(l);
+    for(int i=0;i<l.Count;++i)
+    {
+        //Calculate error between our world matrix and the game's GetPosition()
+        MatrixD g2w=GetGrid2WorldTransform(l[i].CubeGrid);
+        Vector3D gridPos=(new Vector3D(l[i].Min+l[i].Max))/2.0; //( .Position is a problem for even size blocks)
+        Vector3D calcPos=Vector3D.Transform(gridPos,ref g2w);
+        double err=(l[i].GetPosition()-calcPos).Length();
+ 
+        //Find the world "forward" vector for the block
+        MatrixD b2w=GetBlock2WorldTransform(l[i]);
+        Vector3D fwd=b2w.Forward;
+        fwd.Normalize(); //(Need to normalize because the above matrices are scaled by grid size)
+
+        lcd.WritePublicText(String.Format("{0}: Error={1}\n    fwd={2}\n",l[i].CustomName,err,fwd),true);
+    }
+} 
+*/
