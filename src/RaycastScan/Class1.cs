@@ -12,6 +12,7 @@ using VRage.Collections;
 using VRage.Game.ModAPI.Ingame;
 using SpaceEngineers.Game.ModAPI.Ingame;
 using System.Linq;
+using VRage.Game.GUI.TextPanel;
 
 namespace ScriptingClass
 {
@@ -133,6 +134,15 @@ namespace ScriptingClass
 				if (displays.Count == 0)
 				{
 					throw new Exception("No text pannel found in group.");
+				}
+				else
+				{
+					foreach (var display  in displays)
+					{
+						display.ContentType = ContentType.TEXT_AND_IMAGE;
+						display.Font = "DEBUG";
+						display.FontSize = 0.6f;
+					}
 				}
 
 				var cockpits = new List<IMyShipController>();
@@ -277,7 +287,8 @@ namespace ScriptingClass
 					{
 						//split turret fire on grid size
 						//targetVector = targetVector + (turret.Position - cockpit.Position) * info.BoundingBox.Size.Length() / 100;
-						turret.TrackTarget(targetVector, info.Velocity);   //SetTarget(targetVector);
+						//turret.TrackTarget(targetVector, info.Velocity);    broken crash client
+						turret.SetTarget(targetVector);
 					}
 				}
 			}
@@ -289,10 +300,10 @@ namespace ScriptingClass
 				///
 
 				float distance = (float)Vector3D.Distance(cockpit.GetPosition(), info.Position);
-				//float time = 1.5f * distance / 1000;
-				//Vector3D displacement = ToVector3D(info.Velocity) * time;
-				//Vector3D targetVector = info.Position + displacement;
-				Vector3D targetVector = info.Position;
+				float time = 1.5f * distance / 1000;
+				Vector3D displacement = ToVector3D(info.Velocity) * time;
+				Vector3D targetVector = info.Position + displacement;
+				//Vector3D targetVector = info.Position;
 
 				/// Own velocity correction TESTED ON 300
 				var velocities = cockpit.GetShipVelocities();
@@ -519,6 +530,11 @@ namespace ScriptingClass
 		}
 
 		//CUT HERE
+
+
+
+
+
 	}
 
 }

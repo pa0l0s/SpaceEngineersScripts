@@ -47,6 +47,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaycastScan", "RaycastScan\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BS2MixedScripts", "BS2MixedScripts\BS2MixedScripts.csproj", "{EE5D8F28-6A05-49B6-B2B6-FB58D154416E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomingMissleScript", "HomingMissleScript\HomingMissleScript.csproj", "{0F03802D-25C7-47FF-891B-CB02DC8628AE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -141,6 +143,10 @@ Global
 		{EE5D8F28-6A05-49B6-B2B6-FB58D154416E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EE5D8F28-6A05-49B6-B2B6-FB58D154416E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EE5D8F28-6A05-49B6-B2B6-FB58D154416E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F03802D-25C7-47FF-891B-CB02DC8628AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F03802D-25C7-47FF-891B-CB02DC8628AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F03802D-25C7-47FF-891B-CB02DC8628AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F03802D-25C7-47FF-891B-CB02DC8628AE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
