@@ -52,10 +52,58 @@ namespace ScriptingClass
 		public void Main(string argument, UpdateType updateSource)
 
 		{
-			FireRotors();
+
+			if (argument.ToLower().StartsWith("gps:"))
+			{
+				SetTarget(argument);
+			}
+			else if (argument.ToLower().StartsWith("unlock"))
+			{
+				UnlockTarget();
+			}
+			else
+			{
+				FireRotor();
+			}
+
+
 		}
 
-		void FireRotors()
+		private void UnlockTarget()
+		{
+			List<IMyLargeTurretBase> turrets = new List<IMyLargeTurretBase>();
+			this.GridTerminalSystem.GetBlocksOfType(turrets);
+
+			foreach (var turret in turrets)
+			{
+				//turret.TrackTarget
+				//turret.AIEnabled = true;
+
+				turret.ResetTargetingToDefault();
+			}
+		}
+
+		private void SetTarget(string argument)
+		{
+			Vector3D target;
+
+			if (TryParseVector3D(argument, out target))
+			{
+
+
+				List<IMyLargeTurretBase> turrets = new List<IMyLargeTurretBase>();
+				this.GridTerminalSystem.GetBlocksOfType(turrets);
+
+				foreach (var turret in turrets)
+				{
+					turret.SetTarget(target);
+
+					Echo($"Turret: {turret.DisplayNameText} AI {turret.AIEnabled}");
+				}
+			}
+		}
+
+		void FireRotor()
 		{
 			switch (cykl)
 			{
@@ -81,6 +129,40 @@ namespace ScriptingClass
 				cykl = 0;
 			}
 		}
+
+		//GPS:Paolo #1:-113373.03:88155.88:81373.39:
+		//GPS:Large Grid:157759.727203728:231485.308988417:5714590.54597619:
+		//GPS:Thorium Lake:-249471.93:-166022.37:11030192.43:
+		public bool TryParseVector3D(string vectorString, out Vector3D vector)
+		{
+			vector = new Vector3D(0, 0, 0);
+
+			vectorString = vectorString.Replace(" ", "").Replace("{", "").Replace("}", "").Replace("X", "").Replace("Y", "").Replace("Z", "");
+			var vectorStringSplit = vectorString.Split(':');
+
+			double x, y, z;
+
+			if (vectorStringSplit.Length < 5)
+				return false;
+
+			bool passX = double.TryParse(vectorStringSplit[2], out x);
+			bool passY = double.TryParse(vectorStringSplit[3], out y);
+			bool passZ = double.TryParse(vectorStringSplit[4], out z);
+
+			if (passX && passY && passZ)
+			{
+				vector = new Vector3D(x, y, z);
+				return true;
+			}
+			else
+				return false;
+		}
+
+
+
+
+
+
 
 	}
 }
