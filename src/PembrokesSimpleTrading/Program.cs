@@ -201,7 +201,7 @@ namespace ScriptingClass
 				priceList = priceList + System.Environment.NewLine;
 				priceList = priceList + KVP.Key.PadRight(15) + " " + KVP.Value.ToString("0.000").PadLeft(8) + " " + (KVP.Value * Info.RateTraderPurchase).ToString("0.000").PadLeft(8);
 			}
-			Info.DisplayPrice.WritePublicText(priceList);
+			Info.DisplayPrice.WriteText(priceList);
 		}
 
 		private void SetLookup(Dictionary<string, float> lookupTable, string key, float value)
@@ -243,6 +243,7 @@ namespace ScriptingClass
 			if (Info.DisplayCustomer == null)
 				return false;
 
+			Info.DisplayCustomer.ContentType = VRage.Game.GUI.TextPanel.ContentType.TEXT_AND_IMAGE;
 			return true;
 		}
 
