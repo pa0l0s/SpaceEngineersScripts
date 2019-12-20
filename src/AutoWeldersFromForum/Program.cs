@@ -254,6 +254,7 @@ namespace ScriptingClass
 				{
 					lMessages = new Dictionary<Vector3D, string>();
 					lMKeys = new List<Vector3D>();
+					Status.ContentType = VRage.Game.GUI.TextPanel.ContentType.TEXT_AND_IMAGE;
 				}
 			}
 
@@ -261,11 +262,11 @@ namespace ScriptingClass
 			{
 				if (Status == null) return;
 
-				Status.WritePublicText(header);
+				Status.WriteText(header);
 
 				lMKeys.ForEach(key =>
 				{
-					Status.WritePublicText(lMessages[key], true);
+					Status.WriteText(lMessages[key], true);
 				});
 			}
 

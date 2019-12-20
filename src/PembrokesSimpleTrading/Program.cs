@@ -184,7 +184,7 @@ namespace ScriptingClass
 		{
 			//Display a message on the customer display LCD panel
 			if (Info.DisplayCustomer != null)
-				Info.DisplayCustomer.WritePublicText(text + System.Environment.NewLine, append);
+				Info.DisplayCustomer.WriteText(text + System.Environment.NewLine, append);
 		}
 
 		private void ShowPrices()

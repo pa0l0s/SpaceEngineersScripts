@@ -334,15 +334,17 @@ namespace ScriptingClass
 				for (int i = displaysOrdered.Count - 1; i > 0; i--)
 				{
 
-					DisplayNonEmptyInfo(displaysOrdered[i], displaysOrdered[i - 1].GetPublicText(), displaysOrdered[i - 1].GetValueColor("FontColor"));
+					DisplayNonEmptyInfo(displaysOrdered[i], displaysOrdered[i - 1].GetText(), displaysOrdered[i - 1].GetValueColor("FontColor"));
 				}
 				DisplayNonEmptyInfo(displaysOrdered[0], text, color);
 			}
 			private void DisplayNonEmptyInfo(IMyTextPanel display, string text, Color color)
 			{
 				display.SetValue("FontColor", color);
-				display.WritePublicText(text);
-				display.ShowPublicTextOnScreen();
+				display.WriteText(text);
+				display.ContentType = VRage.Game.GUI.TextPanel.ContentType.TEXT_AND_IMAGE;
+				//display.WritePublicText(text);
+				//display.ShowPublicTextOnScreen();
 			}
 
 		}

@@ -1307,8 +1307,10 @@ namespace ScriptingClass
 					{
 						sb.AppendLine($"{entry.Key.Split('/')[1]} - {entry.Value} - {((double)entry.Value)/((double)GetDesiredQuantity(entry.Key)) * 100:0.##}%");
 
-						_textPanel.WritePublicText(sb.ToString());
-						_textPanel.ShowPublicTextOnScreen();
+						_textPanel.WriteText(sb.ToString());
+						_textPanel.ContentType = VRage.Game.GUI.TextPanel.ContentType.TEXT_AND_IMAGE;
+						//_textPanel.WritePublicText(sb.ToString());
+						//_textPanel.ShowPublicTextOnScreen();
 					}
 				}
 

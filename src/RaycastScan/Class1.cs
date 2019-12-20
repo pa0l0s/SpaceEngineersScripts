@@ -12,6 +12,7 @@ using VRage.Collections;
 using VRage.Game.ModAPI.Ingame;
 using SpaceEngineers.Game.ModAPI.Ingame;
 using System.Linq;
+using VRage.Game.GUI.TextPanel;
 
 namespace ScriptingClass
 {
@@ -328,8 +329,10 @@ namespace ScriptingClass
 				sb.Append($"No target found within  {RANGE} m");
 				var firstDisplay = displays.OrderBy(x => x.DisplayNameText).FirstOrDefault();
 				firstDisplay.SetValue("FontColor", Color.White);
-				firstDisplay.WritePublicText(sb.ToString());
-				firstDisplay.ShowPublicTextOnScreen();
+				firstDisplay.WriteText(sb.ToString());
+				firstDisplay.ContentType = ContentType.TEXT_AND_IMAGE;
+				//firstDisplay.WritePublicText(sb.ToString());
+				//firstDisplay.ShowPublicTextOnScreen();
 				return;
 			}
 
@@ -466,15 +469,17 @@ namespace ScriptingClass
 				for (int i = displaysOrdered.Count - 1; i > 0; i--)
 				{
 
-					DisplayNonEmptyInfo(displaysOrdered[i], displaysOrdered[i - 1].GetPublicText(), displaysOrdered[i - 1].GetValueColor("FontColor"));
+					DisplayNonEmptyInfo(displaysOrdered[i], displaysOrdered[i - 1].GetText(), displaysOrdered[i - 1].GetValueColor("FontColor"));
 				}
 				DisplayNonEmptyInfo(displaysOrdered[0], text, color);
 			}
 			private void DisplayNonEmptyInfo(IMyTextPanel display, string text, Color color)
 			{
 				display.SetValue("FontColor", color);
-				display.WritePublicText(text);
-				display.ShowPublicTextOnScreen();
+				display.WriteText(text, false);
+				display.ContentType = ContentType.TEXT_AND_IMAGE;
+				//display.WritePublicText(text,false);
+				//display.ShowPublicTextOnScreen();
 			}
 
 			private void UpdateNonEmptyInfo(MyDetectedEntityInfo info, IMyCameraBlock camera)
