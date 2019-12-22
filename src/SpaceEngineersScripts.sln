@@ -51,6 +51,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomingMissleScript", "Homin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Paolo'sTurretControl", "Paolo'sTurretControl\Paolo'sTurretControl.csproj", "{FE2DB4B1-92C5-40D0-8CD1-8D751A83AF19}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassLibrary1", "ClassLibrary1\ClassLibrary1.csproj", "{D67E3814-9CCF-41CC-BA93-EC2A38896825}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -153,6 +155,10 @@ Global
 		{FE2DB4B1-92C5-40D0-8CD1-8D751A83AF19}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FE2DB4B1-92C5-40D0-8CD1-8D751A83AF19}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FE2DB4B1-92C5-40D0-8CD1-8D751A83AF19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D67E3814-9CCF-41CC-BA93-EC2A38896825}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D67E3814-9CCF-41CC-BA93-EC2A38896825}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D67E3814-9CCF-41CC-BA93-EC2A38896825}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D67E3814-9CCF-41CC-BA93-EC2A38896825}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

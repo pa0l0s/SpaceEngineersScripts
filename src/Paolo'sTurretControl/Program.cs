@@ -58,7 +58,15 @@ namespace ScriptingClass
 				{
 					system.DoScan();
 				}
-				system.SetRange(argument);
+				else if(argument.ToLower().Contains("setrange"))
+				{
+					system.SetRange(argument);
+				}
+				else if(argument.ToLower().Contains("unaim"))
+				{
+					system.UnAim();
+				}
+
 			}
 			catch (Exception ex)
 			{
@@ -82,7 +90,7 @@ namespace ScriptingClass
 			int maxScansPerCycle = 8;
 			bool autoShoot = true;
 
-			private IMyTimerBlock trigger;
+			private List<IMyTimerBlock> triggers;
 			private bool triggerBlockOnContact = false;
 
 			private Program _program;
@@ -105,19 +113,19 @@ namespace ScriptingClass
 
 				detectedList = new Dictionary<long, MyDetectedEntityInfo>();
 
-				IMyBlockGroup scanSystemGroup = _program.GridTerminalSystem.GetBlockGroupWithName(TARGETING_SYSTEM_GROUP);
-				if (scanSystemGroup == null)
+				IMyBlockGroup targetingSystemGroup = _program.GridTerminalSystem.GetBlockGroupWithName(TARGETING_SYSTEM_GROUP);
+				if (targetingSystemGroup == null)
 				{
 					throw new Exception($"No {TARGETING_SYSTEM_GROUP} group defined.");
 				}
 				cameras = new List<IMyCameraBlock>();
-				scanSystemGroup.GetBlocksOfType(cameras);
+				targetingSystemGroup.GetBlocksOfType(cameras);
 				if (cameras.Count == 0)
 				{
 					throw new Exception("No camera found in group.");
 				}
 				displays = new List<IMyTextPanel>();
-				scanSystemGroup.GetBlocksOfType(displays);
+				targetingSystemGroup.GetBlocksOfType(displays);
 				if (displays.Count == 0)
 				{
 					throw new Exception("No text pannel found in group.");
@@ -133,32 +141,22 @@ namespace ScriptingClass
 				}
 
 				var cockpits = new List<IMyShipController>();
-				scanSystemGroup.GetBlocksOfType(cockpits);
+				targetingSystemGroup.GetBlocksOfType(cockpits);
 				if (cockpits.Count == 0)
 				{
 					throw new Exception("No ship controller found in group.");
 				}
 				cockpit = cockpits.First();
 
-				//Currently timmer block function is not completed
-				//if (TIMERBLOCKTRIGGER != string.Empty)
-				//{
-				//	//we are to trigger a block on contact
-				//	_program.Echo("Searching timmer block...");
-				//	trigger = _program.GridTerminalSystem.GetBlockWithName(TIMERBLOCKTRIGGER) as IMyTimerBlock;
-				//	if (trigger != null)
-				//	{
-				//		_program.Echo($"Timer {trigger.CustomName} found.");
-				//		triggerBlockOnContact = true;
-				//	}
-				//	else
-				//	{
-				//		_program.Echo($"Timer {TIMERBLOCKTRIGGER} not found.");
-				//	}
-				//}
+				triggers = new List<IMyTimerBlock>();
+				targetingSystemGroup.GetBlocksOfType(triggers);
+				if (triggers.Count == 0)
+				{
+					//_program.Echo($"No Timmer block found in group {TARGETING_SYSTEM_GROUP}");
+				}
 
 				turrets = new List<IMyLargeTurretBase>();
-				scanSystemGroup.GetBlocksOfType(turrets);
+				targetingSystemGroup.GetBlocksOfType(turrets);
 
 				camerasDictionary = new Dictionary<int, IMyCameraBlock>();
 
@@ -247,7 +245,10 @@ namespace ScriptingClass
 				{
 					foreach (var turret in turrets)
 					{
-						turret.ApplyAction("ShootOnce");
+						if (turret.IsAimed)
+						{
+							turret.ApplyAction("ShootOnce");
+						}
 					}
 
 				}
@@ -331,7 +332,10 @@ namespace ScriptingClass
 				{
 					if (triggerBlockOnContact)
 					{
-						trigger.Trigger();
+						foreach (var timmerBlock in triggers)
+						{
+							timmerBlock.Trigger();
+						}
 					}
 					sb.AppendLine();
 					sb.AppendLine($"Time: {DateTime.Now.ToString()}");
@@ -477,6 +481,14 @@ namespace ScriptingClass
 			{
 				var firstDisplay = displays.OrderBy(x => x.DisplayNameText).First();
 				DisplayNonEmptyInfo(firstDisplay, text, color);
+			}
+
+			internal void UnAim()
+			{
+				foreach (var turret in turrets)
+				{
+					turret.ResetTargetingToDefault();
+				}
 			}
 		}
 

@@ -113,7 +113,7 @@ namespace ScriptingClass
 		// Other items
 		IMyRadioAntenna _ant;
 		IMyRemoteControl _remote;
-		IMyProjector _projector;
+		//IMyProjector _projector;
 		IMyFunctionalBlock _conBlock;
 		IMyBatteryBlock _startupBattery;
 		string _projName = null;
@@ -260,8 +260,8 @@ namespace ScriptingClass
 				Echo($"Debug Count is {++_debugCount}");
 				Echo($"Udpate freq = {Runtime.UpdateFrequency}");
 				Echo($"Proj Name = {_projName}");
-				if (_projector != null)
-					Echo($"Proj ID = {_projector.EntityId}");
+				//if (_projector != null)
+				//	Echo($"Proj ID = {_projector.EntityId}");
 				Echo($"IGC rcvd = {msgPending}");
 			}
 
@@ -435,15 +435,15 @@ namespace ScriptingClass
 				else
 					_conBlock.Enabled = false;
 
-				if (Me.CubeGrid?.GetCubeBlock(_projector.Position)?.FatBlock != null)
-				{
-					if (DEBUG)
-					{
-						_debug.Append("Projector still found. Returning...\n");
-						WriteDebug();
-					}
-					return;
-				}
+				//if (Me.CubeGrid?.GetCubeBlock(_projector.Position)?.FatBlock != null)
+				//{
+				//	if (DEBUG)
+				//	{
+				//		_debug.Append("Projector still found. Returning...\n");
+				//		WriteDebug();
+				//	}
+				//	return;
+				//}
 
 				if (!Init())
 				{
@@ -1133,16 +1133,16 @@ new RayD(pos, myVelocity)
 			if (_lidarGroup != null)
 				_lidarGroup.GetBlocks(tempList);
 
-			_projector = GetClosestBlock<IMyProjector>(tempList, Me);
+			//_projector = GetClosestBlock<IMyProjector>(tempList, Me);
 
-			if (_projector == null || _conBlock == null)
-			{
-				if (_projector == null)
-					Echo("No projector found!");
-				if (_conBlock == null)
-					Echo("No connector/merge/rotor block found!");
-				return false;
-			}
+			//if (_projector == null || _conBlock == null)
+			//{
+			//	if (_projector == null)
+			//		Echo("No projector found!");
+			//	if (_conBlock == null)
+			//		Echo("No connector/merge/rotor block found!");
+			//	return false;
+			//}
 
 			_pitchPID = new PID(proportionalConstant, integralConstant, derivativeConstant, 0.75);
 			_yawPID = new PID(proportionalConstant, integralConstant, derivativeConstant, 0.75);
@@ -1167,8 +1167,9 @@ new RayD(pos, myVelocity)
 			if (sequenceNbr.Length == 0)
 				sequenceNbr.Append("-1");
 
-			_myID = $"{missilePrefix}.{_projector.EntityId}.{Me.EntityId}.{thrusterType}.{connectorType}.{missileType}.{sequenceNbr}";
-			_projName = _projector.CustomName;
+			_myID = $"{missilePrefix}.{Me.EntityId}.{thrusterType}.{connectorType}.{missileType}.{sequenceNbr}";
+			//_myID = $"{missilePrefix}.{_projector.EntityId}.{Me.EntityId}.{thrusterType}.{connectorType}.{missileType}.{sequenceNbr}";
+			//_projName = _projector.CustomName;
 			Me.CustomName = _myID;
 			Echo("Initial Setup Complete!");
 			return true;
