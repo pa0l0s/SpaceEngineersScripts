@@ -36,7 +36,7 @@ namespace ScriptingClass
 		public Program()
 		{
 			///Disable Echoing for performance impovement on MP servers
-			Echo = text => { };
+			//Echo = text => { };
 
 			Runtime.UpdateFrequency = UpdateFrequency.Update10;
 
@@ -52,11 +52,11 @@ namespace ScriptingClass
 		{
 			try
 			{
-				//_rotator.DoTask();  Disabled for performance
+				_rotator.DoTask(); // Disabled for performance
 
 				if (string.IsNullOrEmpty(argument))
 				{
-					system.DoScan();
+					system.Scan();
 				}
 				else if(argument.ToLower().Contains("setrange"))
 				{
@@ -78,16 +78,13 @@ namespace ScriptingClass
 		{
 			const string TARGETING_SYSTEM_GROUP = "TargetingSystem";
 
-			bool turretTargetNeutrals = false;
-
-			//Trigger block on detection
-			String TIMERBLOCKTRIGGER = string.Empty;
+			//bool turretTargetNeutrals = false;
 
 			double RANGE = 20000;
 			float PITCH = 0;
 			float YAW = 0;
 			float raycastAreaSize = 0.1f; //0 - 1 cannnot be greater than 1 less- faster detecting but requires more accurate targeting
-			int maxScansPerCycle = 8;
+			int maxScansPerCycle = 4;
 			bool autoShoot = true;
 
 			private List<IMyTimerBlock> triggers;
@@ -98,13 +95,13 @@ namespace ScriptingClass
 			private List<IMyTextPanel> displays;
 
 			Dictionary<long, MyDetectedEntityInfo> detectedList;
-			Dictionary<int, IMyCameraBlock> camerasDictionary;
+			//Dictionary<int, IMyCameraBlock> camerasDictionary;
+			Queue<IMyCameraBlock> camerasScanQueue;
 			List<IMyLargeTurretBase> turrets;
 			Random random = new Random(DateTime.Now.Second);
 			MyDetectedEntityInfo lastDetected;
-			MyDetectedEntityInfo currentEnemy;
-			int currentCameraScan = 0;
-
+			//int currentCameraScan = 0;
+			bool enemyUpdated;
 			IMyShipController cockpit;
 
 			public TargetingSystem(Program program)
@@ -158,16 +155,15 @@ namespace ScriptingClass
 				turrets = new List<IMyLargeTurretBase>();
 				targetingSystemGroup.GetBlocksOfType(turrets);
 
-				camerasDictionary = new Dictionary<int, IMyCameraBlock>();
-
 				//Enable raycast for cameras
 				foreach (var camera in cameras)
 				{
 					camera.EnableRaycast = true;
-					camerasDictionary.Add(currentCameraScan, camera);
-					currentCameraScan++;
+
 				}
-				currentCameraScan = 0;
+
+				camerasScanQueue = new Queue<IMyCameraBlock>(cameras);
+
 
 				if (RANGE > cameras.FirstOrDefault().RaycastDistanceLimit)
 				{
@@ -183,62 +179,12 @@ namespace ScriptingClass
 					RANGE = Convert.ToDouble(setRangeValue.Trim());
 				}
 			}
-			public void DoScan()
+			public void Scan()
 			{
-				_program.Echo($"Prepare scan for {cameras.Count} cameras ");
-				_program.Echo($"Controll {turrets.Count} turrets");
-
-				bool enemyUpdated = false;
-
-				for (int i = 0; i < maxScansPerCycle; i++)
+				DoScan();
+				if (!lastDetected.IsEmpty())
 				{
-					var camera = camerasDictionary[currentCameraScan];
-					currentCameraScan++;
-					if (currentCameraScan >= (camerasDictionary.Count)) currentCameraScan = 0;
-
-					if (camera.CanScan(RANGE))
-					{
-						if (currentCameraScan != 0) //first camers raycast always strait forward
-						{
-							PITCH = RandomizePitchYaw(camera.RaycastConeLimit);
-							YAW = RandomizePitchYaw(camera.RaycastConeLimit);
-						}
-						else
-						{
-							PITCH = 0;
-							YAW = 0;
-						}
-
-						var info = camera.Raycast(RANGE, PITCH, YAW);
-
-						if (!info.IsEmpty())
-						{
-							if (info.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies || (info.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral && turretTargetNeutrals))
-							{
-								currentEnemy = info;
-								enemyUpdated = true;
-							}
-
-							if (lastDetected.EntityId == info.EntityId)
-							{
-								UpdateInfo(info, camera);
-							}
-
-							if (!detectedList.ContainsKey(info.EntityId))
-							{
-								DisplayNonEmptyInfo(info, camera);
-								detectedList.Add(info.EntityId, info);
-							}
-
-							lastDetected = info;
-						}
-						//DisplayEmptyInfo(info);
-					}
-				}
-
-				if (!currentEnemy.IsEmpty())
-				{
-					TargetTurrets(currentEnemy);
+					TargetTurrets(lastDetected);
 				}
 
 				if (enemyUpdated && autoShoot)
@@ -253,17 +199,62 @@ namespace ScriptingClass
 
 				}
 			}
-
-			private void UpdateInfo(MyDetectedEntityInfo info, IMyCameraBlock camera)
+			private void DoScan()
 			{
-				detectedList[info.EntityId] = info;
 
-				UpdateNonEmptyInfo(info, camera);
+				//_program.Echo($"Prepare scan for {cameras.Count} cameras ");
+				//_program.Echo($"Controll {turrets.Count} turrets");
+
+				//first scan strait
+				PITCH = 0;
+				YAW = 0;
+
+				enemyUpdated = false;
+
+				for (int i = 0; i < maxScansPerCycle; i++)
+				{
+					IMyCameraBlock camera;
+
+					if(camerasScanQueue.TryDequeue(out camera))
+					{
+						if (camera.CanScan(RANGE))
+						{
+							var info = camera.Raycast(RANGE, PITCH, YAW);
+
+							if (!info.IsEmpty())
+							{
+								if (info.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies)
+								{
+									enemyUpdated = true;
+								}
+
+								if (lastDetected.EntityId== info.EntityId)
+								{
+									UpdateNonEmptyInfo(info,camera);
+								}
+								else
+								{
+									DisplayNonEmptyInfo(info, camera);
+								}
+
+								lastDetected = info;
+								return;
+							}
+
+							PITCH = RandomizePitchYaw(camera.RaycastConeLimit);
+							YAW = RandomizePitchYaw(camera.RaycastConeLimit);
+						}
+					}
+					else
+					{
+						camerasScanQueue = new Queue<IMyCameraBlock>(cameras);
+					}
+				}
 			}
 
 			private void TargetTurrets(MyDetectedEntityInfo info)
 			{
-				if (info.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies || (info.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral & turretTargetNeutrals))
+				if (info.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies )
 				{
 					var targetVector = CalculateTargetVector(info);
 					foreach (var turret in turrets)
@@ -297,7 +288,7 @@ namespace ScriptingClass
 				return targetVector;
 			}
 
-			float RandomizePitchYaw(float raycastConeLimit)
+			private float RandomizePitchYaw(float raycastConeLimit)
 			{
 				float result = (float)random.NextDouble() * (raycastConeLimit * raycastAreaSize);
 				bool isPositive = random.NextDouble() < 0.5;
@@ -490,6 +481,8 @@ namespace ScriptingClass
 					turret.ResetTargetingToDefault();
 				}
 			}
+
+
 		}
 
 		public class Rotator
