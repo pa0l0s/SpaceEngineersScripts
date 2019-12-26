@@ -53,6 +53,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Paolo'sTurretControl", "Pao
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassLibrary1", "ClassLibrary1\ClassLibrary1.csproj", "{D67E3814-9CCF-41CC-BA93-EC2A38896825}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pennywide_AltylerryScript", "Pennywide_AltylerryScript\Pennywide_AltylerryScript.csproj", "{390140F4-0F7C-4CC4-8107-7F704D44F73A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -159,6 +161,10 @@ Global
 		{D67E3814-9CCF-41CC-BA93-EC2A38896825}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D67E3814-9CCF-41CC-BA93-EC2A38896825}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D67E3814-9CCF-41CC-BA93-EC2A38896825}.Release|Any CPU.Build.0 = Release|Any CPU
+		{390140F4-0F7C-4CC4-8107-7F704D44F73A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{390140F4-0F7C-4CC4-8107-7F704D44F73A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{390140F4-0F7C-4CC4-8107-7F704D44F73A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{390140F4-0F7C-4CC4-8107-7F704D44F73A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

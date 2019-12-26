@@ -61,3 +61,4 @@ C:\tmp\source\Repos\SpaceEngineersScripts\src\AutoWelders\obj\Debug\AutoWelders.
 C:\tmp\source\Repos\SpaceEngineersScripts\src\AutoWelders\obj\Debug\AutoWelders.csproj.CopyComplete
 C:\tmp\source\Repos\SpaceEngineersScripts\src\AutoWelders\obj\Debug\SpaceEnginersScripts.dll
 C:\tmp\source\Repos\SpaceEngineersScripts\src\AutoWelders\obj\Debug\SpaceEnginersScripts.pdb
+D:\source\Repos\SpaceEngineersScripts\src\AutoWelders\bin\Debug\VRage.dll

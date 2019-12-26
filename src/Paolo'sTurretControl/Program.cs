@@ -84,7 +84,6 @@ namespace ScriptingClass
 			float PITCH = 0;
 			float YAW = 0;
 			float raycastAreaSize = 0.1f; //0 - 1 cannnot be greater than 1 less- faster detecting but requires more accurate targeting
-			int maxScansPerCycle = 4;
 			bool autoShoot = true;
 
 			private List<IMyTimerBlock> triggers;
@@ -164,7 +163,6 @@ namespace ScriptingClass
 
 				camerasScanQueue = new Queue<IMyCameraBlock>(cameras);
 
-
 				if (RANGE > cameras.FirstOrDefault().RaycastDistanceLimit)
 				{
 					//If camera scan range exeeds server setting limit it to server raycast distance limit.
@@ -205,14 +203,8 @@ namespace ScriptingClass
 				//_program.Echo($"Prepare scan for {cameras.Count} cameras ");
 				//_program.Echo($"Controll {turrets.Count} turrets");
 
-				//first scan strait
-				PITCH = 0;
-				YAW = 0;
-
 				enemyUpdated = false;
 
-				for (int i = 0; i < maxScansPerCycle; i++)
-				{
 					IMyCameraBlock camera;
 
 					if(camerasScanQueue.TryDequeue(out camera))
@@ -248,8 +240,12 @@ namespace ScriptingClass
 					else
 					{
 						camerasScanQueue = new Queue<IMyCameraBlock>(cameras);
-					}
+
+						//first scan strait
+						PITCH = 0;
+						YAW = 0;
 				}
+
 			}
 
 			private void TargetTurrets(MyDetectedEntityInfo info)
