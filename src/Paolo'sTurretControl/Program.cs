@@ -40,7 +40,7 @@ namespace ScriptingClass
 
 			Runtime.UpdateFrequency = UpdateFrequency.Update10;
 
-			system = new TargetingSystem(this);
+			system = new TargetingSystem(this, Me);
 
 			_rotator = new Rotator(this);
 		}
@@ -52,17 +52,17 @@ namespace ScriptingClass
 		{
 			try
 			{
-				_rotator.DoTask(); // Disabled for performance
+				//_rotator.DoTask(); // Disabled for performance
 
 				if (string.IsNullOrEmpty(argument))
 				{
 					system.Scan();
 				}
-				else if(argument.ToLower().Contains("setrange"))
+				else if (argument.ToLower().Contains("setrange"))
 				{
 					system.SetRange(argument);
 				}
-				else if(argument.ToLower().Contains("unaim"))
+				else if (argument.ToLower().Contains("unaim"))
 				{
 					system.UnAim();
 				}
@@ -102,10 +102,12 @@ namespace ScriptingClass
 			//int currentCameraScan = 0;
 			bool enemyUpdated;
 			IMyShipController cockpit;
+			IMyProgrammableBlock _me;
 
-			public TargetingSystem(Program program)
+			public TargetingSystem(Program program, IMyProgrammableBlock me)
 			{
 				_program = program;
+				_me = me;
 
 				detectedList = new Dictionary<long, MyDetectedEntityInfo>();
 
@@ -114,17 +116,21 @@ namespace ScriptingClass
 				{
 					throw new Exception($"No {TARGETING_SYSTEM_GROUP} group defined.");
 				}
+
+				_program.Echo("Configure cameras...");
 				cameras = new List<IMyCameraBlock>();
 				targetingSystemGroup.GetBlocksOfType(cameras);
 				if (cameras.Count == 0)
 				{
 					throw new Exception("No camera found in group.");
 				}
+
+				_program.Echo("Configure displays...");
 				displays = new List<IMyTextPanel>();
 				targetingSystemGroup.GetBlocksOfType(displays);
 				if (displays.Count == 0)
 				{
-					throw new Exception("No text pannel found in group.");
+					_program.Echo("No text pannel found in group.");
 				}
 				else
 				{
@@ -132,10 +138,12 @@ namespace ScriptingClass
 					{
 						display.ContentType = ContentType.TEXT_AND_IMAGE;
 						display.Font = "DEBUG";
-						display.FontSize = 0.6f;
+						display.FontSize = 0.9f;
+						display.ApplyAction(Actions.TURN_ON);
 					}
 				}
 
+				_program.Echo("Configure ShipController...");
 				var cockpits = new List<IMyShipController>();
 				targetingSystemGroup.GetBlocksOfType(cockpits);
 				if (cockpits.Count == 0)
@@ -144,21 +152,27 @@ namespace ScriptingClass
 				}
 				cockpit = cockpits.First();
 
+				_program.Echo("Configure triggers...");
 				triggers = new List<IMyTimerBlock>();
 				targetingSystemGroup.GetBlocksOfType(triggers);
 				if (triggers.Count == 0)
 				{
-					//_program.Echo($"No Timmer block found in group {TARGETING_SYSTEM_GROUP}");
+					_program.Echo($"No Timmer block found in group {TARGETING_SYSTEM_GROUP}");
 				}
 
+				_program.Echo("Configure turrets...");
 				turrets = new List<IMyLargeTurretBase>();
 				targetingSystemGroup.GetBlocksOfType(turrets);
+				foreach (var turret in turrets)
+				{
+					turret.ApplyAction(Actions.TURN_ON);
+				}
 
 				//Enable raycast for cameras
 				foreach (var camera in cameras)
 				{
 					camera.EnableRaycast = true;
-
+					camera.ApplyAction(Actions.TURN_ON);
 				}
 
 				camerasScanQueue = new Queue<IMyCameraBlock>(cameras);
@@ -179,6 +193,7 @@ namespace ScriptingClass
 			}
 			public void Scan()
 			{
+				_program.Echo($"CQ: {camerasScanQueue.Count}");
 				DoScan();
 				if (!lastDetected.IsEmpty())
 				{
@@ -195,6 +210,7 @@ namespace ScriptingClass
 						}
 					}
 
+					_program.Echo("Shoot");
 				}
 			}
 			private void DoScan()
@@ -205,56 +221,57 @@ namespace ScriptingClass
 
 				enemyUpdated = false;
 
-					IMyCameraBlock camera;
+				IMyCameraBlock camera;
 
-					if(camerasScanQueue.TryDequeue(out camera))
+				if (camerasScanQueue.TryDequeue(out camera))
+				{
+					if (camera.CanScan(RANGE))
 					{
-						if (camera.CanScan(RANGE))
+						var info = camera.Raycast(RANGE, PITCH, YAW);
+
+						if (!info.IsEmpty())
 						{
-							var info = camera.Raycast(RANGE, PITCH, YAW);
-
-							if (!info.IsEmpty())
+							if (info.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies)
 							{
-								if (info.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies)
-								{
-									enemyUpdated = true;
-								}
-
-								if (lastDetected.EntityId== info.EntityId)
-								{
-									UpdateNonEmptyInfo(info,camera);
-								}
-								else
-								{
-									DisplayNonEmptyInfo(info, camera);
-								}
-
-								lastDetected = info;
-								return;
+								enemyUpdated = true;
 							}
 
-							PITCH = RandomizePitchYaw(camera.RaycastConeLimit);
-							YAW = RandomizePitchYaw(camera.RaycastConeLimit);
-						}
-					}
-					else
-					{
-						camerasScanQueue = new Queue<IMyCameraBlock>(cameras);
+							if (lastDetected.EntityId == info.EntityId)
+							{
+								UpdateNonEmptyInfo(info, camera);
+							}
+							else
+							{
+								DisplayNonEmptyInfo(info, camera);
+							}
 
-						//first scan strait
-						PITCH = 0;
-						YAW = 0;
+							lastDetected = info;
+							return;
+						}
+
+						PITCH = RandomizePitchYaw(camera.RaycastConeLimit);
+						YAW = RandomizePitchYaw(camera.RaycastConeLimit);
+					}
+				}
+				else
+				{
+					camerasScanQueue = new Queue<IMyCameraBlock>(cameras);
+
+					//first scan strait
+					PITCH = 0;
+					YAW = 0;
 				}
 
 			}
 
 			private void TargetTurrets(MyDetectedEntityInfo info)
 			{
-				if (info.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies )
+				if (info.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies)
 				{
-					var targetVector = CalculateTargetVector(info);
+					
 					foreach (var turret in turrets)
 					{
+						var targetVector = CalculateTargetVector(info, turret);
 						//split turret fire on grid size
 						//targetVector = targetVector + (turret.Position - cockpit.Position) * info.BoundingBox.Size.Length() / 100;
 						//turret.TrackTarget(targetVector, info.Velocity);    broken crash client
@@ -263,14 +280,22 @@ namespace ScriptingClass
 				}
 			}
 
-			private Vector3D CalculateTargetVector(MyDetectedEntityInfo info)
+			private Vector3D CalculateTargetVector(MyDetectedEntityInfo info, IMyLargeTurretBase turret)
 			{
 				///prediction = position + velocity * time + 0.5 * acceleration * time * time
-				///time ~ 1.5(s)*distance(m)/1000 
+				///time ~ distance(m)/1000 (1000m/s 300 AC ammmo speed
 				///
+				double AmmoSpeed300 = 1000d;//projectile speed 1000m/s (300 auto canon)
 
-				float distance = (float)Vector3D.Distance(cockpit.GetPosition(), info.Position);
-				float time = 1.5f * distance / 1000;
+				Vector3D shotOrigin = turret.GetPosition();
+
+				Vector3D directionToTarget = Vector3D.Normalize(info.Position - shotOrigin);
+
+				double targetSpeedInLineOfFire = Vector3D.Dot(directionToTarget, info.Velocity);
+				double relativeSpeed = AmmoSpeed300 - targetSpeedInLineOfFire;
+
+				double distance = Vector3D.Distance(turret.GetPosition(), info.Position);
+				double time = distance / relativeSpeed; 
 				Vector3D displacement = ToVector3D(info.Velocity) * time;
 				Vector3D targetVector = info.Position + displacement;
 				//Vector3D targetVector = info.Position;
@@ -278,9 +303,10 @@ namespace ScriptingClass
 				/// Own velocity correction TESTED ON 300
 				var velocities = cockpit.GetShipVelocities();
 				Vector3D mySpeed = velocities.LinearVelocity;
-				targetVector = targetVector + mySpeed * -1 * distance / 2500;
+				//targetVector = targetVector + mySpeed * -1 * distance / 2500;
+				targetVector = targetVector + mySpeed * -1 * time/2;
 
-				_program.Echo($"T:{time}");
+				//_program.Echo($"T:{time}");
 				return targetVector;
 			}
 
@@ -472,13 +498,13 @@ namespace ScriptingClass
 
 			internal void UnAim()
 			{
+				_program.Echo("UnAim");
 				foreach (var turret in turrets)
 				{
 					turret.ResetTargetingToDefault();
+					_me.ApplyAction(Actions.TURN_OFF);
 				}
 			}
-
-
 		}
 
 		public class Rotator
@@ -514,6 +540,12 @@ namespace ScriptingClass
 		public static Vector3D ToVector3D(Vector3 input)
 		{
 			return new Vector3D((float)input.X, (float)input.Y, (float)input.Z);
+		}
+
+		public static class Actions
+		{
+			public static string TURN_ON = "OnOff_On";
+			public static string TURN_OFF = "OnOff_Off";
 		}
 
 		//CUT HERE
