@@ -31,7 +31,6 @@ namespace ScriptingClass
 		///Add all cammeras, lcds, ship controller (cockpit, remote, flight seat), turrets (300 and 900) you wont to use to group with name "TargetingSystem".
 
 		TargetingSystem system;
-		Rotator _rotator;
 
 		public Program()
 		{
@@ -41,8 +40,6 @@ namespace ScriptingClass
 			Runtime.UpdateFrequency = UpdateFrequency.Update10;
 
 			system = new TargetingSystem(this, Me);
-
-			_rotator = new Rotator(this);
 		}
 		public void Save()
 		{
@@ -54,7 +51,7 @@ namespace ScriptingClass
 			{
 				//_rotator.DoTask(); // Disabled for performance
 
-				if (string.IsNullOrEmpty(argument))
+				if (updateSource ==  UpdateType.Update10)
 				{
 					system.Scan();
 				}
@@ -87,7 +84,7 @@ namespace ScriptingClass
 			bool autoShoot = true;
 
 			private List<IMyTimerBlock> triggers;
-			private bool triggerBlockOnContact = false;
+			//private bool triggerBlockOnContact = false;
 
 			private Program _program;
 			public List<IMyCameraBlock> cameras;
@@ -99,7 +96,7 @@ namespace ScriptingClass
 			Random random = new Random(DateTime.Now.Second);
 			MyDetectedEntityInfo lastDetected;
 			//int currentCameraScan = 0;
-			bool enemyUpdated;
+			bool enemyUpdated = false;
 			IMyShipController cockpit;
 			IMyProgrammableBlock _me;
 			float raycastConeLimit;
@@ -133,6 +130,7 @@ namespace ScriptingClass
 				_program.Echo("Configure displays...");
 				displays = new List<IMyTextPanel>();
 				targetingSystemGroup.GetBlocksOfType(displays);
+				displays = displays.OrderBy(x => x.DisplayNameText).ToList();
 				if (displays.Count == 0)
 				{
 					_program.Echo("No text pannel found in group.");
@@ -185,6 +183,8 @@ namespace ScriptingClass
 					//If camera scan range exeeds server setting limit it to server raycast distance limit.
 					RANGE = cameras.FirstOrDefault().RaycastDistanceLimit;
 				}
+
+				_program.Echo("Init OK.");
 			}
 
 			public void SetRange(string setRangeValue)
@@ -197,7 +197,7 @@ namespace ScriptingClass
 			public void Scan()
 			{
 				DoScan();
-				if (!lastDetected.IsEmpty()&& enemyUpdated)
+				if (!lastDetected.IsEmpty() && enemyUpdated)
 				{
 					TargetTurrets(lastDetected);
 				}
@@ -223,44 +223,43 @@ namespace ScriptingClass
 
 				enemyUpdated = false;
 
-					_program.Echo($"CQ: {camIndex}");
+				_program.Echo($"CQ: {camIndex}");
 
-					if (cameras[camIndex].CanScan(RANGE))
+				if (cameras[camIndex].CanScan(RANGE))
+				{
+					var info = cameras[camIndex].Raycast(RANGE, PITCH, YAW);
+
+					if (!info.IsEmpty())
 					{
-						var info = cameras[camIndex].Raycast(RANGE, PITCH, YAW);
-
-						if (!info.IsEmpty())
+						if (info.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies)
 						{
-							if (info.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies)
-							{
-								enemyUpdated = true;
-							}
-
-						bool update = false;
-							if (lastDetected.EntityId == info.EntityId)
-							{
-							update = true;
-							}
-
-
-				
-						lastDetected = info;
-						DisplayNonEmptyInfo(update);
-						return;
+							enemyUpdated = true;
 						}
 
-					camIndex++;
-					if (camIndex <= cameras.Count)
-					{
-						camIndex = 0;
-						PITCH = 0;
-						YAW = 0;
+						bool update = false;
+						if (lastDetected.EntityId == info.EntityId)
+						{
+							update = true;
+						}
+
+
+
+						lastDetected = info;
+						DisplayNonEmptyInfo(update);
 					}
-					else
-					{
-						PITCH = RandomizePitchYaw(raycastConeLimit);
-						YAW = RandomizePitchYaw(raycastConeLimit);
-					}
+				}
+
+				camIndex++;
+				if (camIndex >= cameras.Count)
+				{
+					camIndex = 0;
+					PITCH = 0;
+					YAW = 0;
+				}
+				else
+				{
+					PITCH = RandomizePitchYaw(raycastConeLimit);
+					YAW = RandomizePitchYaw(raycastConeLimit);
 				}
 			}
 
@@ -268,7 +267,7 @@ namespace ScriptingClass
 			{
 				if (info.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies)
 				{
-					
+
 					foreach (var turret in turrets)
 					{
 						var targetVector = CalculateTargetVector(info, turret);
@@ -294,7 +293,7 @@ namespace ScriptingClass
 				double relativeSpeed = ammoSpeed - targetSpeedInLineOfFire;
 
 				double distance = Vector3D.Distance(turret.GetPosition(), info.Position);
-				double time = distance / relativeSpeed; 
+				double time = distance / relativeSpeed;
 				Vector3D displacement = ToVector3D(info.Velocity) * time;
 				Vector3D targetVector = info.Position + displacement;
 				//Vector3D targetVector = info.Position;
@@ -303,7 +302,7 @@ namespace ScriptingClass
 				var velocities = cockpit.GetShipVelocities();
 				Vector3D mySpeed = velocities.LinearVelocity;
 				//targetVector = targetVector + mySpeed * -1 * distance / 2500;
-				targetVector = targetVector + mySpeed * -1 * time/2;
+				targetVector = targetVector + mySpeed * -1 * time / 2;
 
 				//_program.Echo($"T:{time}");
 				return targetVector;
@@ -345,7 +344,7 @@ namespace ScriptingClass
 
 						double factor = 1;
 
-						if (lastDetected.Type== MyDetectedEntityType.SmallGrid)
+						if (lastDetected.Type == MyDetectedEntityType.SmallGrid)
 						{
 							factor = 4;
 							unitName = "blocks";
@@ -402,11 +401,11 @@ namespace ScriptingClass
 
 			private Color GetDisplayColor()
 			{
-				switch(lastDetected.Relationship)
+				switch (lastDetected.Relationship)
 				{
-					case MyRelationsBetweenPlayerAndBlock.Owner: 
+					case MyRelationsBetweenPlayerAndBlock.Owner:
 					case MyRelationsBetweenPlayerAndBlock.Friends:
-					case MyRelationsBetweenPlayerAndBlock.FactionShare : 
+					case MyRelationsBetweenPlayerAndBlock.FactionShare:
 						return Color.Green;
 					case MyRelationsBetweenPlayerAndBlock.Neutral:
 					case MyRelationsBetweenPlayerAndBlock.NoOwnership:
@@ -421,19 +420,23 @@ namespace ScriptingClass
 			private void DisplayNonEmptyInfo(bool update)
 			{
 				Color color = GetDisplayColor();
-				if(enemyUpdated)
+				
+
+				if (enemyUpdated)
 				{
+					_program.Echo($"enemy");
 					//Enemy na pierwszy ekran
 					displays[0].SetValue("FontColor", color);
 					displays[0].WriteText(GetDisplayText(), false);
 				}
 				else
 				{
+					_program.Echo($"di {displayIndex}");
 					displays[displayIndex].SetValue("FontColor", color);
 					displays[displayIndex].WriteText(GetDisplayText(), false);
-					displayIndex++;
 
-					if(displayIndex>=displays.Count)
+					displayIndex++;
+					if (displayIndex >= displays.Count)
 					{
 						displayIndex = 1;
 					}
@@ -450,36 +453,6 @@ namespace ScriptingClass
 					_me.ApplyAction(Actions.TURN_OFF);
 				}
 			}
-		}
-
-		public class Rotator
-		{
-			private string[] statusChars = new string[] { "/", "-", @"\", "|" };
-			private int statusCharPosition = 0;
-			private Program _program;
-			public Rotator(Program program)
-			{
-				_program = program;
-				statusCharPosition = 0;
-			}
-
-			public void DoTask()
-			{
-
-				_program.Echo(statusChars[statusCharPosition]);
-				statusCharPosition++;
-				if (statusCharPosition >= statusChars.Length)
-				{
-					statusCharPosition = 0;
-				}
-
-			}
-
-			public int GetPriority()
-			{
-				return 100;
-			}
-
 		}
 
 		public static Vector3D ToVector3D(Vector3 input)
