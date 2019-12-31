@@ -131,7 +131,7 @@ namespace ScriptingClass
 				raycastConeLimit = cameras[0].RaycastConeLimit;
 
 				_program.Echo("Configure displays...");
-				var displays = new List<IMyTextPanel>();
+				displays = new List<IMyTextPanel>();
 				targetingSystemGroup.GetBlocksOfType(displays);
 				if (displays.Count == 0)
 				{
@@ -495,9 +495,6 @@ namespace ScriptingClass
 		}
 
 		//CUT HERE
-
-
-
 
 
 	}
