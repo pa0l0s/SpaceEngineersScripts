@@ -55,6 +55,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassLibrary1", "ClassLibra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pennywide_AltylerryScript", "Pennywide_AltylerryScript\Pennywide_AltylerryScript.csproj", "{390140F4-0F7C-4CC4-8107-7F704D44F73A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZbigTorpeda", "ZbigTorpeda\ZbigTorpeda.csproj", "{FAD41CE6-E239-4D6C-9C8D-13AEE6F8CB0B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zbig_Arta_Torpeda", "Zbig_Arta_Torpeda\Zbig_Arta_Torpeda.csproj", "{5194DF8D-A681-4F08-9F81-881B91612537}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -165,6 +169,14 @@ Global
 		{390140F4-0F7C-4CC4-8107-7F704D44F73A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{390140F4-0F7C-4CC4-8107-7F704D44F73A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{390140F4-0F7C-4CC4-8107-7F704D44F73A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FAD41CE6-E239-4D6C-9C8D-13AEE6F8CB0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAD41CE6-E239-4D6C-9C8D-13AEE6F8CB0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FAD41CE6-E239-4D6C-9C8D-13AEE6F8CB0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FAD41CE6-E239-4D6C-9C8D-13AEE6F8CB0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5194DF8D-A681-4F08-9F81-881B91612537}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5194DF8D-A681-4F08-9F81-881B91612537}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5194DF8D-A681-4F08-9F81-881B91612537}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5194DF8D-A681-4F08-9F81-881B91612537}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
