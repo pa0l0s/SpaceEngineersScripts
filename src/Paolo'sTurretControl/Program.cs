@@ -30,7 +30,34 @@ namespace ScriptingClass
 		///Setup:
 		///Add all cammeras, lcds, ship controller (cockpit, remote, flight seat), turrets (300 and 900) you wont to use to group with name "TargetingSystem".
 
-		TargetingSystem system;
+		public const string TARGETING_SYSTEM_GROUP = "TargetingSystem";
+
+		//bool turretTargetNeutrals = false;
+
+		double RANGE = 20000;
+		float PITCH = 0;
+		float YAW = 0;
+		float raycastAreaSize = 0.1f; //0 - 1 cannnot be greater than 1 less- faster detecting but requires more accurate targeting
+		bool autoShoot = true;
+
+		private List<IMyTimerBlock> triggers;
+
+		public List<IMyCameraBlock> cameras;
+		private List<IMyTextPanel> displays;
+
+		List<IMyLargeTurretBase> turrets;
+		Random random = new Random(DateTime.Now.Second);
+		MyDetectedEntityInfo lastDetected;
+		bool enemyUpdated = false;
+		public IMyShipController shipcontroller;
+		float raycastConeLimit;
+
+		int camIndex = 0;
+
+		IMyTextPanel InfoDisplay;
+
+		int maxTurretsPerCycle = 6;
+		int turretIndex = 0;
 
 		public Program()
 		{
@@ -39,7 +66,83 @@ namespace ScriptingClass
 
 			Runtime.UpdateFrequency = UpdateFrequency.Update10;
 
-			system = new TargetingSystem(this, Me);
+			IMyBlockGroup targetingSystemGroup = GridTerminalSystem.GetBlockGroupWithName(TARGETING_SYSTEM_GROUP);
+			if (targetingSystemGroup == null)
+			{
+				throw new Exception($"No {TARGETING_SYSTEM_GROUP} group defined.");
+			}
+
+			Echo("Configure cameras...");
+			cameras = new List<IMyCameraBlock>();
+			targetingSystemGroup.GetBlocksOfType(cameras);
+			if (cameras.Count == 0)
+			{
+				throw new Exception("No camera found in group.");
+			}
+
+			raycastConeLimit = cameras[0].RaycastConeLimit;
+
+			Echo("Configure displays...");
+			displays = new List<IMyTextPanel>();
+			targetingSystemGroup.GetBlocksOfType(displays);
+			displays = displays.OrderBy(x => x.DisplayNameText).ToList();
+			if (displays.Count == 0)
+			{
+				Echo("No text pannel found in group.");
+			}
+			else
+			{
+				InfoDisplay = displays.FirstOrDefault();
+				InfoDisplay.ContentType = ContentType.TEXT_AND_IMAGE;
+				InfoDisplay.Font = "DEBUG";
+				InfoDisplay.FontSize = 0.9f;
+				InfoDisplay.ApplyAction(Actions.TURN_ON);
+			}
+
+			Echo("Configure ShipController...");
+			var cockpits = new List<IMyShipController>();
+			targetingSystemGroup.GetBlocksOfType(cockpits);
+			if (cockpits.Count == 0)
+			{
+				throw new Exception("No ship controller found in group.");
+			}
+			shipcontroller = cockpits.First();
+
+			Echo("Configure triggers...");
+			triggers = new List<IMyTimerBlock>();
+			targetingSystemGroup.GetBlocksOfType(triggers);
+			if (triggers.Count == 0)
+			{
+				Echo($"No Timmer block found in group {TARGETING_SYSTEM_GROUP}");
+			}
+
+			Echo("Configure turrets...");
+			turrets = new List<IMyLargeTurretBase>();
+			targetingSystemGroup.GetBlocksOfType(turrets);
+			foreach (var turret in turrets)
+			{
+				turret.ApplyAction(Actions.TURN_ON);
+			}
+			if (maxTurretsPerCycle > turrets.Count)
+			{
+				maxTurretsPerCycle = turrets.Count;
+			}
+
+			//Enable raycast for cameras
+			foreach (var camera in cameras)
+			{
+				camera.EnableRaycast = true;
+				camera.ApplyAction(Actions.TURN_ON);
+			}
+
+			if (RANGE > cameras.FirstOrDefault().RaycastDistanceLimit)
+			{
+				//If camera scan range exeeds server setting limit it to server raycast distance limit.
+				RANGE = cameras.FirstOrDefault().RaycastDistanceLimit;
+			}
+
+			Echo("Init OK.");
+
 		}
 		public void Save()
 		{
@@ -47,33 +150,214 @@ namespace ScriptingClass
 
 		public void Main(string argument, UpdateType updateSource)
 		{
-			try
-			{
-				//_rotator.DoTask(); // Disabled for performance
 
-				if (updateSource ==  UpdateType.Update10)
+			if (updateSource == UpdateType.Update10)
+			{
+				enemyUpdated = false;
+
+				//_program.Echo($"CQ: {camIndex}");
+
+				if (cameras[camIndex].CanScan(RANGE))
 				{
-					system.Scan();
+					var info = cameras[camIndex].Raycast(RANGE, PITCH, YAW);
+
+					if (!info.IsEmpty())
+					{
+						if (info.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies)
+						{
+							enemyUpdated = true;
+						}
+
+						lastDetected = info;
+
+						SetDisplayColor();
+						var sbdisplay = new StringBuilder();
+
+						sbdisplay.AppendLine();
+						sbdisplay.AppendLine($"Time: {DateTime.Now.ToString()}");
+						sbdisplay.AppendLine($"Distance: {(Vector3D.Distance(cameras[camIndex].GetPosition(), lastDetected.HitPosition.Value)):0.00}m");
+						sbdisplay.AppendLine($"Name: {lastDetected.Name}");
+						sbdisplay.Append($"Type: {lastDetected.Type} ");
+						sbdisplay.AppendLine($"Speed: {lastDetected.Velocity.Length().ToString("0.0")}m/s");
+						sbdisplay.AppendLine($"GPS:{lastDetected.Name}:{lastDetected.Position.X.ToString("0.00")}:{lastDetected.Position.Y.ToString("0.00")}:{lastDetected.Position.Z.ToString("0.00")}:");
+						InfoDisplay.WriteText( sbdisplay.ToString());
+						
+					}
 				}
-				else if (argument.ToLower().Contains("setrange"))
+				else
 				{
-					system.SetRange(argument);
+					Runtime.UpdateFrequency = UpdateFrequency.None;
 				}
-				else if (argument.ToLower().Contains("stop"))
+
+				camIndex++;
+				if (camIndex >= cameras.Count)
 				{
-					system.UnAim();
+					camIndex = 0;
+					PITCH = 0;
+					YAW = 0;
 				}
+				else
+				{
+					PITCH = RandomizePitchYaw(raycastConeLimit);
+					YAW = RandomizePitchYaw(raycastConeLimit);
+				}
+
+				if (autoShoot && enemyUpdated)
+				{
+					Echo("shoot");
+					Runtime.UpdateFrequency = UpdateFrequency.None;
+					for (int i = 0; i < maxTurretsPerCycle; i++)
+
+					{
+						turrets[turretIndex].ApplyAction(Actions.SHOOT_ONCE);
+
+						turretIndex++;
+						if (turretIndex >= turrets.Count)
+						{
+							turretIndex = 0;
+						}
+					}
+
+					//	_program.Echo("Shoot");
+				}
+
+				if (!lastDetected.IsEmpty() && enemyUpdated)
+				{
+					TargetTurrets();
+				}
+			}
+			else if (argument.ToLower().Contains("setrange"))
+			{
+
+				RANGE = Convert.ToDouble(argument.Split(':')[1].Trim());
 
 			}
-			catch (Exception ex)
+			else if (argument.ToLower().Contains("stop"))
 			{
-				Echo(ex.Message);
+				Echo("UnAim");
+				foreach (var turret in turrets)
+				{
+					turret.ResetTargetingToDefault();
+					Me.ApplyAction(Actions.TURN_OFF);
+				}
+			}
+
+			var sb = new StringBuilder();
+			sb.AppendLine($"LRT: {Runtime.LastRunTimeMs}");
+			sb.AppendLine($"IC: {Runtime.CurrentInstructionCount}");
+			sb.AppendLine($"CCD: {Runtime.CurrentCallChainDepth}");
+
+			Echo(sb.ToString());
+
+			if (Runtime.LastRunTimeMs>2)
+			{
+				Runtime.UpdateFrequency = UpdateFrequency.Update100;
+			}
+			else
+			{
+				Runtime.UpdateFrequency = UpdateFrequency.Update10;
 			}
 		}
 
+		private void TargetTurrets()
+		{
+			if (lastDetected.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies)
+			{
+				foreach (var turret in turrets)
+				{
+					var targetVector = CalculateTargetVector(lastDetected, turret);
+					//split turret fire on grid size
+					//targetVector = targetVector + (turret.Position - cockpit.Position) * info.BoundingBox.Size.Length() / 100;
+					//turret.TrackTarget(targetVector, info.Velocity);    broken crash client
+					turret.SetTarget(targetVector);
+				}
+			}
+		}
+
+		private Vector3D CalculateTargetVector(MyDetectedEntityInfo info, IMyLargeTurretBase turret, double ammoSpeed = 1000d)//projectile speed 1000m/s (300 auto canon)
+		{
+			///prediction = position + velocity * time + 0.5 * acceleration * time * time
+			///time ~ distance(m)/1000 (1000m/s 300 AC ammmo speed
+			///
+
+			Vector3D shotOrigin = turret.GetPosition();
+
+			Vector3D directionToTarget = Vector3D.Normalize(info.Position - shotOrigin);
+
+			//double targetSpeedInLineOfFire = Vector3D.Dot(directionToTarget, info.Velocity);
+			double relativeSpeed = ammoSpeed;// - targetSpeedInLineOfFire;
+
+			double distance = Vector3D.Distance(turret.GetPosition(), info.Position);
+			double time = distance / relativeSpeed;
+			Vector3D displacement = ToVector3D(info.Velocity) * time;
+			Vector3D targetVector = info.Position + displacement;
+			//Vector3D targetVector = info.Position;
+
+			/// Own velocity correction TESTED ON 300
+			Vector3D mySpeed = shipcontroller.GetShipVelocities().LinearVelocity;
+			//targetVector = targetVector + mySpeed * -1 * distance / 2500;
+			targetVector = targetVector + (mySpeed * -1) * time / 1.5d;
+
+			//_program.Echo($"T:{time}");
+			return targetVector;
+		}
+
+		private float RandomizePitchYaw(float raycastConeLimit)
+		{
+			float result = (float)random.NextDouble() * (raycastConeLimit * raycastAreaSize);
+			bool isPositive = random.NextDouble() < 0.5;
+
+			if (!isPositive)
+			{
+				result = result * -1;
+			}
+
+			return result;
+
+		}
+
+		public static Vector3D ToVector3D(Vector3 input)
+		{
+			return new Vector3D((float)input.X, (float)input.Y, (float)input.Z);
+		}
+
+		private void SetDisplayColor()
+		{
+			Color color;
+			switch (lastDetected.Relationship)
+			{
+				case MyRelationsBetweenPlayerAndBlock.Owner:
+				case MyRelationsBetweenPlayerAndBlock.Friends:
+				case MyRelationsBetweenPlayerAndBlock.FactionShare:
+					color = Color.Green;
+					break;
+				case MyRelationsBetweenPlayerAndBlock.Neutral:
+				case MyRelationsBetweenPlayerAndBlock.NoOwnership:
+					color = Color.Yellow;
+					break;
+				case MyRelationsBetweenPlayerAndBlock.Enemies:
+					color = Color.Red;
+					break;
+				default:
+					color = Color.White;
+					break;
+			}
+			InfoDisplay.FontColor = color;
+		}
+
+		public static class Actions
+		{
+			public static string TURN_ON = "OnOff_On";
+			public static string TURN_OFF = "OnOff_Off";
+			public static string SHOOT_ONCE = "ShootOnce";
+		}
+
+		//CUT HERE
+
+
 		public class TargetingSystem
 		{
-			const string TARGETING_SYSTEM_GROUP = "TargetingSystem";
+			public const string TARGETING_SYSTEM_GROUP = "TargetingSystem";
 
 			//bool turretTargetNeutrals = false;
 
@@ -97,18 +381,21 @@ namespace ScriptingClass
 			MyDetectedEntityInfo lastDetected;
 			//int currentCameraScan = 0;
 			bool enemyUpdated = false;
-			IMyShipController cockpit;
+			public IMyShipController shipcontroller;
 			IMyProgrammableBlock _me;
 			float raycastConeLimit;
 
 			int camIndex = 0;
-			int displayIndex = 1; //0 na enemy
+
+			IMyTextPanel InfoDisplay;
+
+			int maxTurretsPerCycle = 6;
+			int turretIndex = 0;
 
 			public TargetingSystem(Program program, IMyProgrammableBlock me)
 			{
 				_program = program;
 				_me = me;
-
 				detectedList = new Dictionary<long, MyDetectedEntityInfo>();
 
 				IMyBlockGroup targetingSystemGroup = _program.GridTerminalSystem.GetBlockGroupWithName(TARGETING_SYSTEM_GROUP);
@@ -137,14 +424,13 @@ namespace ScriptingClass
 				}
 				else
 				{
-					foreach (var display in displays)
-					{
-						display.ContentType = ContentType.TEXT_AND_IMAGE;
-						display.Font = "DEBUG";
-						display.FontSize = 0.9f;
-						display.ApplyAction(Actions.TURN_ON);
-					}
+					InfoDisplay = displays.FirstOrDefault();
+					InfoDisplay.ContentType = ContentType.TEXT_AND_IMAGE;
+					InfoDisplay.Font = "DEBUG";
+					InfoDisplay.FontSize = 0.9f;
+					InfoDisplay.ApplyAction(Actions.TURN_ON);
 				}
+
 
 				_program.Echo("Configure ShipController...");
 				var cockpits = new List<IMyShipController>();
@@ -153,7 +439,7 @@ namespace ScriptingClass
 				{
 					throw new Exception("No ship controller found in group.");
 				}
-				cockpit = cockpits.First();
+				shipcontroller = cockpits.First();
 
 				_program.Echo("Configure triggers...");
 				triggers = new List<IMyTimerBlock>();
@@ -169,6 +455,10 @@ namespace ScriptingClass
 				foreach (var turret in turrets)
 				{
 					turret.ApplyAction(Actions.TURN_ON);
+				}
+				if (maxTurretsPerCycle > turrets.Count)
+				{
+					maxTurretsPerCycle = turrets.Count;
 				}
 
 				//Enable raycast for cameras
@@ -196,34 +486,9 @@ namespace ScriptingClass
 			}
 			public void Scan()
 			{
-				DoScan();
-				if (!lastDetected.IsEmpty() && enemyUpdated)
-				{
-					TargetTurrets(lastDetected);
-				}
-
-				if (enemyUpdated && autoShoot)
-				{
-					foreach (var turret in turrets)
-					{
-						if (turret.IsAimed)
-						{
-							turret.ApplyAction(Actions.SHOOT_ONCE);
-						}
-					}
-
-					_program.Echo("Shoot");
-				}
-			}
-			private void DoScan()
-			{
-
-				//_program.Echo($"Prepare scan for {cameras.Count} cameras ");
-				//_program.Echo($"Controll {turrets.Count} turrets");
-
 				enemyUpdated = false;
 
-				_program.Echo($"CQ: {camIndex}");
+				//_program.Echo($"CQ: {camIndex}");
 
 				if (cameras[camIndex].CanScan(RANGE))
 				{
@@ -236,16 +501,8 @@ namespace ScriptingClass
 							enemyUpdated = true;
 						}
 
-						bool update = false;
-						if (lastDetected.EntityId == info.EntityId)
-						{
-							update = true;
-						}
-
-
-
 						lastDetected = info;
-						DisplayNonEmptyInfo(update);
+						//DisplayInfo();
 					}
 				}
 
@@ -261,16 +518,39 @@ namespace ScriptingClass
 					PITCH = RandomizePitchYaw(raycastConeLimit);
 					YAW = RandomizePitchYaw(raycastConeLimit);
 				}
+
+				if (autoShoot && enemyUpdated)
+				{
+					_program.Echo("shoot");
+					_program.Runtime.UpdateFrequency = UpdateFrequency.None;
+					for (int i = 0; i < maxTurretsPerCycle; i++)
+
+					{
+						turrets[turretIndex].ApplyAction(Actions.SHOOT_ONCE);
+
+						turretIndex++;
+						if (turretIndex >= turrets.Count)
+						{
+							turretIndex = 0;
+						}
+					}
+
+					//	_program.Echo("Shoot");
+				}
+
+				if (!lastDetected.IsEmpty() && enemyUpdated)
+				{
+					TargetTurrets();
+				}
 			}
 
-			private void TargetTurrets(MyDetectedEntityInfo info)
+			private void TargetTurrets()
 			{
-				if (info.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies)
+				if (lastDetected.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies)
 				{
-
 					foreach (var turret in turrets)
 					{
-						var targetVector = CalculateTargetVector(info, turret);
+						var targetVector = CalculateTargetVector(lastDetected, turret);
 						//split turret fire on grid size
 						//targetVector = targetVector + (turret.Position - cockpit.Position) * info.BoundingBox.Size.Length() / 100;
 						//turret.TrackTarget(targetVector, info.Velocity);    broken crash client
@@ -289,8 +569,8 @@ namespace ScriptingClass
 
 				Vector3D directionToTarget = Vector3D.Normalize(info.Position - shotOrigin);
 
-				double targetSpeedInLineOfFire = Vector3D.Dot(directionToTarget, info.Velocity);
-				double relativeSpeed = ammoSpeed - targetSpeedInLineOfFire;
+				//double targetSpeedInLineOfFire = Vector3D.Dot(directionToTarget, info.Velocity);
+				double relativeSpeed = ammoSpeed;// - targetSpeedInLineOfFire;
 
 				double distance = Vector3D.Distance(turret.GetPosition(), info.Position);
 				double time = distance / relativeSpeed;
@@ -299,10 +579,9 @@ namespace ScriptingClass
 				//Vector3D targetVector = info.Position;
 
 				/// Own velocity correction TESTED ON 300
-				var velocities = cockpit.GetShipVelocities();
-				Vector3D mySpeed = velocities.LinearVelocity;
+				Vector3D mySpeed = shipcontroller.GetShipVelocities().LinearVelocity;
 				//targetVector = targetVector + mySpeed * -1 * distance / 2500;
-				targetVector = targetVector + mySpeed * -1 * time / 2;
+				targetVector = targetVector + (mySpeed * -1) * time / 1.5d;
 
 				//_program.Echo($"T:{time}");
 				return targetVector;
@@ -330,7 +609,7 @@ namespace ScriptingClass
 				{
 					sb.AppendLine();
 					sb.AppendLine($"Time: {DateTime.Now.ToString()}");
-					sb.Append($"Target found at {(Vector3D.Distance(cameras[camIndex].GetPosition(), lastDetected.HitPosition.Value)):0.00}m range");
+					sb.AppendLine($"Target found at {(Vector3D.Distance(cameras[camIndex].GetPosition(), lastDetected.HitPosition.Value)):0.00}m range");
 
 					String size = lastDetected.BoundingBox.Size.ToString("0.000");
 					String printSize = string.Empty;
@@ -399,6 +678,25 @@ namespace ScriptingClass
 				return sb.ToString();
 			}
 
+			private string GetShortDisplayText()
+			{
+				var sb = new StringBuilder();
+
+				sb.AppendLine();
+				sb.AppendLine($"Time: {DateTime.Now.ToString()}");
+				sb.AppendLine($"Distance: {(Vector3D.Distance(cameras[camIndex].GetPosition(), lastDetected.HitPosition.Value)):0.00}m");
+				sb.AppendLine($"Name: {lastDetected.Name}");
+				sb.Append($"Type: {lastDetected.Type} ");
+				sb.AppendLine($"Speed: {lastDetected.Velocity.Length().ToString("0.0")}m/s");
+				sb.AppendLine($"GPS:{lastDetected.Name}:{lastDetected.Position.X.ToString("0.00")}:{lastDetected.Position.Y.ToString("0.00")}:{lastDetected.Position.Z.ToString("0.00")}:");
+				return sb.ToString();
+			}
+			private string GetGPS(Vector3D position, string name)
+			{
+				//GPS: Akanixon 死神 #1:429399.39:24917.71:-458976.29:
+				return $"GPS:{name}:{position.X.ToString("0.00")}:{position.Y.ToString("0.00")}:{position.Z.ToString("0.00")}:";
+			}
+
 			private Color GetDisplayColor()
 			{
 				switch (lastDetected.Relationship)
@@ -416,32 +714,71 @@ namespace ScriptingClass
 						return Color.White;
 				}
 			}
-
-			private void DisplayNonEmptyInfo(bool update)
+			private void SetDisplayColor()
 			{
-				Color color = GetDisplayColor();
-				
-
-				if (enemyUpdated)
+				Color color;
+				switch (lastDetected.Relationship)
 				{
-					_program.Echo($"enemy");
-					//Enemy na pierwszy ekran
-					displays[0].SetValue("FontColor", color);
-					displays[0].WriteText(GetDisplayText(), false);
+					case MyRelationsBetweenPlayerAndBlock.Owner:
+					case MyRelationsBetweenPlayerAndBlock.Friends:
+					case MyRelationsBetweenPlayerAndBlock.FactionShare:
+						color = Color.Green;
+						break;
+					case MyRelationsBetweenPlayerAndBlock.Neutral:
+					case MyRelationsBetweenPlayerAndBlock.NoOwnership:
+						color = Color.Yellow;
+						break;
+					case MyRelationsBetweenPlayerAndBlock.Enemies:
+						color = Color.Red;
+						break;
+					default:
+						color = Color.White;
+						break;
 				}
-				else
-				{
-					_program.Echo($"di {displayIndex}");
-					displays[displayIndex].SetValue("FontColor", color);
-					displays[displayIndex].WriteText(GetDisplayText(), false);
+				InfoDisplay.FontColor = color;
+			}
 
-					displayIndex++;
-					if (displayIndex >= displays.Count)
-					{
-						displayIndex = 1;
-					}
-				}
+			//private void DisplayNonEmptyInfo(bool update)
+			//{
+			//	Color color = GetDisplayColor();
 
+			//	if (enemyUpdated)
+			//	{
+			//		_program.Echo($"enemy");
+			//		//Enemy na pierwszy ekran
+			//		displays[0].SetValue("FontColor", color);
+			//		displays[0].WriteText(GetDisplayText(), false);
+			//		if (shortInfoDisplay != null)
+			//		{
+			//			shortInfoDisplay.SetValue("FontColor", color);
+			//			shortInfoDisplay.WriteText(GetShortDisplayText(), false);
+			//		}
+			//	}
+			//	else
+			//	{
+			//		//_program.Echo($"di {displayIndex}");
+			//		displays[displayIndex].SetValue("FontColor", color);
+			//		displays[displayIndex].WriteText(GetDisplayText(), false);
+
+			//		if (shortInfoDisplay != null)
+			//		{
+			//			shortInfoDisplay.SetValue("FontColor", color);
+			//			shortInfoDisplay.WriteText(GetShortDisplayText(), false);
+			//		}
+
+			//		displayIndex++;
+			//		if (displayIndex >= displays.Count)
+			//		{
+			//			displayIndex = 1;
+			//		}
+			//	}
+
+			//}
+
+			private void DisplayInfo()
+			{
+				SetDisplayColor();
+				InfoDisplay.WriteText(GetShortDisplayText());
 			}
 
 			internal void UnAim()
@@ -453,21 +790,8 @@ namespace ScriptingClass
 					_me.ApplyAction(Actions.TURN_OFF);
 				}
 			}
-		}
 
-		public static Vector3D ToVector3D(Vector3 input)
-		{
-			return new Vector3D((float)input.X, (float)input.Y, (float)input.Z);
 		}
-
-		public static class Actions
-		{
-			public static string TURN_ON = "OnOff_On";
-			public static string TURN_OFF = "OnOff_Off";
-			public static string SHOOT_ONCE = "ShootOnce";
-		}
-
-		//CUT HERE
 
 
 	}
