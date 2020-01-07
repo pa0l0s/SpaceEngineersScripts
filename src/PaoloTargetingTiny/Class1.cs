@@ -307,6 +307,11 @@ namespace ScriptingClass
 
 						sbdisplay.AppendLine($"GPS:{lastDetected.Name}:{lastDetected.Position.X.ToString("0.00")}:{lastDetected.Position.Y.ToString("0.00")}:{lastDetected.Position.Z.ToString("0.00")}:");
 
+						if(lastDetected.EntityId==Me.CubeGrid.EntityId)
+						{
+							sbdisplay.AppendLine($"Camera: {cameras[camIndex - 1].DisplayNameText} detected own grid!");
+						}
+
 						GPSLogDisplay.WriteText(sbdisplay.ToString(), true);
 					}
 
@@ -346,7 +351,7 @@ namespace ScriptingClass
 
 			if (Runtime.LastRunTimeMs > 2)
 			{
-				Runtime.UpdateFrequency = UpdateFrequency.Update100;
+				Runtime.UpdateFrequency = UpdateFrequency.Update10;
 				raycastTickSkip = 10;
 			}
 			else
