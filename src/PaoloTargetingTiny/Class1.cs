@@ -210,10 +210,10 @@ namespace ScriptingClass
 						for (int i = 0; i < maxTurretPerScan; i++)
 						{
 							//Shoot
-							if (turrets[turretIndex].IsAimed)
-							{
+							//if (turrets[turretIndex].IsAimed)
+							//{
 								turrets[turretIndex].ApplyAction(Actions.SHOOT_ONCE);
-							}
+							//}
 
 							turretIndex++;
 							if (turretIndex >= turrets.Count)
