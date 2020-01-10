@@ -25,6 +25,7 @@ namespace ScriptingClass
 		public List<IMyCameraBlock> cameras;
 		IMyTextPanel InfoDisplay;
 		IMyTextPanel GPSLogDisplay;
+		IMyTextPanel ErrorLogDisplay;
 		int camIndex = 0;
 		double RANGE = 5000;
 		float PITCH = 0;
@@ -33,7 +34,7 @@ namespace ScriptingClass
 		List<long> detectedEntityList = new List<long>();
 		List<IMyLargeTurretBase> turrets;
 		int turretIndex = 0;
-		int maxTurretPerScan = 2;
+		int maxTurretPerScan = 3;
 		IMyShipController shipcontroller;
 
 		int scriptPhaze = 0; //0 - scan, 1 - target, 2 - shoot, 3 - display, 4 - display gps;
@@ -104,6 +105,18 @@ namespace ScriptingClass
 
 				Echo($"Display GPSLog {GPSLogDisplay.DisplayNameText} OK");
 			}
+			if (displays.Count > 2)
+			{
+				ErrorLogDisplay = displays[2];
+				ErrorLogDisplay.ContentType = ContentType.TEXT_AND_IMAGE;
+				ErrorLogDisplay.Font = "DEBUG";
+				ErrorLogDisplay.FontSize = 0.9f;
+				ErrorLogDisplay.FontColor = Color.Red;
+				ErrorLogDisplay.WriteText(string.Empty);
+				ErrorLogDisplay.ApplyAction(Actions.TURN_ON);
+
+				Echo($"Display ErrorLog {ErrorLogDisplay.DisplayNameText} OK");
+			}
 
 			Echo("Configure turrets...");
 			turrets = new List<IMyLargeTurretBase>();
@@ -146,7 +159,7 @@ namespace ScriptingClass
 
 				if (scriptPhaze == 0)
 				{
-					if (cameras[camIndex].CanScan(RANGE))
+					if (cameras[camIndex].IsWorking && cameras[camIndex].CanScan(RANGE))
 					{
 						raycastTickSkip = 5;
 						var info = cameras[camIndex].Raycast(RANGE, PITCH, YAW);
@@ -162,6 +175,7 @@ namespace ScriptingClass
 						}
 					}
 
+
 					camIndex++;
 					if (camIndex >= cameras.Count)
 					{
@@ -169,6 +183,8 @@ namespace ScriptingClass
 						PITCH = 0;
 						YAW = 0;
 					}
+
+
 				}
 				else if (scriptPhaze == 1)
 				{
@@ -237,8 +253,8 @@ namespace ScriptingClass
 					var sbdisplay = new StringBuilder();
 
 					sbdisplay.AppendLine();
-					sbdisplay.AppendLine($"Time: {DateTime.Now.ToString()}");
-					sbdisplay.AppendLine($"Distance: {(Vector3D.Distance(cameras[camIndex].GetPosition(), lastDetected.HitPosition.Value)):0.00}m");
+					sbdisplay.Append($"Time: {DateTime.Now.ToString()}");
+					sbdisplay.AppendLine($" at: {(Vector3D.Distance(cameras[camIndex].GetPosition(), lastDetected.HitPosition.Value)):0.00}m");
 					sbdisplay.AppendLine($"Name: {lastDetected.Name}");
 					sbdisplay.Append($"Type: {lastDetected.Type} ");
 					sbdisplay.AppendLine($"Relation: {lastDetected.Relationship} ");
@@ -307,10 +323,7 @@ namespace ScriptingClass
 
 						sbdisplay.AppendLine($"GPS:{lastDetected.Name}:{lastDetected.Position.X.ToString("0.00")}:{lastDetected.Position.Y.ToString("0.00")}:{lastDetected.Position.Z.ToString("0.00")}:");
 
-						if(lastDetected.EntityId==Me.CubeGrid.EntityId)
-						{
-							sbdisplay.AppendLine($"Camera: {cameras[camIndex - 1].DisplayNameText} detected own grid!");
-						}
+
 
 						GPSLogDisplay.WriteText(sbdisplay.ToString(), true);
 					}
@@ -321,11 +334,46 @@ namespace ScriptingClass
 				{
 					PITCH = RandomizePitchYaw(raycastConeLimit);
 					YAW = RandomizePitchYaw(raycastConeLimit);
-					scriptPhaze = 0;
+					scriptPhaze = 7;
 				}
 				else if (scriptPhaze == 6)
 				{
 					//skip
+					scriptPhaze = 0;
+				}
+				else if (scriptPhaze == 7)
+				{
+					//ErrorLogDisplay log LCD
+					StringBuilder sbdisplay = new StringBuilder();
+
+
+					if (lastDetected.EntityId == Me.CubeGrid.EntityId)
+					{
+						sbdisplay.AppendLine($"Camera: {cameras[camIndex].DisplayNameText} detected own grid!");
+					}
+					if (!cameras[camIndex].IsWorking)
+					{
+						sbdisplay.AppendLine($"Camera: {cameras[camIndex - 1].DisplayNameText} is not working!");
+					}
+					if (!turrets[turretIndex].IsWorking)
+					{
+						sbdisplay.AppendLine($"Turret: {cameras[camIndex - 1].DisplayNameText} is not working!");
+					}
+					if(!InfoDisplay.IsWorking)
+					{
+						sbdisplay.AppendLine($"Info Display: {InfoDisplay.DisplayNameText} is not working!");
+					}
+					if (!GPSLogDisplay.IsWorking)
+					{
+						sbdisplay.AppendLine($"GPSLog Display: {GPSLogDisplay.DisplayNameText} is not working!");
+					}
+					if (!shipcontroller.IsWorking)
+					{
+						sbdisplay.AppendLine($"Ship controller: {shipcontroller.DisplayNameText} is not working!");
+					}
+
+					ErrorLogDisplay.WriteText(sbdisplay.ToString(), true);
+
 					scriptPhaze = 0;
 				}
 			}
