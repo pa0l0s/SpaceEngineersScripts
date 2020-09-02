@@ -1,4 +1,5 @@
 ﻿using Sandbox.ModAPI.Ingame;
+using SpaceEngineers.Game.ModAPI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -949,9 +950,15 @@ namespace ScriptingClass
 
 				var refineries = refineriesTypeBlocks.Where(x => x.CubeGrid == _me.CubeGrid).ToList(); //Only from current grid
 
+				var gravityGeneratorTypeBlocks = new List<IMyTerminalBlock>();
+				_program.GridTerminalSystem.GetBlocksOfType<IMyGravityGenerator>(gravityGeneratorTypeBlocks);
+
+				var gravityGenerators = gravityGeneratorTypeBlocks.Where(x => x.CubeGrid == _me.CubeGrid).ToList(); //Only from current grid
+
 				var blocks = new List<IMyTerminalBlock>();
 				blocks.AddRange(assemblers);
 				blocks.AddRange(refineries);
+				blocks.AddRange(gravityGenerators);
 
 				foreach (var block in blocks)
 				{
