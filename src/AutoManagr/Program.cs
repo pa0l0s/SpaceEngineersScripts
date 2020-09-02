@@ -593,6 +593,9 @@ namespace ScriptingClass
 			private const string defaultIgnoreContainerNameTag = "Ignore";
 			private const string defaultForceMoveFromConnectedGridContainerNameTag = "ForceConnected";
 
+			private const bool defaultIgnoreSorters = true;
+			private const bool defaultIgnoreEjector = true;
+
 			private Program _program;
 			private IMyProgrammableBlock _me;
 			private string _oreContainerNameTag;
@@ -601,6 +604,9 @@ namespace ScriptingClass
 			private string _componentsContainerNameTag;
 			private string _ignoreContainerNameTag;
 			private string _forceMoveFromConnectedGridContainerNameTag;
+
+			private bool _ignoreSorters;
+			private bool _ignoreEjector;
 
 			public SimpleInventoryManager(Program program, IMyProgrammableBlock me)
 			{
@@ -613,7 +619,8 @@ namespace ScriptingClass
 				_ignoreContainerNameTag = defaultIgnoreContainerNameTag;
 				_forceMoveFromConnectedGridContainerNameTag = defaultForceMoveFromConnectedGridContainerNameTag;
 
-
+				_ignoreSorters = defaultIgnoreSorters;
+				_ignoreEjector = defaultIgnoreEjector;
 			}
 			public IEnumerable<IManagerTask> GetTasks()
 			{
@@ -624,8 +631,9 @@ namespace ScriptingClass
 				_program.GridTerminalSystem.GetBlocksOfType<IMyCargoContainer>(blocks);
 				if (blocks == null) return tasks;
 
-				var cargoContainers = blocks.Select(x => (IMyCargoContainer)x).Where(x => !x.DisplayNameText.ToLower().Contains(_ignoreContainerNameTag.ToLower())).ToList();
-
+				var cargoContainers = blocks.Select(x => (IMyCargoContainer)x).Where(x => !x.DisplayNameText.ToLower().Contains(_ignoreContainerNameTag.ToLower())).ToList()
+					.Where(x => !(_ignoreSorters && x is IMyConveyorSorter))
+					.Where(x => !(_ignoreEjector && x.BlockDefinition.ToString().Contains("ConnectorSmall"))).ToList();
 
 				tasks.AddRange(GetOreTasks(cargoContainers));
 				tasks.AddRange(GetComponentsTasks(cargoContainers));
@@ -690,14 +698,17 @@ namespace ScriptingClass
 				}
 				foreach (var inventory in inventories)
 				{
-					var inventoryItems = new List<MyInventoryItem>();
-					inventory.GetItems(inventoryItems);
-
-					foreach (var inventoryItem in inventoryItems)
+					if (inventory != null)
 					{
-						if (HasTagInName(inventoryItem, itemTag))
+						var inventoryItems = new List<MyInventoryItem>();
+						inventory.GetItems(inventoryItems);
+
+						foreach (var inventoryItem in inventoryItems)
 						{
-							yield return new MoveItemTask(_program, inventoryItem, inventory, destinationCargos);
+							if (HasTagInName(inventoryItem, itemTag))
+							{
+								yield return new MoveItemTask(_program, inventoryItem, inventory, destinationCargos);
+							}
 						}
 					}
 				}
@@ -769,7 +780,14 @@ namespace ScriptingClass
 					inventories.AddRange(blocks.Select(x => ((IMyShipConnector)x).GetInventory()).ToList());
 				}
 
-				tasks.AddRange(GetInventoryManagerTasks(inventories, destinationCargos, itemTag));
+				try
+				{
+					tasks.AddRange(GetInventoryManagerTasks(inventories, destinationCargos, itemTag));
+				}
+				catch(Exception ex)
+				{
+					_program.Echo(ex.Message);
+				}
 
 				return tasks;
 
@@ -1416,6 +1434,8 @@ namespace ScriptingClass
 
 		public static bool HasTagInName(MyInventoryItem item, string itemTag)
 		{
+			if (item == null) return false;
+
 			return item.ToString().ToLower().Contains(itemTag.ToLower());
 		}
 
