@@ -749,7 +749,7 @@ namespace ScriptingClass
 					_program.GridTerminalSystem.GetBlocksOfType<IMyAssembler>(blocks);
 					if (blocks == null) return tasks;
 
-					inventories.AddRange(blocks.Select(x => ((IMyAssembler)x).OutputInventory).ToList());
+					inventories.AddRange(blocks.Where(x => !x.DisplayNameText.ToLower().Contains(_ignoreContainerNameTag.ToLower())).Select(x => ((IMyAssembler)x).OutputInventory).ToList());
 
 				}
 
@@ -759,7 +759,7 @@ namespace ScriptingClass
 					_program.GridTerminalSystem.GetBlocksOfType<IMyRefinery>(blocks);
 					if (blocks == null) return tasks;
 
-					inventories.AddRange(blocks.Select(x => ((IMyRefinery)x).OutputInventory).ToList());
+					inventories.AddRange(blocks.Where(x => !x.DisplayNameText.ToLower().Contains(_ignoreContainerNameTag.ToLower())).Select(x => ((IMyRefinery)x).OutputInventory).ToList());
 
 				}
 
@@ -769,7 +769,7 @@ namespace ScriptingClass
 					_program.GridTerminalSystem.GetBlocksOfType<IMyCockpit>(blocks);
 					if (blocks == null) return tasks;
 
-					inventories.AddRange(blocks.Select(x => ((IMyCockpit)x).GetInventory()).ToList());
+					inventories.AddRange(blocks.Where(x => !x.DisplayNameText.ToLower().Contains(_ignoreContainerNameTag.ToLower())).Select(x => ((IMyCockpit)x).GetInventory()).ToList());
 				}
 
 				if (addConnectors)
@@ -778,7 +778,7 @@ namespace ScriptingClass
 					_program.GridTerminalSystem.GetBlocksOfType<IMyShipConnector>(blocks);
 					if (blocks == null) return tasks;
 
-					inventories.AddRange(blocks.Select(x => ((IMyShipConnector)x).GetInventory()).ToList());
+					inventories.AddRange(blocks.Where(x => !x.DisplayNameText.ToLower().Contains(_ignoreContainerNameTag.ToLower())).Select(x => ((IMyShipConnector)x).GetInventory()).ToList());
 				}
 
 				try
@@ -1078,6 +1078,8 @@ namespace ScriptingClass
 			private const long _defautDesiredComponentQuantity = 1000;
 			private const long _defaultMaxSingleItemAddToQueueAmmount = 1000;
 
+			private const float _defaultMultiplayer = 0.5F;
+
 			private Program _program;
 			private IMyProgrammableBlock _me;
 			private IMyAssembler _mainAssembler;
@@ -1109,10 +1111,11 @@ namespace ScriptingClass
 						var blueprint = blueprintNullable.Value;
 						if (!queueProductionItemsDefinitions.Contains(blueprint))
 						{
-							if (entry.Value < GetDesiredQuantity(entry.Key))
+							if (entry.Value < GetDesiredQuantity(entry.Key) * _defaultMultiplayer)
 							{
 								var ammoutToBuild = GetDesiredQuantity(entry.Key) - entry.Value;
 								if (ammoutToBuild > _defaultMaxSingleItemAddToQueueAmmount) { ammoutToBuild = _defaultMaxSingleItemAddToQueueAmmount; }
+								ammoutToBuild = (long)(ammoutToBuild * _defaultMultiplayer);
 								tasks.Add(new AddToAssemblerQueueTask(_program, _mainAssembler, blueprint, ammoutToBuild));
 							}
 						}
