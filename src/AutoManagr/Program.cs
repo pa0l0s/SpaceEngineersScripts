@@ -585,12 +585,58 @@ namespace ScriptingClass
 
 		}
 
+		/*
+		 * This list might also be helpful. This is the list of all the components that an Assembler can produce. It has the Item Name (not exact name, but not really needed), the TypeId, and SubTypeId. The TypeId and SubTypeId are useful for accessing items in scripts. This is the list used for the Visual Script Builder.
+
+		Name, TypeId, SubTypeId
+		"Construction Component", "Component", "Construction"
+		"Metal Grid", "Component", "MetalGrid"
+		"Interior Plate", "Component", "InteriorPlate"
+		"Steel Plate", "Component", "SteelPlate"
+		"Girder", "Component", "Girder"
+		"Small Tube", "Component", "SmallTube"
+		"Large Tube", "Component", "LargeTube"
+		"Motor", "Component", "Motor"
+		"Display", "Component", "Display"
+		"Bulletproof Glass", "Component", "BulletproofGlass"
+		"Superconductor Conduit", "Component", "Superconductor"
+		"Computer", "Component", "Computer"
+		"Reactor", "Component", "Reactor"
+		"Thruster Component", "Component", "Thrust"
+		"Gravity Generator Component", "Component", "GravityGenerator"
+		"Medical Component", "Component", "Medical"
+		"Radio-communication Component", "Component", "RadioCommunication"
+		"Detector Component", "Component", "Detector"
+		"Explosives", "Component", "Explosives"
+		"Solar Cell", "Component", "SolarCell"
+		"Power Cell", "Component", "PowerCell"
+		"Welder", "PhysicalGunObject", "WelderItem"
+		"Enhanced Welder", "PhysicalGunObject", "Welder2Item"
+		"Proficient Welder", "PhysicalGunObject", "Welder3Item"
+		"Elite Welder", "PhysicalGunObject", "Welder4Item"
+		"Grinder", "PhysicalGunObject", "AngleGrinderItem"
+		"Enhanced Grinder", "PhysicalGunObject", "AngleGrinder2Item"
+		"Proficient Grinder", "PhysicalGunObject", "AngleGrinder3Item"
+		"Elite Grinder", "PhysicalGunObject", "AngleGrinder4Item"
+		"Drill", "PhysicalGunObject", "HandDrillItem"
+		"Enhanced Drill", "PhysicalGunObject", "HandDrill2Item"
+		"Proficient Drill", "PhysicalGunObject", "HandDrill3Item"
+		"Elite Drill", "PhysicalGunObject", "HandDrill4Item"
+		"Oxygen Bottle", "OxygenContainerObject", "OxygenBottle"
+		"Hydrogen Bottle", "GasContainerObject", "HydrogenBottle"
+		"Missile Container", "AmmoMagazine", "Missile200mm"
+		"Ammo Container", "AmmoMagazine", "NATO_25x184mm"
+		"Magazine", "AmmoMagazine", "NATO_5p56x45mm"
+		 */
+
 		public class SimpleInventoryManager : IManager
 		{
 			private const string defaultOreContainerNameTag = "Ores";
 			private const string defaultIngotContainerNameTag = "Ingots";
 			private const string defaultToolsContainerNameTag = "Tools";
 			private const string defaultComponentsContainerNameTag = "Components";
+			private const string defaultAmmunitionContainerNameTag = "Ammo";
+			private const string defaultBottlesContainerNameTag = "Bottles";
 			private const string defaultIgnoreContainerNameTag = "Ignore";
 			private const string defaultForceMoveFromConnectedGridContainerNameTag = "ForceConnected";
 
@@ -603,6 +649,8 @@ namespace ScriptingClass
 			private string _ingotContainerNameTag;
 			private string _toolsContainerNameTag;
 			private string _componentsContainerNameTag;
+			private string _ammunitionContainerNameTag;
+			private string _bottlesContainerNameTag;
 			private string _ignoreContainerNameTag;
 			private string _forceMoveFromConnectedGridContainerNameTag;
 
@@ -617,6 +665,8 @@ namespace ScriptingClass
 				_ingotContainerNameTag = defaultIngotContainerNameTag;
 				_toolsContainerNameTag = defaultToolsContainerNameTag;
 				_componentsContainerNameTag = defaultComponentsContainerNameTag;
+				_ammunitionContainerNameTag = defaultAmmunitionContainerNameTag;
+				_bottlesContainerNameTag = defaultBottlesContainerNameTag;
 				_ignoreContainerNameTag = defaultIgnoreContainerNameTag;
 				_forceMoveFromConnectedGridContainerNameTag = defaultForceMoveFromConnectedGridContainerNameTag;
 
@@ -640,7 +690,9 @@ namespace ScriptingClass
 				tasks.AddRange(GetComponentsTasks(cargoContainers));
 				tasks.AddRange(GetIngotsTasks(cargoContainers));
 				tasks.AddRange(GetToolsTasks(cargoContainers));
-
+				tasks.AddRange(GetAmmunitionTasks(cargoContainers));
+				tasks.AddRange(GetBottlesTasks(cargoContainers));
+				
 				return tasks;
 
 			}
@@ -652,7 +704,7 @@ namespace ScriptingClass
 
 			private IEnumerable<IManagerTask> GetComponentsTasks(List<IMyCargoContainer> cargoContainers)
 			{
-				return GetInventoryManagerTasks(cargoContainers, _componentsContainerNameTag, "_Component", addAssemblers: true);
+				return GetInventoryManagerTasks(cargoContainers, _componentsContainerNameTag, "_Component", addAssemblers: true, moveConnected: false);
 			}
 
 			private IEnumerable<IManagerTask> GetIngotsTasks(List<IMyCargoContainer> cargoContainers)
@@ -662,38 +714,32 @@ namespace ScriptingClass
 
 			private IEnumerable<IManagerTask> GetToolsTasks(List<IMyCargoContainer> cargoContainers)
 			{
-
 				var tasks = new List<IManagerTask>();
 
-				tasks.AddRange(GetInventoryManagerTasks(cargoContainers, _toolsContainerNameTag, "_PhysicalGunObject", addAssemblers: true));
-
-				//add assemblers inventory
-
-				var blocks = new List<IMyTerminalBlock>();
-				_program.GridTerminalSystem.GetBlocksOfType<IMyAssembler>(blocks);
-				if (blocks == null) return tasks;
-
-				List<IMyInventory> inventories = blocks.Select(x => ((IMyAssembler)x).OutputInventory).ToList();
-
-				foreach (var inventory in inventories)
-				{
-					var inventoryItems = new List<MyInventoryItem>();
-					inventory.GetItems(inventoryItems);
-					foreach (var inventoryItem in inventoryItems)
-					{
-						if (HasTagInName(inventoryItem, "_CaracterTool"))
-						{
-							tasks.Add(new MoveItemTask(_program, inventoryItem, inventory, cargoContainers));
-						}
-					}
-				}
+				tasks.AddRange(GetInventoryManagerTasks(cargoContainers, _toolsContainerNameTag, "_PhysicalGunObject", addAssemblers: true, addCockpit: false, moveConnected: false));
+				tasks.AddRange(GetInventoryManagerTasks(cargoContainers, _toolsContainerNameTag, "_CaracterTool", addAssemblers: true, addCockpit:false, moveConnected: false));
 
 				return tasks;
 			}
 
-			private IEnumerable<IManagerTask> GetInventoryManagerTasks(List<IMyInventory> inventories, List<IMyCargoContainer> destinationCargos, string itemTag)
+			private IEnumerable<IManagerTask> GetBottlesTasks(List<IMyCargoContainer> cargoContainers)
 			{
-				if (itemTag == _toolsContainerNameTag || itemTag == _componentsContainerNameTag)
+				var tasks = new List<IManagerTask>();
+
+				tasks.AddRange(GetInventoryManagerTasks(cargoContainers, _bottlesContainerNameTag, "GasContainerObject", addAssemblers: true, addCockpit: false, moveConnected: false));
+				tasks.AddRange(GetInventoryManagerTasks(cargoContainers, _bottlesContainerNameTag, "OxygenContainerObject", addAssemblers: true, addCockpit: false, moveConnected: false));
+
+				return tasks;
+			}
+
+			private IEnumerable<IManagerTask> GetAmmunitionTasks(List<IMyCargoContainer> cargoContainers)
+			{
+				return GetInventoryManagerTasks(cargoContainers, _ammunitionContainerNameTag, "AmmoMagazine", addAssemblers: true, addCockpit: false, moveConnected: false);
+			}
+
+			private IEnumerable<IManagerTask> GetInventoryManagerTasks(List<IMyInventory> inventories, List<IMyCargoContainer> destinationCargos, string itemTag, bool moveConnected = true)
+			{
+				if (!moveConnected)
 				{
 					inventories = inventories.Where(x => _program.GridTerminalSystem.GetBlockWithId(x.Owner.EntityId).CubeGrid == _me.CubeGrid || _program.GridTerminalSystem.GetBlockWithId(x.Owner.EntityId).DisplayNameText.ToLower().Contains(_forceMoveFromConnectedGridContainerNameTag.ToLower())).ToList(); //Tools and components are moved only from inventories in local grid to prevent moving stuff from connected ships 
 				}
@@ -715,7 +761,7 @@ namespace ScriptingClass
 				}
 			}
 
-			private IEnumerable<IManagerTask> GetInventoryManagerTasks(List<IMyCargoContainer> cargoContainers, string containerTag, string itemTag, bool addAssemblers = false, bool addRefieries = false, bool addCockpit = true, bool addConnectors = true)
+			private IEnumerable<IManagerTask> GetInventoryManagerTasks(List<IMyCargoContainer> cargoContainers, string containerTag, string itemTag, bool addAssemblers = false, bool addRefieries = false, bool addCockpit = true, bool addConnectors = true, bool moveConnected = true)
 			{
 
 				var tasks = new List<IManagerTask>();
@@ -783,7 +829,7 @@ namespace ScriptingClass
 
 				try
 				{
-					tasks.AddRange(GetInventoryManagerTasks(inventories, destinationCargos, itemTag));
+					tasks.AddRange(GetInventoryManagerTasks(inventories, destinationCargos, itemTag, moveConnected: moveConnected));
 				}
 				catch(Exception ex)
 				{
