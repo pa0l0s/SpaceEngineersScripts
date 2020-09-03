@@ -739,22 +739,21 @@ namespace ScriptingClass
 
 			private IEnumerable<IManagerTask> GetInventoryManagerTasks(List<IMyInventory> inventories, List<IMyCargoContainer> destinationCargos, string itemTag, bool moveConnected = true)
 			{
-				if (!moveConnected)
-				{
-					inventories = inventories.Where(x => _program.GridTerminalSystem.GetBlockWithId(x.Owner.EntityId).CubeGrid == _me.CubeGrid || _program.GridTerminalSystem.GetBlockWithId(x.Owner.EntityId).DisplayNameText.ToLower().Contains(_forceMoveFromConnectedGridContainerNameTag.ToLower())).ToList(); //Tools and components are moved only from inventories in local grid to prevent moving stuff from connected ships 
-				}
 				foreach (var inventory in inventories)
 				{
 					if (inventory != null)
 					{
-						var inventoryItems = new List<MyInventoryItem>();
-						inventory.GetItems(inventoryItems);
-
-						foreach (var inventoryItem in inventoryItems)
+						if (_program.GridTerminalSystem.GetBlockWithId(inventory.Owner.EntityId).CubeGrid.EntityId == _me.CubeGrid.EntityId || _program.GridTerminalSystem.GetBlockWithId(inventory.Owner.EntityId).DisplayNameText.ToLower().Contains(_forceMoveFromConnectedGridContainerNameTag.ToLower()) || moveConnected)
 						{
-							if (HasTagInName(inventoryItem, itemTag))
+							var inventoryItems = new List<MyInventoryItem>();
+							inventory.GetItems(inventoryItems);
+
+							foreach (var inventoryItem in inventoryItems)
 							{
-								yield return new MoveItemTask(_program, inventoryItem, inventory, destinationCargos);
+								if (HasTagInName(inventoryItem, itemTag))
+								{
+									yield return new MoveItemTask(_program, inventoryItem, inventory, destinationCargos);
+								}
 							}
 						}
 					}
@@ -876,7 +875,7 @@ namespace ScriptingClass
 						{
 							_program.Echo(String.Format($"Transfering {inventoryItem.ToString()} from: { _program.GridTerminalSystem.GetBlockWithId(sourceInventory.Owner.EntityId).DisplayNameText} to container {destinationContainer.DisplayNameText}"));
 							sourceInventory.TransferItemTo(((IMyEntity)destinationContainer).GetInventory(0), inventoryItem);
-							//throw new Exception("test");
+							_program.Echo($"{_program.GridTerminalSystem.GetBlockWithId(sourceInventory.Owner.EntityId).CubeGrid.EntityId} = {destinationContainer.CubeGrid.EntityId}");
 							return;
 						}
 					}
@@ -1124,8 +1123,6 @@ namespace ScriptingClass
 			private const long _defautDesiredComponentQuantity = 1000;
 			private const long _defaultMaxSingleItemAddToQueueAmmount = 1000;
 
-			private const float _defaultMultiplayer = 0.5F;
-
 			private Program _program;
 			private IMyProgrammableBlock _me;
 			private IMyAssembler _mainAssembler;
@@ -1157,11 +1154,10 @@ namespace ScriptingClass
 						var blueprint = blueprintNullable.Value;
 						if (!queueProductionItemsDefinitions.Contains(blueprint))
 						{
-							if (entry.Value < GetDesiredQuantity(entry.Key) * _defaultMultiplayer)
+							if (entry.Value < GetDesiredQuantity(entry.Key))
 							{
 								var ammoutToBuild = GetDesiredQuantity(entry.Key) - entry.Value;
 								if (ammoutToBuild > _defaultMaxSingleItemAddToQueueAmmount) { ammoutToBuild = _defaultMaxSingleItemAddToQueueAmmount; }
-								ammoutToBuild = (long)(ammoutToBuild * _defaultMultiplayer);
 								tasks.Add(new AddToAssemblerQueueTask(_program, _mainAssembler, blueprint, ammoutToBuild));
 							}
 						}
