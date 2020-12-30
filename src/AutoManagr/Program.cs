@@ -1106,25 +1106,40 @@ namespace ScriptingClass
 
             private static Dictionary<string, long> _desiredComponentsQuantity = new Dictionary<string, long>
             {
+                //{ "MyObjectBuilder_Component/SuperComputer", 0 },
+                //{ "MyObjectBuilder_Component/SteelPlate", 50000},
+                //{ "MyObjectBuilder_Component/MetalGrid", 25000},
+                //{ "MyObjectBuilder_Component/InteriorPlate", 20000 },
+                //{ "MyObjectBuilder_Component/Construction", 25000},
+                //{ "MyObjectBuilder_Component/Computer", 15000},
+                //{ "MyObjectBuilder_Component/Motor", 20000},
+                //{ "MyObjectBuilder_Component/Thrust", 10000},
+                //{ "MyObjectBuilder_Component/LargeTube", 15000},
+                //{ "MyObjectBuilder_Component/SmallTube", 25000},
+                //{ "MyObjectBuilder_Component/Reactor", 10000},
+                //{ "MyObjectBuilder_Component/Superconductor", 10000},
+                //{ "MyObjectBuilder_Component/GravityGenerator", 4000},
+                //{ "MyObjectBuilder_Component/PowerCell", 5000}
+
                 { "MyObjectBuilder_Component/SuperComputer", 0 },
-                { "MyObjectBuilder_Component/SteelPlate", 50000},
-                { "MyObjectBuilder_Component/MetalGrid", 25000},
-                { "MyObjectBuilder_Component/InteriorPlate", 20000 },
-                { "MyObjectBuilder_Component/Construction", 25000},
-                { "MyObjectBuilder_Component/Computer", 15000},
-                { "MyObjectBuilder_Component/Motor", 20000},
-                { "MyObjectBuilder_Component/Thrust", 10000},
-                { "MyObjectBuilder_Component/LargeTube", 15000},
-                { "MyObjectBuilder_Component/SmallTube", 25000},
-                { "MyObjectBuilder_Component/Reactor", 10000},
-                { "MyObjectBuilder_Component/Superconductor", 10000},
-                { "MyObjectBuilder_Component/GravityGenerator", 4000},
-                { "MyObjectBuilder_Component/PowerCell", 5000}
-            };
+				{ "MyObjectBuilder_Component/SteelPlate", 3000},
+				{ "MyObjectBuilder_Component/MetalGrid", 750},
+				{ "MyObjectBuilder_Component/InteriorPlate", 2000 },
+				{ "MyObjectBuilder_Component/Construction", 2000},
+				{ "MyObjectBuilder_Component/Computer", 500},
+				{ "MyObjectBuilder_Component/Motor", 750},
+				{ "MyObjectBuilder_Component/Thrust", 300},
+				{ "MyObjectBuilder_Component/LargeTube", 500},
+				{ "MyObjectBuilder_Component/SmallTube", 1000},
+				{ "MyObjectBuilder_Component/Reactor", 500},
+				{ "MyObjectBuilder_Component/Superconductor", 200},
+				{ "MyObjectBuilder_Component/GravityGenerator", 100},
+				{ "MyObjectBuilder_Component/PowerCell", 500}
+			};
 
             //defaut components quantity to produce
-            private const long _defautDesiredComponentQuantity = 1000;
-            private const long _defaultMaxSingleItemAddToQueueAmmount = 1000;
+            private const long _defautDesiredComponentQuantity = 100;
+            private const long _defaultMaxSingleItemAddToQueueAmmount = 100;
 
             private Program _program;
             private IMyProgrammableBlock _me;
