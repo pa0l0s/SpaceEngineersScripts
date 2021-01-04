@@ -63,6 +63,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaoloTargetingTiny", "Paolo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaoloSAM", "PaoloSAM\PaoloSAM.csproj", "{9A881A81-3922-4DD1-839C-0B41E7E64872}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PirateDroneScriptEncounter", "PirateDroneScriptEncounter\PirateDroneScriptEncounter.csproj", "{E3005FBA-68E6-4BB5-9088-B3056CA95132}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -189,6 +191,10 @@ Global
 		{9A881A81-3922-4DD1-839C-0B41E7E64872}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9A881A81-3922-4DD1-839C-0B41E7E64872}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9A881A81-3922-4DD1-839C-0B41E7E64872}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3005FBA-68E6-4BB5-9088-B3056CA95132}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3005FBA-68E6-4BB5-9088-B3056CA95132}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3005FBA-68E6-4BB5-9088-B3056CA95132}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3005FBA-68E6-4BB5-9088-B3056CA95132}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

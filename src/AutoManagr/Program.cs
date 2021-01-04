@@ -1265,12 +1265,17 @@ namespace ScriptingClass
             {
                 var blocks = new List<IMyAssembler>();
                 _program.GridTerminalSystem.GetBlocksOfType<IMyAssembler>(blocks);
+
                 if (blocks == null) throw new Exception("Assembler not found!");
 
-                var mainAssembler = blocks.Where(x => !x.DisplayNameText.ToLower().Contains(_ignoreAssemblerNameTag.ToLower())).OrderBy(x => x.DisplayNameText).FirstOrDefault(x => x.BlockDefinition.TypeIdString == "MyObjectBuilder_Assembler" && x.CubeGrid == _me.CubeGrid); //Select first assembler according to alphabetical order
-                blocks.Remove(mainAssembler);
+                var assemblers = blocks.Where(x => !x.DisplayNameText.ToLower().Contains(_ignoreAssemblerNameTag.ToLower())).ToList();
 
-                foreach (var assembler in blocks)
+                if (!assemblers.Any()) throw new Exception("Assembler not found!");
+
+                var mainAssembler = assemblers.OrderBy(x => x.DisplayNameText).FirstOrDefault(x => x.BlockDefinition.TypeIdString == "MyObjectBuilder_Assembler" && x.CubeGrid == _me.CubeGrid); //Select first assembler according to alphabetical order
+                assemblers.Remove(mainAssembler);
+
+                foreach (var assembler in assemblers)
                 {
                     assembler.Mode = MyAssemblerMode.Assembly;
                     assembler.CooperativeMode = true;
