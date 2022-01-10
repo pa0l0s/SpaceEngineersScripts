@@ -36,7 +36,6 @@ D:\source\Repos\SpaceEngineersScripts\src\AutoWelders\bin\Debug\VRage.Game.xml
 D:\source\Repos\SpaceEngineersScripts\src\AutoWelders\bin\Debug\VRage.Game.dll.config
 D:\source\Repos\SpaceEngineersScripts\src\AutoWelders\bin\Debug\VRage.Library.xml
 D:\source\Repos\SpaceEngineersScripts\src\AutoWelders\bin\Debug\VRage.Math.xml
-D:\source\Repos\SpaceEngineersScripts\src\AutoWelders\obj\Debug\AutoWelders.csprojAssemblyReference.cache
 D:\source\Repos\SpaceEngineersScripts\src\AutoWelders\obj\Debug\AutoWelders.csproj.CopyComplete
 D:\source\Repos\SpaceEngineersScripts\src\AutoWelders\obj\Debug\SpaceEnginersScripts.dll
 D:\source\Repos\SpaceEngineersScripts\src\AutoWelders\obj\Debug\SpaceEnginersScripts.pdb
@@ -62,3 +61,5 @@ C:\tmp\source\Repos\SpaceEngineersScripts\src\AutoWelders\obj\Debug\AutoWelders.
 C:\tmp\source\Repos\SpaceEngineersScripts\src\AutoWelders\obj\Debug\SpaceEnginersScripts.dll
 C:\tmp\source\Repos\SpaceEngineersScripts\src\AutoWelders\obj\Debug\SpaceEnginersScripts.pdb
 D:\source\Repos\SpaceEngineersScripts\src\AutoWelders\bin\Debug\VRage.dll
+D:\Source\Repos\SpaceEngineersScripts\src\AutoWelders\obj\Debug\AutoWelders.csproj.AssemblyReference.cache
+D:\Source\Repos\SpaceEngineersScripts\src\AutoWelders\obj\Debug\AutoWelders.csproj.CoreCompileInputs.cache

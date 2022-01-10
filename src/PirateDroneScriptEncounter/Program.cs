@@ -37,6 +37,8 @@ namespace ScriptingClass
         private IMyRemoteControl _currentControl;
         private double _weaponAngle;
         private bool _shooting;
+        private List<IMySensorBlock> _sensors;
+        private IMySensorBlock _currentSensor;
 
         Program()
         {
@@ -61,6 +63,10 @@ namespace ScriptingClass
             }
 
             _weaponAngle = Math.Cos(MathHelperD.ToRadians(WEAPON_ANGLE_LIMIT));
+
+            _sensors = new List<IMySensorBlock>();
+            GridTerminalSystem.GetBlocksOfType(_sensors);
+            _currentSensor = _sensors.FirstOrDefault(c => c.IsFunctional);
         }
 
         void Main()
@@ -75,6 +81,11 @@ namespace ScriptingClass
             if (_currentControl == null)
                 return; //no controls left :( 
 
+            //check if current RC is damaged, look for a replacement 
+            if (_currentSensor == null || !_currentSensor.IsFunctional)
+            {
+                _currentSensor = _sensors.FirstOrDefault(c => c.IsFunctional);
+            }
 
             //Check Player Distance From Origin  
             _currentControl.ClearWaypoints();

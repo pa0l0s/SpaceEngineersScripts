@@ -1101,7 +1101,7 @@ namespace ScriptingClass
         public class AssemblerManager : IManager
         {
             private const string _componentsNameTag = "_Component";
-            private const string _lcdNameTag = "Components";
+            private const string _lcdNameTag = "ComponentsLCD";
             private const string _ignoreAssemblerNameTag = "Ignore";
 
             private static Dictionary<string, long> _desiredComponentsQuantity = new Dictionary<string, long>
@@ -1121,8 +1121,8 @@ namespace ScriptingClass
                 //{ "MyObjectBuilder_Component/GravityGenerator", 4000},
                 //{ "MyObjectBuilder_Component/PowerCell", 5000}
 
-                { "MyObjectBuilder_Component/SuperComputer", 0 },
-				{ "MyObjectBuilder_Component/SteelPlate", 3000},
+                //{ "MyObjectBuilder_Component/SuperComputer", 0 },
+				{ "MyObjectBuilder_Component/SteelPlate", 5000},
 				{ "MyObjectBuilder_Component/MetalGrid", 750},
 				{ "MyObjectBuilder_Component/InteriorPlate", 2000 },
 				{ "MyObjectBuilder_Component/Construction", 2000},
@@ -1218,11 +1218,13 @@ namespace ScriptingClass
 
                     foreach (var inventoryItem in inventoryItems)
                     {
-                        if (HasTagInName(inventoryItem, _componentsNameTag))
+                        if (HasTagInName(inventoryItem, _componentsNameTag) && _desiredComponentsQuantity.ContainsKey(GetInventoryTypeName(inventoryItem)))
                         {
                             if (!result.ContainsKey(GetInventoryTypeName(inventoryItem)))
                             {
+                              
                                 result.Add(GetInventoryTypeName(inventoryItem), inventoryItem.Amount.ToIntSafe());
+                                //_program.Echo($"added: {GetInventoryTypeName(inventoryItem)} - {inventoryItem.Amount.ToIntSafe()}"); //debug info
                             }
                             else
                             {

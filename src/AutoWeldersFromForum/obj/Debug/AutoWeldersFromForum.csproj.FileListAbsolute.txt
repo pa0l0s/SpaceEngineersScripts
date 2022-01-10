@@ -35,7 +35,6 @@ D:\source\Repos\SpaceEngineersScripts\src\AutoWeldersFromForum\bin\Debug\VRage.G
 D:\source\Repos\SpaceEngineersScripts\src\AutoWeldersFromForum\bin\Debug\VRage.Game.dll.config
 D:\source\Repos\SpaceEngineersScripts\src\AutoWeldersFromForum\bin\Debug\VRage.Library.xml
 D:\source\Repos\SpaceEngineersScripts\src\AutoWeldersFromForum\bin\Debug\VRage.Math.xml
-D:\source\Repos\SpaceEngineersScripts\src\AutoWeldersFromForum\obj\Debug\AutoWeldersFromForum.csprojAssemblyReference.cache
 D:\source\Repos\SpaceEngineersScripts\src\AutoWeldersFromForum\obj\Debug\AutoWeldersFromForum.csproj.CopyComplete
 D:\source\Repos\SpaceEngineersScripts\src\AutoWeldersFromForum\obj\Debug\AutoWeldersFromForum.dll
 D:\source\Repos\SpaceEngineersScripts\src\AutoWeldersFromForum\obj\Debug\AutoWeldersFromForum.pdb
@@ -61,3 +60,5 @@ C:\tmp\source\Repos\SpaceEngineersScripts\src\AutoWeldersFromForum\obj\Debug\Aut
 C:\tmp\source\Repos\SpaceEngineersScripts\src\AutoWeldersFromForum\obj\Debug\AutoWeldersFromForum.dll
 C:\tmp\source\Repos\SpaceEngineersScripts\src\AutoWeldersFromForum\obj\Debug\AutoWeldersFromForum.pdb
 D:\source\Repos\SpaceEngineersScripts\src\AutoWeldersFromForum\bin\Debug\VRage.dll
+D:\Source\Repos\SpaceEngineersScripts\src\AutoWeldersFromForum\obj\Debug\AutoWeldersFromForum.csproj.AssemblyReference.cache
+D:\Source\Repos\SpaceEngineersScripts\src\AutoWeldersFromForum\obj\Debug\AutoWeldersFromForum.csproj.CoreCompileInputs.cache
