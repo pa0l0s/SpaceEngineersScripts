@@ -57,29 +57,39 @@ namespace ScriptingClass
 
 		void FireRotors()
 		{
-			switch (cykl)
+			try
 			{
-				case 0:
-					foreach (IMyMotorStator accelerator in accelerators) accelerator.SetValue("Displacement", RetractionDistance);
-					this.Runtime.UpdateFrequency = UpdateFrequency.Update1;
-					break;
-				case 1:
-					foreach (IMyMotorStator accelerator in accelerators) accelerator.SetValue("Displacement", ExtensionDistance);
-					foreach (IMyMotorStator generator in generators) generator.GetActionWithName("Add Top Part").Apply(generator);
-					break;
-				case 2:
-					foreach (IMyMotorStator generator in generators) { generator.GetActionWithName("Detach").Apply(generator); }
-					this.Runtime.UpdateFrequency = UpdateFrequency.None;
-					break;
-				case 3:
+				switch (cykl)
+				{
+					case 0:
+						foreach (IMyMotorStator accelerator in accelerators) accelerator.SetValue("Displacement", RetractionDistance);
+						this.Runtime.UpdateFrequency = UpdateFrequency.Update1;
+						break;
+					case 1:
+						foreach (IMyMotorStator accelerator in accelerators) accelerator.SetValue("Displacement", ExtensionDistance);
+						//foreach (IMyMotorStator generator in generators) generator.GetActionWithName("Add Top Part").Apply(generator);
+						//foreach (IMyMotorStator generator in generators) generator.Attach();
+						foreach (IMyMotorStator generator in generators) { generator.Detach(); }
+						break;
+					case 2:
+						//foreach (IMyMotorStator generator in generators) { generator.GetActionWithName("Detach").Apply(generator); }
+						foreach (IMyMotorStator generator in generators) { generator.Detach(); }
+						this.Runtime.UpdateFrequency = UpdateFrequency.None;
+						break;
+					case 3:
 
-					break;
+						break;
+				}
+				cykl++;
+				if (cykl >= 3)
+				{
+					cykl = 0;
+				}
 			}
-			cykl++;
-			if (cykl >= 3)
-			{
-				cykl = 0;
-			}
+			catch (Exception ex)
+            {
+				Echo(ex.ToString());
+            }
 		}
 
 	}

@@ -84,13 +84,13 @@ namespace ScriptingClass
             _managers = new List<IManager>();
 
             _managers.Add(new TurnOnBlocksDisabledBySerwerManager(this, Me));
-            _managers.Add(new AssemblerManager(this, Me));
+            //_managers.Add(new AssemblerManager(this, Me));
             _managers.Add(new DoorManager(this));
-            _managers.Add(new SimpleInventoryManager(this, Me));
+            //_managers.Add(new SimpleInventoryManager(this, Me));
             //_managers.Add(new TestManager(this));
             _managers.Add(new DamageManager(this, Me));
-            _managers.Add(new HydrogenManager(this, Me));
-            _managers.Add(new DelyManager());
+            //_managers.Add(new HydrogenManager(this, Me));
+            //_managers.Add(new DelyManager());
 
         }
 
