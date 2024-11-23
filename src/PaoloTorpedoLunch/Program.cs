@@ -48,6 +48,7 @@ namespace ScriptingClass
             _welders = new List<IMyShipWelder>();
             _warheads = new List<IMyWarhead>();
 
+            //_railguns = new List<IMySmallGatlingGun();
             //debug
             var blocks = new List<IMyTerminalBlock>();
             GridTerminalSystem.GetBlockGroupWithName(groupName).GetBlocks(blocks);

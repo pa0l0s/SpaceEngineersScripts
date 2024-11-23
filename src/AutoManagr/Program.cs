@@ -84,9 +84,9 @@ namespace ScriptingClass
             _managers = new List<IManager>();
 
             _managers.Add(new TurnOnBlocksDisabledBySerwerManager(this, Me));
-            //_managers.Add(new AssemblerManager(this, Me));
+            _managers.Add(new AssemblerManager(this, Me));
             _managers.Add(new DoorManager(this));
-            //_managers.Add(new SimpleInventoryManager(this, Me));
+            _managers.Add(new SimpleInventoryManager(this, Me));
             //_managers.Add(new TestManager(this));
             _managers.Add(new DamageManager(this, Me));
             //_managers.Add(new HydrogenManager(this, Me));
@@ -1128,14 +1128,19 @@ namespace ScriptingClass
 				{ "MyObjectBuilder_Component/Construction", 2000},
 				{ "MyObjectBuilder_Component/Computer", 500},
 				{ "MyObjectBuilder_Component/Motor", 750},
-				{ "MyObjectBuilder_Component/Thrust", 300},
+				{ "MyObjectBuilder_Component/Thrust", 1000},
 				{ "MyObjectBuilder_Component/LargeTube", 500},
 				{ "MyObjectBuilder_Component/SmallTube", 1000},
 				{ "MyObjectBuilder_Component/Reactor", 500},
-				{ "MyObjectBuilder_Component/Superconductor", 200},
-				{ "MyObjectBuilder_Component/GravityGenerator", 100},
-				{ "MyObjectBuilder_Component/PowerCell", 500}
-			};
+				{ "MyObjectBuilder_Component/Superconductor", 1000},
+				{ "MyObjectBuilder_Component/GravityGenerator", 50},
+				{ "MyObjectBuilder_Component/PowerCell", 500},
+                { "MyObjectBuilder_Component/SolarCell", 200},
+                { "MyObjectBuilder_Component/BulletproofGlass", 200},
+                { "MyObjectBuilder_Component/Girder", 200},
+                { "MyObjectBuilder_Component/Medical", 10},
+                { "MyObjectBuilder_Component/Display", 50}
+            };
 
             //defaut components quantity to produce
             private const long _defautDesiredComponentQuantity = 100;

@@ -38,6 +38,7 @@ namespace ScriptingClass
         private double _weaponAngle;
         private bool _shooting;
 
+
         Program()
 
         {
@@ -63,6 +64,8 @@ namespace ScriptingClass
             }
 
             _weaponAngle = Math.Cos(MathHelperD.ToRadians(WEAPON_ANGLE_LIMIT));
+
+
         }
 
         void Main()
@@ -81,8 +84,8 @@ namespace ScriptingClass
             //Check Player Distance From Origin  
             _currentControl.ClearWaypoints();
             Vector3D currentPos = _currentControl.GetPosition();
-            Vector3D closestPlayer;
-            _currentControl.   .GetNearestPlayer(out closestPlayer);
+            Vector3D closestPlayer = new Vector3D();
+            //_currentControl.   .GetNearestPlayer(out closestPlayer);
             double playerDistanceOrigin = Vector3D.DistanceSquared(closestPlayer, _origin);
             double playerDistanceDrone = Vector3D.DistanceSquared(currentPos, closestPlayer);
             if (playerDistanceDrone < BREAKAWAY_DISTANCE * BREAKAWAY_DISTANCE || playerDistanceOrigin < PATROL_RADIUS * PATROL_RADIUS)

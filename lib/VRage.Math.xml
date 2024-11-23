@@ -10,15 +10,489 @@
             Each component is only 0,-1 or 1;
             </summary>
         </member>
+        <member name="T:VRageMath.Base27Directions.Direction">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base27Directions.Direction.Forward">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base27Directions.Direction.Backward">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base27Directions.Direction.Left">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base27Directions.Direction.Right">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base27Directions.Direction.Up">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base27Directions.Direction.Down">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base27Directions.Directions">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base27Directions.DirectionsInt">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:VRageMath.Base27Directions.IsBaseDirection(VRageMath.Vector3@)">
+            <summary>
+            
+            </summary>
+            <param name="vec"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base27Directions.IsBaseDirection(VRageMath.Vector3I@)">
+            <summary>
+            
+            </summary>
+            <param name="vec"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base27Directions.IsBaseDirection(VRageMath.Vector3)">
+            <summary>
+            
+            </summary>
+            <param name="vec"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base27Directions.GetVector(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="direction"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base27Directions.GetVectorInt(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="direction"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base27Directions.GetVector(VRageMath.Base27Directions.Direction)">
+            <summary>
+            
+            </summary>
+            <param name="dir"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base27Directions.GetVectorInt(VRageMath.Base27Directions.Direction)">
+            <summary>
+            
+            </summary>
+            <param name="dir"></param>
+            <returns></returns>
+        </member>
         <member name="M:VRageMath.Base27Directions.GetDirection(VRageMath.Vector3)">
             <summary>
             Vector must be normalized, allowed values for components are: 0, 1, -1, 0.707, -0.707, 0.577, -0.577
+            </summary>
+        </member>
+        <member name="M:VRageMath.Base27Directions.GetDirection(VRageMath.Vector3I)">
+            <summary>
+            
+            </summary>
+            <param name="vec"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base27Directions.GetDirection(VRageMath.Vector3@)">
+            <summary>
+            
+            </summary>
+            <param name="vec"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base27Directions.GetDirection(VRageMath.Vector3I@)">
+            <summary>
+            
+            </summary>
+            <param name="vec"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base27Directions.GetForward(VRageMath.Quaternion@)">
+            <summary>
+            
+            </summary>
+            <param name="rot"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base27Directions.GetUp(VRageMath.Quaternion@)">
+            <summary>
+            
+            </summary>
+            <param name="rot"></param>
+            <returns></returns>
+        </member>
+        <member name="T:VRageMath.Base6Directions">
+            <summary>
+            Workaround because .NET XML serializer is stupid and does not like enum inside static class 
+            </summary>
+        </member>
+        <member name="T:VRageMath.Base6Directions.Direction">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base6Directions.Direction.Forward">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base6Directions.Direction.Backward">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base6Directions.Direction.Left">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base6Directions.Direction.Right">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base6Directions.Direction.Up">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base6Directions.Direction.Down">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:VRageMath.Base6Directions.DirectionFlags">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base6Directions.DirectionFlags.Forward">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base6Directions.DirectionFlags.Backward">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base6Directions.DirectionFlags.Left">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base6Directions.DirectionFlags.Right">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base6Directions.DirectionFlags.Up">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base6Directions.DirectionFlags.Down">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base6Directions.DirectionFlags.All">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:VRageMath.Base6Directions.Axis">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base6Directions.Axis.ForwardBackward">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base6Directions.Axis.LeftRight">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base6Directions.Axis.UpDown">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base6Directions.EnumDirections">
+            <summary>
+            Because Enum.GetValues(...) returns array of objects
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base6Directions.Directions">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:VRageMath.Base6Directions.IntDirections">
+            <summary>
+            
             </summary>
         </member>
         <member name="F:VRageMath.Base6Directions.LeftDirections">
             <summary>
             Pre-calculated left directions for given forward (index / 6) and up (index % 6) directions
             </summary>
+        </member>
+        <member name="M:VRageMath.Base6Directions.IsBaseDirection(VRageMath.Vector3@)">
+            <summary>
+            
+            </summary>
+            <param name="vec"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.IsBaseDirection(VRageMath.Vector3)">
+            <summary>
+            
+            </summary>
+            <param name="vec"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.IsBaseDirection(VRageMath.Vector3I@)">
+            <summary>
+            
+            </summary>
+            <param name="vec"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetVector(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="direction"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetVector(VRageMath.Base6Directions.Direction)">
+            <summary>
+            
+            </summary>
+            <param name="dir"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetIntVector(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="direction"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetIntVector(VRageMath.Base6Directions.Direction)">
+            <summary>
+            
+            </summary>
+            <param name="dir"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetVector(VRageMath.Base6Directions.Direction,VRageMath.Vector3@)">
+            <summary>
+            
+            </summary>
+            <param name="dir"></param>
+            <param name="result"></param>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetDirectionFlag(VRageMath.Base6Directions.Direction)">
+            <summary>
+            
+            </summary>
+            <param name="dir"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetPerpendicular(VRageMath.Base6Directions.Direction)">
+            <summary>
+            
+            </summary>
+            <param name="dir"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetDirection(VRageMath.Vector3)">
+            <summary>
+            
+            </summary>
+            <param name="vec"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetDirection(VRageMath.Vector3@)">
+            <summary>
+            
+            </summary>
+            <param name="vec"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetDirection(VRageMath.Vector3I)">
+            <summary>
+            
+            </summary>
+            <param name="vec"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetDirection(VRageMath.Vector3I@)">
+            <summary>
+            
+            </summary>
+            <param name="vec"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetClosestDirection(VRageMath.Vector3)">
+            <summary>
+            
+            </summary>
+            <param name="vec"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetClosestDirection(VRageMath.Vector3@)">
+            <summary>
+            
+            </summary>
+            <param name="vec"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetDirectionInAxis(VRageMath.Vector3,VRageMath.Base6Directions.Axis)">
+            <summary>
+            
+            </summary>
+            <param name="vec"></param>
+            <param name="axis"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetDirectionInAxis(VRageMath.Vector3@,VRageMath.Base6Directions.Axis)">
+            <summary>
+            
+            </summary>
+            <param name="vec"></param>
+            <param name="axis"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetForward(VRageMath.Quaternion)">
+            <summary>
+            
+            </summary>
+            <param name="rot"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetForward(VRageMath.Quaternion@)">
+            <summary>
+            
+            </summary>
+            <param name="rot"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetForward(VRageMath.Matrix@)">
+            <summary>
+            
+            </summary>
+            <param name="rotation"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetUp(VRageMath.Quaternion)">
+            <summary>
+            
+            </summary>
+            <param name="rot"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetUp(VRageMath.Quaternion@)">
+            <summary>
+            
+            </summary>
+            <param name="rot"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetUp(VRageMath.Matrix@)">
+            <summary>
+            
+            </summary>
+            <param name="rotation"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetAxis(VRageMath.Base6Directions.Direction)">
+            <summary>
+            
+            </summary>
+            <param name="direction"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetBaseAxisDirection(VRageMath.Base6Directions.Axis)">
+            <summary>
+            
+            </summary>
+            <param name="axis"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetFlippedDirection(VRageMath.Base6Directions.Direction)">
+            <summary>
+            
+            </summary>
+            <param name="toFlip"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetCross(VRageMath.Base6Directions.Direction,VRageMath.Base6Directions.Direction)">
+            <summary>
+            
+            </summary>
+            <param name="dir1"></param>
+            <param name="dir2"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetLeft(VRageMath.Base6Directions.Direction,VRageMath.Base6Directions.Direction)">
+            <summary>
+            
+            </summary>
+            <param name="up"></param>
+            <param name="forward"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetOppositeDirection(VRageMath.Base6Directions.Direction)">
+            <summary>
+            
+            </summary>
+            <param name="dir"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.GetOrientation(VRageMath.Base6Directions.Direction,VRageMath.Base6Directions.Direction)">
+            <summary>
+            
+            </summary>
+            <param name="forward"></param>
+            <param name="up"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.Base6Directions.IsValidBlockOrientation(VRageMath.Base6Directions.Direction,VRageMath.Base6Directions.Direction)">
+            <summary>
+            
+            </summary>
+            <param name="forward"></param>
+            <param name="up"></param>
+            <returns></returns>
         </member>
         <member name="T:VRageMath.BoundingBox">
             <summary>
@@ -51,6 +525,17 @@
             Creates an instance of BoundingBox from BoundingBoxD (helper for transformed BBs)
             </summary>
             <param name="bbd"></param>
+        </member>
+        <member name="M:VRageMath.BoundingBox.#ctor(VRageMath.BoundingBoxI)">
+            <summary>
+            Creates an instance of BoundingBox from BoundingBoxI
+            </summary>
+            <param name="bbd"></param>
+        </member>
+        <member name="P:VRageMath.BoundingBox.Corners">
+            <summary>
+            
+            </summary>
         </member>
         <member name="M:VRageMath.BoundingBox.op_Equality(VRageMath.BoundingBox,VRageMath.BoundingBox)">
             <summary>
@@ -93,6 +578,14 @@
             </summary>
             <param name="obj">The Object to compare with the current BoundingBox.</param>
         </member>
+        <member name="M:VRageMath.BoundingBox.Equals(VRageMath.BoundingBox,System.Single)">
+            <summary>
+            
+            </summary>
+            <param name="other"></param>
+            <param name="epsilon"></param>
+            <returns></returns>
+        </member>
         <member name="M:VRageMath.BoundingBox.GetHashCode">
             <summary>
             Gets the hash code for this instance.
@@ -133,12 +626,29 @@
             </summary>
             <param name="points">A list of points the BoundingBox should contain.</param>
         </member>
+        <member name="M:VRageMath.BoundingBox.CreateFromHalfExtent(VRageMath.Vector3,System.Single)">
+            <summary>
+            
+            </summary>
+            <param name="center"></param>
+            <param name="halfExtent"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox.CreateFromHalfExtent(VRageMath.Vector3,VRageMath.Vector3)">
+            <summary>
+            
+            </summary>
+            <param name="center"></param>
+            <param name="halfExtent"></param>
+            <returns></returns>
+        </member>
         <member name="M:VRageMath.BoundingBox.Intersect(VRageMath.BoundingBox)">
             <summary>
-            Returns bounding box which is intersection of this and box
-            It's called 'Prunik'
-            Result is invalid box when there's no intersection (Min > Max)
+            Returns bounding box which is intersection of this and box        
+            Result is invalid box when there's no intersection (Min > Max)        
             </summary>
+            <param name="box"></param>
+            <returns></returns>
         </member>
         <member name="M:VRageMath.BoundingBox.Intersects(VRageMath.BoundingBox)">
             <summary>
@@ -146,15 +656,65 @@
             </summary>
             <param name="box">The BoundingBox to check for intersection with.</param>
         </member>
+        <member name="M:VRageMath.BoundingBox.Intersects(VRageMath.BoundingBox@)">
+            <summary>
+            
+            </summary>
+            <param name="box"></param>
+            <returns></returns>
+        </member>
         <member name="M:VRageMath.BoundingBox.Intersects(VRageMath.BoundingBox@,System.Boolean@)">
             <summary>
             Checks whether the current BoundingBox intersects another BoundingBox.
             </summary>
             <param name="box">The BoundingBox to check for intersection with.</param><param name="result">[OutAttribute] true if the BoundingBox instances intersect; false otherwise.</param>
         </member>
+        <member name="M:VRageMath.BoundingBox.IntersectsTriangle(VRageMath.Vector3,VRageMath.Vector3,VRageMath.Vector3)">
+            <summary>
+            
+            </summary>
+            <param name="v0"></param>
+            <param name="v1"></param>
+            <param name="v2"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox.IntersectsTriangle(VRageMath.Vector3@,VRageMath.Vector3@,VRageMath.Vector3@)">
+            <summary>
+            
+            </summary>
+            <param name="v0"></param>
+            <param name="v1"></param>
+            <param name="v2"></param>
+            <returns></returns>
+        </member>
         <member name="P:VRageMath.BoundingBox.Center">
             <summary>
             Calculates center
+            </summary>
+        </member>
+        <member name="P:VRageMath.BoundingBox.HalfExtents">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:VRageMath.BoundingBox.Extents">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:VRageMath.BoundingBox.Width">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:VRageMath.BoundingBox.Height">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:VRageMath.BoundingBox.Depth">
+            <summary>
+            
             </summary>
         </member>
         <member name="M:VRageMath.BoundingBox.Intersects(VRageMath.BoundingFrustum)">
@@ -175,6 +735,14 @@
             </summary>
             <param name="plane">The Plane to check for intersection with.</param><param name="result">[OutAttribute] An enumeration indicating whether the BoundingBox intersects the Plane.</param>
         </member>
+        <member name="M:VRageMath.BoundingBox.Intersects(VRageMath.Line,System.Single@)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <param name="distance"></param>
+            <returns></returns>
+        </member>
         <member name="M:VRageMath.BoundingBox.Intersects(VRageMath.Ray)">
             <summary>
             Checks whether the current BoundingBox intersects a Ray.
@@ -185,7 +753,8 @@
             <summary>
             Checks whether the current BoundingBox intersects a Ray.
             </summary>
-            <param name="ray">The Ray to check for intersection with.</param><param name="result">[OutAttribute] Distance at which the ray intersects the BoundingBox, or null if there is no intersection.</param>
+            <param name="ray">The Ray to check for intersection with.</param>
+            <param name="result">[OutAttribute] Distance at which the ray intersects the BoundingBox, or null if there is no intersection.</param>
         </member>
         <member name="M:VRageMath.BoundingBox.Intersects(VRageMath.BoundingSphere)">
             <summary>
@@ -198,6 +767,34 @@
             Checks whether the current BoundingBox intersects a BoundingSphere.
             </summary>
             <param name="sphere">The BoundingSphere to check for intersection with.</param><param name="result">[OutAttribute] true if the BoundingBox and BoundingSphere intersect; false otherwise.</param>
+        </member>
+        <member name="M:VRageMath.BoundingBox.Intersects(VRageMath.BoundingSphere@)">
+            <summary>
+            
+            </summary>
+            <param name="sphere"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox.Intersects(VRageMath.BoundingSphereD@)">
+            <summary>
+            
+            </summary>
+            <param name="sphere"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox.Distance(VRageMath.Vector3)">
+            <summary>
+            
+            </summary>
+            <param name="point"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox.DistanceSquared(VRageMath.Vector3)">
+            <summary>
+            
+            </summary>
+            <param name="point"></param>
+            <returns></returns>
         </member>
         <member name="M:VRageMath.BoundingBox.Contains(VRageMath.BoundingBox)">
             <summary>
@@ -222,6 +819,13 @@
             Tests whether the BoundingBox contains a point.
             </summary>
             <param name="point">The point to test for overlap.</param>
+        </member>
+        <member name="M:VRageMath.BoundingBox.Contains(VRageMath.Vector3D)">
+            <summary>
+            
+            </summary>
+            <param name="point"></param>
+            <returns></returns>
         </member>
         <member name="M:VRageMath.BoundingBox.Contains(VRageMath.Vector3@,VRageMath.ContainmentType@)">
             <summary>
@@ -263,14 +867,88 @@
         </member>
         <member name="P:VRageMath.BoundingBox.Matrix">
             <summary>
-            Matrix of AABB, respection center and size
+            Matrix of AABB, respecting center and size
             </summary>
+        </member>
+        <member name="M:VRageMath.BoundingBox.Transform(VRageMath.Matrix)">
+            <summary>
+            
+            </summary>
+            <param name="worldMatrix"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox.Transform(VRageMath.MatrixD)">
+            <summary>
+            
+            </summary>
+            <param name="worldMatrix"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox.Transform(VRageMath.Matrix@)">
+            <summary>
+            
+            </summary>
+            <param name="m"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox.Transform(VRageMath.Matrix@,VRageMath.BoundingBox@)">
+            <summary>
+            
+            </summary>
+            <param name="m"></param>
+            <param name="bb"></param>
+        </member>
+        <member name="M:VRageMath.BoundingBox.Transform(VRageMath.MatrixD@)">
+            <summary>
+            
+            </summary>
+            <param name="m"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox.Transform(VRageMath.MatrixD@,VRageMath.BoundingBoxD@)">
+            <summary>
+            
+            </summary>
+            <param name="m"></param>
+            <param name="bb"></param>
         </member>
         <member name="M:VRageMath.BoundingBox.Include(VRageMath.Vector3@)">
             <summary>
             return expanded aabb (aabb include point)
             </summary>
             <param name="point"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox.GetIncluded(VRageMath.Vector3)">
+            <summary>
+            
+            </summary>
+            <param name="point"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox.Include(VRageMath.Vector3)">
+            <summary>
+            
+            </summary>
+            <param name="point"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox.Include(VRageMath.Vector3,VRageMath.Vector3,VRageMath.Vector3)">
+            <summary>
+            
+            </summary>
+            <param name="p0"></param>
+            <param name="p1"></param>
+            <param name="p2"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox.Include(VRageMath.Vector3@,VRageMath.Vector3@,VRageMath.Vector3@)">
+            <summary>
+            
+            </summary>
+            <param name="p0"></param>
+            <param name="p1"></param>
+            <param name="p2"></param>
             <returns></returns>
         </member>
         <member name="M:VRageMath.BoundingBox.Include(VRageMath.BoundingBox@)">
@@ -280,20 +958,141 @@
             <param name="box"></param>
             <returns></returns>
         </member>
+        <member name="M:VRageMath.BoundingBox.Include(VRageMath.BoundingBox)">
+            <summary>
+            
+            </summary>
+            <param name="box"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox.Include(VRageMath.Line@)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+        </member>
+        <member name="M:VRageMath.BoundingBox.Include(VRageMath.BoundingSphere)">
+            <summary>
+            
+            </summary>
+            <param name="sphere"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox.Include(VRageMath.BoundingSphere@)">
+            <summary>
+            
+            </summary>
+            <param name="sphere"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox.Include(VRageMath.BoundingFrustum@)">
+            <summary>
+            
+            </summary>
+            <param name="frustum"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox.CreateInvalid">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox.SurfaceArea">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox.Volume">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox.ProjectedArea(VRageMath.Vector3)">
+            <summary>
+            
+            </summary>
+            <param name="viewDir"></param>
+            <returns></returns>
+        </member>
         <member name="P:VRageMath.BoundingBox.Perimeter">
             <summary>
             return perimeter of edges
             </summary>
             <returns></returns>
         </member>
+        <member name="F:VRageMath.BoundingBox.Invalid">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:VRageMath.BoundingBox.Inflate(System.Single)">
+            <summary>
+            
+            </summary>
+            <param name="size"></param>
+        </member>
+        <member name="M:VRageMath.BoundingBox.Inflate(VRageMath.Vector3)">
+            <summary>
+            
+            </summary>
+            <param name="size"></param>
+        </member>
+        <member name="M:VRageMath.BoundingBox.InflateToMinimum(VRageMath.Vector3)">
+            <summary>
+            
+            </summary>
+            <param name="minimumSize"></param>
+        </member>
+        <member name="T:VRageMath.BoundingBox.ComparerType">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:VRageMath.BoundingBox.ComparerType.Equals(VRageMath.BoundingBoxD,VRageMath.BoundingBoxD)">
+            <summary>
+            
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox.ComparerType.GetHashCode(VRageMath.BoundingBoxD)">
+            <summary>
+            
+            </summary>
+            <param name="obj"></param>
+            <returns></returns>
+        </member>
+        <member name="F:VRageMath.BoundingBox.Comparer">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:VRageMath.BoundingBox.Scale(VRageMath.Vector3)">
+            <summary>
+            
+            </summary>
+            <param name="scale"></param>
+        </member>
+        <member name="M:VRageMath.BoundingBox.Round(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="decimals"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox.Round">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:VRageMath.BoundingBox2">
             <summary>
             Defines an axis-aligned box-shaped 3D volume.
-            </summary>
-        </member>
-        <member name="F:VRageMath.BoundingBox2.CornerCount">
-            <summary>
-            Specifies the total number of corners (8) in the BoundingBox2.
             </summary>
         </member>
         <member name="F:VRageMath.BoundingBox2.Min">
@@ -367,13 +1166,16 @@
             <summary>
             Creates the smallest BoundingBox2 that contains the two specified BoundingBox2 instances.
             </summary>
-            <param name="original">One of the BoundingBox2s to contain.</param><param name="additional">One of the BoundingBox2s to contain.</param>
+            <param name="original">One of the BoundingBox2s to contain.</param>
+            <param name="additional">One of the BoundingBox2s to contain.</param>
         </member>
         <member name="M:VRageMath.BoundingBox2.CreateMerged(VRageMath.BoundingBox2@,VRageMath.BoundingBox2@,VRageMath.BoundingBox2@)">
             <summary>
             Creates the smallest BoundingBox2 that contains the two specified BoundingBox2 instances.
             </summary>
-            <param name="original">One of the BoundingBox2 instances to contain.</param><param name="additional">One of the BoundingBox2 instances to contain.</param><param name="result">[OutAttribute] The created BoundingBox2.</param>
+            <param name="original">One of the BoundingBox2 instances to contain.</param>
+            <param name="additional">One of the BoundingBox2 instances to contain.</param>
+            <param name="result">[OutAttribute] The created BoundingBox2.</param>
         </member>
         <member name="M:VRageMath.BoundingBox2.CreateFromPoints(System.Collections.Generic.IEnumerable{VRageMath.Vector2})">
             <summary>
@@ -381,10 +1183,25 @@
             </summary>
             <param name="points">A list of points the BoundingBox2 should contain.</param>
         </member>
+        <member name="M:VRageMath.BoundingBox2.CreateFromHalfExtent(VRageMath.Vector2,System.Single)">
+            <summary>
+            
+            </summary>
+            <param name="center"></param>
+            <param name="halfExtent"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox2.CreateFromHalfExtent(VRageMath.Vector2,VRageMath.Vector2)">
+            <summary>
+            
+            </summary>
+            <param name="center"></param>
+            <param name="halfExtent"></param>
+            <returns></returns>
+        </member>
         <member name="M:VRageMath.BoundingBox2.Intersect(VRageMath.BoundingBox2)">
             <summary>
-            Returns bounding box which is intersection of this and box
-            It's called 'Prunik'
+            Returns bounding box which is intersection of this and box        
             Result is invalid box when there's no intersection (Min > Max)
             </summary>
         </member>
@@ -393,6 +1210,13 @@
             Checks whether the current BoundingBox2 intersects another BoundingBox2.
             </summary>
             <param name="box">The BoundingBox2 to check for intersection with.</param>
+        </member>
+        <member name="M:VRageMath.BoundingBox2.Intersects(VRageMath.BoundingBox2@)">
+            <summary>
+            
+            </summary>
+            <param name="box"></param>
+            <returns></returns>
         </member>
         <member name="M:VRageMath.BoundingBox2.Intersects(VRageMath.BoundingBox2@,System.Boolean@)">
             <summary>
@@ -404,6 +1228,33 @@
             <summary>
             Calculates center
             </summary>
+        </member>
+        <member name="P:VRageMath.BoundingBox2.HalfExtents">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:VRageMath.BoundingBox2.Extents">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:VRageMath.BoundingBox2.Width">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:VRageMath.BoundingBox2.Height">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:VRageMath.BoundingBox2.Distance(VRageMath.Vector2)">
+            <summary>
+            
+            </summary>
+            <param name="point"></param>
+            <returns></returns>
         </member>
         <member name="M:VRageMath.BoundingBox2.Contains(VRageMath.BoundingBox2)">
             <summary>
@@ -449,6 +1300,38 @@
             <param name="point"></param>
             <returns></returns>
         </member>
+        <member name="M:VRageMath.BoundingBox2.GetIncluded(VRageMath.Vector2)">
+            <summary>
+            
+            </summary>
+            <param name="point"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox2.Include(VRageMath.Vector2)">
+            <summary>
+            
+            </summary>
+            <param name="point"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox2.Include(VRageMath.Vector2,VRageMath.Vector2,VRageMath.Vector2)">
+            <summary>
+            
+            </summary>
+            <param name="p0"></param>
+            <param name="p1"></param>
+            <param name="p2"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox2.Include(VRageMath.Vector2@,VRageMath.Vector2@,VRageMath.Vector2@)">
+            <summary>
+            
+            </summary>
+            <param name="p0"></param>
+            <param name="p1"></param>
+            <param name="p2"></param>
+            <returns></returns>
+        </member>
         <member name="M:VRageMath.BoundingBox2.Include(VRageMath.BoundingBox2@)">
             <summary>
             return expanded aabb (abb include point)
@@ -456,9 +1339,52 @@
             <param name="box"></param>
             <returns></returns>
         </member>
+        <member name="M:VRageMath.BoundingBox2.Include(VRageMath.BoundingBox2)">
+            <summary>
+            
+            </summary>
+            <param name="box"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox2.CreateInvalid">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox2.Perimeter">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox2.Area">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBox2.Inflate(System.Single)">
+            <summary>
+            
+            </summary>
+            <param name="size"></param>
+        </member>
+        <member name="M:VRageMath.BoundingBox2.InflateToMinimum(VRageMath.Vector2)">
+            <summary>
+            
+            </summary>
+            <param name="minimumSize"></param>
+        </member>
+        <member name="M:VRageMath.BoundingBox2.Scale(VRageMath.Vector2)">
+            <summary>
+            
+            </summary>
+            <param name="scale"></param>
+        </member>
         <member name="T:VRageMath.BoundingBox2D">
             <summary>
-            Defines an axis-aligned box-shaped 3D volume.
+            Defines an axis-aligned box-shaped 2D volume.
             </summary>
         </member>
         <member name="F:VRageMath.BoundingBox2D.CornerCount">
@@ -631,11 +1557,6 @@
             Defines an axis-aligned box-shaped 3D volume.
             </summary>
         </member>
-        <member name="F:VRageMath.BoundingBox2I.CornerCount">
-            <summary>
-            Specifies the total number of corners (8) in the BoundingBox2I.
-            </summary>
-        </member>
         <member name="F:VRageMath.BoundingBox2I.Min">
             <summary>
             The minimum point the BoundingBox2I contains.
@@ -801,11 +1722,6 @@
             Defines an axis-aligned box-shaped 3D volume.
             </summary>
         </member>
-        <member name="F:VRageMath.BoundingBoxD.CornerCount">
-            <summary>
-            Specifies the total number of corners (8) in the BoundingBox.
-            </summary>
-        </member>
         <member name="F:VRageMath.BoundingBoxD.Min">
             <summary>
             The minimum point the BoundingBox contains.
@@ -822,6 +1738,18 @@
             </summary>
             <param name="min">The minimum point the BoundingBox includes.</param><param name="max">The maximum point the BoundingBox includes.</param>
         </member>
+        <member name="M:VRageMath.BoundingBoxD.op_Implicit(VRageMath.BoundingBoxI)~VRageMath.BoundingBoxD">
+            <summary>
+            
+            </summary>
+            <param name="box"></param>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.op_Implicit(VRageMath.BoundingBox)~VRageMath.BoundingBoxD">
+            <summary>
+            
+            </summary>
+            <param name="box"></param>
+        </member>
         <member name="M:VRageMath.BoundingBoxD.op_Equality(VRageMath.BoundingBoxD,VRageMath.BoundingBoxD)">
             <summary>
             Determines whether two instances of BoundingBox are equal.
@@ -833,6 +1761,20 @@
             Determines whether two instances of BoundingBox are not equal.
             </summary>
             <param name="a">The object to the left of the inequality operator.</param><param name="b">The object to the right of the inequality operator.</param>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.op_Addition(VRageMath.BoundingBoxD,VRageMath.Vector3D)">
+            <summary>
+            
+            </summary>
+            <param name="a"></param>
+            <param name="b"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.Centerize(VRageMath.Vector3D)">
+            <summary>
+            
+            </summary>
+            <param name="center"></param>
         </member>
         <member name="M:VRageMath.BoundingBoxD.GetCorners">
             <summary>
@@ -862,6 +1804,14 @@
             Determines whether two instances of BoundingBox are equal.
             </summary>
             <param name="obj">The Object to compare with the current BoundingBox.</param>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.Equals(VRageMath.BoundingBoxD,System.Double)">
+            <summary>
+            
+            </summary>
+            <param name="other"></param>
+            <param name="epsilon"></param>
+            <returns></returns>
         </member>
         <member name="M:VRageMath.BoundingBoxD.GetHashCode">
             <summary>
@@ -905,8 +1855,7 @@
         </member>
         <member name="M:VRageMath.BoundingBoxD.Intersect(VRageMath.BoundingBoxD)">
             <summary>
-            Returns bounding box which is intersection of this and box
-            It's called 'Prunik'
+            Returns bounding box which is intersection of this and box        
             Result is invalid box when there's no intersection (Min > Max)
             </summary>
         </member>
@@ -916,15 +1865,57 @@
             </summary>
             <param name="box">The BoundingBox to check for intersection with.</param>
         </member>
+        <member name="M:VRageMath.BoundingBoxD.Intersects(VRageMath.BoundingBoxD@)">
+            <summary>
+            
+            </summary>
+            <param name="box"></param>
+            <returns></returns>
+        </member>
         <member name="M:VRageMath.BoundingBoxD.Intersects(VRageMath.BoundingBoxD@,System.Boolean@)">
             <summary>
             Checks whether the current BoundingBox intersects another BoundingBox.
             </summary>
             <param name="box">The BoundingBox to check for intersection with.</param><param name="result">[OutAttribute] true if the BoundingBox instances intersect; false otherwise.</param>
         </member>
+        <member name="M:VRageMath.BoundingBoxD.Intersects(VRageMath.BoundingBox@,System.Boolean@)">
+            <summary>
+            
+            </summary>
+            <param name="box"></param>
+            <param name="result"></param>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.IntersectsTriangle(VRageMath.Vector3D,VRageMath.Vector3D,VRageMath.Vector3D)">
+            <summary>
+            
+            </summary>
+            <param name="v0"></param>
+            <param name="v1"></param>
+            <param name="v2"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.IntersectsTriangle(VRageMath.Vector3D@,VRageMath.Vector3D@,VRageMath.Vector3D@)">
+            <summary>
+            
+            </summary>
+            <param name="v0"></param>
+            <param name="v1"></param>
+            <param name="v2"></param>
+            <returns></returns>
+        </member>
         <member name="P:VRageMath.BoundingBoxD.Center">
             <summary>
             Calculates center
+            </summary>
+        </member>
+        <member name="P:VRageMath.BoundingBoxD.HalfExtents">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:VRageMath.BoundingBoxD.Extents">
+            <summary>
+            
             </summary>
         </member>
         <member name="M:VRageMath.BoundingBoxD.Intersects(VRageMath.BoundingFrustumD)">
@@ -945,6 +1936,28 @@
             </summary>
             <param name="plane">The Plane to check for intersection with.</param><param name="result">[OutAttribute] An enumeration indicating whether the BoundingBox intersects the Plane.</param>
         </member>
+        <member name="M:VRageMath.BoundingBoxD.Intersects(VRageMath.LineD@)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.Intersects(VRageMath.LineD@,System.Double@)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <param name="distance"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.Intersects(VRageMath.Ray)">
+            <summary>
+            
+            </summary>
+            <param name="ray"></param>
+            <returns></returns>
+        </member>
         <member name="M:VRageMath.BoundingBoxD.Intersects(VRageMath.RayD)">
             <summary>
             Checks whether the current BoundingBox intersects a Ray.
@@ -957,6 +1970,32 @@
             </summary>
             <param name="ray">The Ray to check for intersection with.</param><param name="result">[OutAttribute] Distance at which the ray intersects the BoundingBox, or null if there is no intersection.</param>
         </member>
+        <member name="M:VRageMath.BoundingBoxD.Intersect(VRageMath.LineD@,VRageMath.LineD@)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <param name="intersectedLine"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.Intersect(VRageMath.LineD@,System.Double@,System.Double@)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <param name="t1"></param>
+            <param name="t2"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.Intersect(VRageMath.RayD@,System.Double@,System.Double@)">
+            <summary>
+            
+            </summary>
+            <param name="ray"></param>
+            <param name="tmin"></param>
+            <param name="tmax"></param>
+            <returns></returns>
+        </member>
         <member name="M:VRageMath.BoundingBoxD.Intersects(VRageMath.BoundingSphereD)">
             <summary>
             Checks whether the current BoundingBox intersects a BoundingSphere.
@@ -968,6 +2007,48 @@
             Checks whether the current BoundingBox intersects a BoundingSphere.
             </summary>
             <param name="sphere">The BoundingSphere to check for intersection with.</param><param name="result">[OutAttribute] true if the BoundingBox and BoundingSphere intersect; false otherwise.</param>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.Intersects(VRageMath.BoundingSphereD@)">
+            <summary>
+            
+            </summary>
+            <param name="sphere"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.Distance(VRageMath.Vector3D)">
+            <summary>
+            
+            </summary>
+            <param name="point"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.DistanceSquared(VRageMath.Vector3D)">
+            <summary>
+            
+            </summary>
+            <param name="point"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.DistanceSquared(VRageMath.Vector3D@)">
+            <summary>
+            
+            </summary>
+            <param name="point"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.Distance(VRageMath.BoundingBoxD@)">
+            <summary>
+            
+            </summary>
+            <param name="other"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.DistanceSquared(VRageMath.BoundingBoxD@)">
+            <summary>
+            
+            </summary>
+            <param name="other"></param>
+            <returns></returns>
         </member>
         <member name="M:VRageMath.BoundingBoxD.Contains(VRageMath.BoundingBoxD)">
             <summary>
@@ -1033,7 +2114,7 @@
         </member>
         <member name="P:VRageMath.BoundingBoxD.Matrix">
             <summary>
-            Matrix of AABB, respection center and size
+            Matrix of AABB, respecting center and size
             </summary>
         </member>
         <member name="M:VRageMath.BoundingBoxD.TransformSlow(VRageMath.MatrixD)">
@@ -1047,7 +2128,7 @@
             <summary>
             Transform this AABB by matrix.
             </summary>
-            <param name="m">transformation matrix</param>
+            <param name="worldMatrix">transformation matrix</param>
             <returns>transformed aabb</returns>
         </member>
         <member name="M:VRageMath.BoundingBoxD.TransformFast(VRageMath.MatrixD)">
@@ -1078,11 +2159,93 @@
             <param name="point"></param>
             <returns></returns>
         </member>
+        <member name="M:VRageMath.BoundingBoxD.Include(VRageMath.Vector3D)">
+            <summary>
+            
+            </summary>
+            <param name="point"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.Include(VRageMath.Vector3D,VRageMath.Vector3D,VRageMath.Vector3D)">
+            <summary>
+            
+            </summary>
+            <param name="p0"></param>
+            <param name="p1"></param>
+            <param name="p2"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.Include(VRageMath.Vector3D@,VRageMath.Vector3D@,VRageMath.Vector3D@)">
+            <summary>
+            
+            </summary>
+            <param name="p0"></param>
+            <param name="p1"></param>
+            <param name="p2"></param>
+            <returns></returns>
+        </member>
         <member name="M:VRageMath.BoundingBoxD.Include(VRageMath.BoundingBoxD@)">
             <summary>
             return expanded aabb (aabb include aabb)
             </summary>
             <param name="box"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.Include(VRageMath.BoundingBoxD)">
+            <summary>
+            
+            </summary>
+            <param name="box"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.Include(VRageMath.LineD@)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.Include(VRageMath.BoundingSphereD)">
+            <summary>
+            
+            </summary>
+            <param name="sphere"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.Include(VRageMath.BoundingSphereD@)">
+            <summary>
+            
+            </summary>
+            <param name="sphere"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.Include(VRageMath.BoundingFrustumD@)">
+            <summary>
+            
+            </summary>
+            <param name="frustum"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.CreateInvalid">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:VRageMath.BoundingBoxD.SurfaceArea">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:VRageMath.BoundingBoxD.Volume">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.ProjectedArea(VRageMath.Vector3D)">
+            <summary>
+            
+            </summary>
+            <param name="viewDir"></param>
             <returns></returns>
         </member>
         <member name="P:VRageMath.BoundingBoxD.Perimeter">
@@ -1091,14 +2254,110 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="P:VRageMath.BoundingBoxD.Valid">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.Inflate(System.Double)">
+            <summary>
+            
+            </summary>
+            <param name="size"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.Inflate(VRageMath.Vector3D)">
+            <summary>
+            
+            </summary>
+            <param name="size"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.GetInflated(System.Double)">
+            <summary>
+            
+            </summary>
+            <param name="size"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.GetInflated(VRageMath.Vector3)">
+            <summary>
+            
+            </summary>
+            <param name="size"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.GetInflated(VRageMath.Vector3D)">
+            <summary>
+            
+            </summary>
+            <param name="size"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.op_Explicit(VRageMath.BoundingBoxD)~VRageMath.BoundingBox">
+            <summary>
+            
+            </summary>
+            <param name="b"></param>
+        </member>
+        <member name="T:VRageMath.BoundingBoxD.ComparerType">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.ComparerType.Equals(VRageMath.BoundingBox,VRageMath.BoundingBox)">
+            <summary>
+            
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.ComparerType.GetHashCode(VRageMath.BoundingBox)">
+            <summary>
+            
+            </summary>
+            <param name="obj"></param>
+            <returns></returns>
+        </member>
+        <member name="F:VRageMath.BoundingBoxD.Comparer">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.InflateToMinimum(VRageMath.Vector3D)">
+            <summary>
+            
+            </summary>
+            <param name="minimumSize"></param>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.InflateToMinimum(System.Double)">
+            <summary>
+            
+            </summary>
+            <param name="minimumSize"></param>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.Round(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="decimals"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.Round">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxD.AssertIsValid">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="T:VRageMath.BoundingBoxI">
             <summary>
             Defines an axis-aligned box-shaped 3D volume.
-            </summary>
-        </member>
-        <member name="F:VRageMath.BoundingBoxI.CornerCount">
-            <summary>
-            Specifies the total number of corners (8) in the BoundingBoxI.
             </summary>
         </member>
         <member name="F:VRageMath.BoundingBoxI.Min">
@@ -1115,19 +2374,32 @@
             <summary>
             Creates an instance of BoundingBoxI.
             </summary>
-            <param name="min">The minimum point the BoundingBoxI includes.</param><param name="max">The maximum point the BoundingBoxI includes.</param>
+            <param name="box"></param>        
         </member>
         <member name="M:VRageMath.BoundingBoxI.#ctor(VRageMath.Vector3I,VRageMath.Vector3I)">
             <summary>
             Creates an instance of BoundingBoxI.
             </summary>
-            <param name="min">The minimum point the BoundingBoxI includes.</param><param name="max">The maximum point the BoundingBoxI includes.</param>
+            <param name="min">The minimum point the BoundingBoxI includes.</param>
+            <param name="max">The maximum point the BoundingBoxI includes.</param>
         </member>
         <member name="M:VRageMath.BoundingBoxI.#ctor(System.Int32,System.Int32)">
             <summary>
             Creates an instance of BoundingBoxI.
             </summary>
             <param name="min">The minimum point the BoundingBoxI includes.</param><param name="max">The maximum point the BoundingBoxI includes.</param>
+        </member>
+        <member name="M:VRageMath.BoundingBoxI.op_Explicit(VRageMath.BoundingBoxD)~VRageMath.BoundingBoxI">
+            <summary>
+            
+            </summary>
+            <param name="box"></param>
+        </member>
+        <member name="M:VRageMath.BoundingBoxI.op_Explicit(VRageMath.BoundingBox)~VRageMath.BoundingBoxI">
+            <summary>
+            
+            </summary>
+            <param name="box"></param>
         </member>
         <member name="M:VRageMath.BoundingBoxI.op_Equality(VRageMath.BoundingBoxI,VRageMath.BoundingBoxI)">
             <summary>
@@ -1184,13 +2456,16 @@
             <summary>
             Creates the smallest BoundingBoxI that contains the two specified BoundingBoxI instances.
             </summary>
-            <param name="original">One of the BoundingBoxIs to contain.</param><param name="additional">One of the BoundingBoxIs to contain.</param>
+            <param name="original">One of the BoundingBoxIs to contain.</param>
+            <param name="additional">One of the BoundingBoxIs to contain.</param>
         </member>
         <member name="M:VRageMath.BoundingBoxI.CreateMerged(VRageMath.BoundingBoxI@,VRageMath.BoundingBoxI@,VRageMath.BoundingBoxI@)">
             <summary>
             Creates the smallest BoundingBoxI that contains the two specified BoundingBoxI instances.
             </summary>
-            <param name="original">One of the BoundingBoxI instances to contain.</param><param name="additional">One of the BoundingBoxI instances to contain.</param><param name="result">[OutAttribute] The created BoundingBoxI.</param>
+            <param name="original">One of the BoundingBoxI instances to contain.</param>
+            <param name="additional">One of the BoundingBoxI instances to contain.</param>
+            <param name="result">[OutAttribute] The created BoundingBoxI.</param>
         </member>
         <member name="M:VRageMath.BoundingBoxI.CreateFromSphere(VRageMath.BoundingSphere)">
             <summary>
@@ -1212,15 +2487,13 @@
         </member>
         <member name="M:VRageMath.BoundingBoxI.IntersectWith(VRageMath.BoundingBoxI@)">
             <summary>
-            Returns bounding box which is intersection of this and box
-            It's called 'Prunik'
+            Returns bounding box which is intersection of this and box        
             Result is invalid box when there's no intersection (Min > Max)
             </summary>
         </member>
         <member name="M:VRageMath.BoundingBoxI.Intersect(VRageMath.BoundingBoxI)">
             <summary>
-            Returns bounding box which is intersection of this and box
-            It's called 'Prunik'
+            Returns bounding box which is intersection of this and box        
             Result is invalid box when there's no intersection (Min > Max)
             </summary>
         </member>
@@ -1230,15 +2503,45 @@
             </summary>
             <param name="box">The BoundingBoxI to check for intersection with.</param>
         </member>
+        <member name="M:VRageMath.BoundingBoxI.Intersects(VRageMath.BoundingBoxI@)">
+            <summary>
+            
+            </summary>
+            <param name="box"></param>
+            <returns></returns>
+        </member>
         <member name="M:VRageMath.BoundingBoxI.Intersects(VRageMath.BoundingBoxI@,System.Boolean@)">
             <summary>
             Checks whether the current BoundingBoxI intersects another BoundingBoxI.
             </summary>
             <param name="box">The BoundingBoxI to check for intersection with.</param><param name="result">[OutAttribute] true if the BoundingBoxI instances intersect; false otherwise.</param>
         </member>
+        <member name="M:VRageMath.BoundingBoxI.IntersectsTriangle(VRageMath.Vector3I,VRageMath.Vector3I,VRageMath.Vector3I)">
+            <summary>
+            
+            </summary>
+            <param name="v0"></param>
+            <param name="v1"></param>
+            <param name="v2"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxI.IntersectsTriangle(VRageMath.Vector3I@,VRageMath.Vector3I@,VRageMath.Vector3I@)">
+            <summary>
+            
+            </summary>
+            <param name="v0"></param>
+            <param name="v1"></param>
+            <param name="v2"></param>
+            <returns></returns>
+        </member>
         <member name="P:VRageMath.BoundingBoxI.Center">
             <summary>
             Calculates center
+            </summary>
+        </member>
+        <member name="P:VRageMath.BoundingBoxI.HalfExtents">
+            <summary>
+            
             </summary>
         </member>
         <member name="M:VRageMath.BoundingBoxI.Intersects(VRageMath.Plane)">
@@ -1252,6 +2555,14 @@
             Checks whether the current BoundingBoxI intersects a Plane.
             </summary>
             <param name="plane">The Plane to check for intersection with.</param><param name="result">[OutAttribute] An enumeration indicating whether the BoundingBoxI intersects the Plane.</param>
+        </member>
+        <member name="M:VRageMath.BoundingBoxI.Intersects(VRageMath.Line,System.Single@)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <param name="distance"></param>
+            <returns></returns>
         </member>
         <member name="M:VRageMath.BoundingBoxI.Intersects(VRageMath.Ray)">
             <summary>
@@ -1267,9 +2578,10 @@
         </member>
         <member name="M:VRageMath.BoundingBoxI.Distance(VRageMath.Vector3I)">
             <summary>
-            Checks whether the current BoundingBoxI intersects a BoundingSphere.
+            
             </summary>
-            <param name="sphere">The BoundingSphere to check for intersection with.</param><param name="result">[OutAttribute] true if the BoundingBoxI and BoundingSphere intersect; false otherwise.</param>
+            <param name="point"></param>
+            <returns></returns>
         </member>
         <member name="M:VRageMath.BoundingBoxI.Contains(VRageMath.BoundingBoxI)">
             <summary>
@@ -1289,23 +2601,23 @@
             </summary>
             <param name="point">The point to test for overlap.</param>
         </member>
+        <member name="M:VRageMath.BoundingBoxI.Contains(VRageMath.Vector3)">
+            <summary>
+            
+            </summary>
+            <param name="point"></param>
+            <returns></returns>
+        </member>
         <member name="M:VRageMath.BoundingBoxI.Contains(VRageMath.Vector3I@,VRageMath.ContainmentType@)">
             <summary>
             Tests whether the BoundingBoxI contains a point.
             </summary>
             <param name="point">The point to test for overlap.</param><param name="result">[OutAttribute] Enumeration indicating the extent of overlap.</param>
         </member>
-        <member name="M:VRageMath.BoundingBoxI.SupportMapping(VRageMath.Vector3I@,VRageMath.Vector3I@)">
-            <summary>
-            Tests whether the BoundingBoxI contains a BoundingSphere.
-            </summary>
-            <param name="sphere">The BoundingSphere to test for overlap.</param><param name="result">[OutAttribute] Enumeration indicating the extent of overlap.</param>
-        </member>
         <member name="M:VRageMath.BoundingBoxI.Translate(VRageMath.Vector3I)">
             <summary>
             Translate
-            </summary>
-            <param name="bbox"></param>
+            </summary>        
             <param name="vctTranlsation"></param>
             <returns></returns>
         </member>
@@ -1318,17 +2630,72 @@
         <member name="M:VRageMath.BoundingBoxI.Include(VRageMath.Vector3I@)">
             <summary>
             return expanded aabb (abb include point)
-            </summary>
-            <param name="bbox"></param>
+            </summary>        
             <param name="point"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxI.GetIncluded(VRageMath.Vector3I)">
+            <summary>
+            
+            </summary>
+            <param name="point"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxI.Include(VRageMath.Vector3I)">
+            <summary>
+            
+            </summary>
+            <param name="point"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxI.Include(VRageMath.Vector3I,VRageMath.Vector3I,VRageMath.Vector3I)">
+            <summary>
+            
+            </summary>
+            <param name="p0"></param>
+            <param name="p1"></param>
+            <param name="p2"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxI.Include(VRageMath.Vector3I@,VRageMath.Vector3I@,VRageMath.Vector3I@)">
+            <summary>
+            
+            </summary>
+            <param name="p0"></param>
+            <param name="p1"></param>
+            <param name="p2"></param>
             <returns></returns>
         </member>
         <member name="M:VRageMath.BoundingBoxI.Include(VRageMath.BoundingBoxI@)">
             <summary>
             return expanded aabb (abb include point)
             </summary>
-            <param name="bbox"></param>
-            <param name="point"></param>
+            <param name="box"></param>        
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxI.Include(VRageMath.BoundingBoxI)">
+            <summary>
+            
+            </summary>
+            <param name="box"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxI.CreateInvalid">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxI.SurfaceArea">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxI.Volume">
+            <summary>
+            
+            </summary>
             <returns></returns>
         </member>
         <member name="P:VRageMath.BoundingBoxI.Perimeter">
@@ -1336,6 +2703,23 @@
             return perimeter of edges
             </summary>
             <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingBoxI.Inflate(System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="size"></param>
+        </member>
+        <member name="M:VRageMath.BoundingBoxI.InflateToMinimum(VRageMath.Vector3I)">
+            <summary>
+            
+            </summary>
+            <param name="minimumSize"></param>
+        </member>
+        <member name="P:VRageMath.BoundingBoxI.IsValid">
+            <summary>
+            
+            </summary>
         </member>
         <member name="M:VRageMath.BoundingBoxI.IterateDifference(VRageMath.BoundingBoxI,VRageMath.BoundingBoxI)">
             <summary>
@@ -2055,6 +3439,13 @@
             </summary>
             <param name="box">The BoundingBoxD to check for intersection with.</param><param name="result">[OutAttribute] true if the BoundingSphereD and BoundingBoxD intersect; false otherwise.</param>
         </member>
+        <member name="M:VRageMath.BoundingSphereD.Intersects(VRageMath.RayD)">
+            <summary>
+            
+            </summary>
+            <param name="ray"></param>
+            <returns></returns>
+        </member>
         <member name="M:VRageMath.BoundingSphereD.Intersects(VRageMath.BoundingFrustumD)">
             <summary>
             Checks whether the current BoundingSphereD intersects with a specified BoundingFrustum.
@@ -2127,16 +3518,78 @@
             </summary>
             <param name="matrix">A transformation matrix that might include translation, rotation, or uniform scaling. Note that BoundingSphereD.Transform will not return correct results if there are non-uniform scaling, shears, or other unusual transforms in this transformation matrix. This is because there is no way to shear or non-uniformly scale a sphere. Such an operation would cause the sphere to lose its shape as a sphere.</param><param name="result">[OutAttribute] The transformed BoundingSphereD.</param>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:VRageMath.BoundingSphereD.RandomToUniformPointInSphere(System.Double,System.Double,System.Double)" -->
+        <member name="M:VRageMath.BoundingSphereD.IntersectRaySphere(VRageMath.RayD,System.Double@,System.Double@)">
+            <summary>
+            NOTE: This function doesn't calculate the normal because it's easily derived for a sphere (p - center).
+            </summary>
+            <param name="ray"></param>
+            <param name="tmin"></param>
+            <param name="tmax"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingSphereD.Include(VRageMath.BoundingSphereD)">
+            <summary>
+            
+            </summary>
+            <param name="sphere"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingSphereD.Include(VRageMath.BoundingSphereD@,VRageMath.BoundingSphereD@)">
+            <summary>
+            
+            </summary>
+            <param name="sphere"></param>
+            <param name="otherSphere"></param>
+        </member>
+        <member name="M:VRageMath.BoundingSphereD.CreateInvalid">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingSphereD.op_Implicit(VRageMath.BoundingSphere)~VRageMath.BoundingSphereD">
+            <summary>
+            
+            </summary>
+            <param name="b"></param>
+        </member>
+        <member name="M:VRageMath.BoundingSphereD.op_Implicit(VRageMath.BoundingSphereD)~VRageMath.BoundingSphere">
+            <summary>
+            
+            </summary>
+            <param name="b"></param>
+        </member>
+        <member name="M:VRageMath.BoundingSphereD.RandomToUniformPointInSphere(System.Double,System.Double,System.Double)">
+            <summary>
+            If ranX, ranY, ranZ are uniformly distributed across ranges &lt;0,1&gt;, Resulting point will be uniformly distributed inside sphere
+            </summary>        
+            <param name="ranX"> Random number in &lt;0,1&gt; affecting azimuth </param>
+            <param name="ranY"> Random number in &lt;0,1&gt; affecting altitude </param>
+            <param name="ranZ"> Random number in &lt;0,1&gt; affecting distance from center </param>
+            <returns></returns>
+        </member>
         <member name="M:VRageMath.BoundingSphereD.RandomToUniformPointInSphereWithInnerCutout(System.Double,System.Double,System.Double,System.Double)">
             <summary>
              Similar to RandomToUniformPointInSphere(...) but excludes points within distance of cutoutRadius from center. (Results are randomly distributed in the shape that remains from sphere that had another sphere cut out from center. )
-            </summary>
-            <param name="sphere"></param>
+            </summary>        
             <param name="ranX"></param>
             <param name="ranY"></param>
             <param name="ranZ"></param>
             <param name="cutoutRadius"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingSphereD.RandomToUniformPointOnSphere(System.Double,System.Double)">
+            <summary>
+            
+            </summary>
+            <param name="ranX"></param>
+            <param name="ranY"></param>
+            <returns></returns>
+        </member>
+        <member name="M:VRageMath.BoundingSphereD.GetBoundingBox">
+            <summary>
+            
+            </summary>
             <returns></returns>
         </member>
         <member name="T:VRageMath.Color">
@@ -3018,8 +4471,22 @@
         <member name="T:VRageMath.ContainmentType">
             <summary>
             Indicates the extent to which bounding volumes intersect or contain one another.
+            </summary>    
+        </member>
+        <member name="F:VRageMath.ContainmentType.Disjoint">
+            <summary>
+            Indicates there is no overlap between the bounding volumes.
             </summary>
-            <param name="Contains">Indicates that one bounding volume completely contains the other.</param><param name="Disjoint">Indicates there is no overlap between the bounding volumes.</param><param name="Intersects">Indicates that the bounding volumes partially overlap.</param>
+        </member>
+        <member name="F:VRageMath.ContainmentType.Contains">
+            <summary>
+            Indicates that one bounding volume completely contains the other.
+            </summary>
+        </member>
+        <member name="F:VRageMath.ContainmentType.Intersects">
+            <summary>
+            Indicates that the bounding volumes partially overlap.
+            </summary>
         </member>
         <member name="T:VRageMath.Curve">
             <summary>
@@ -3085,7 +4552,16 @@
             <summary>
             Defines the continuity of CurveKeys on a Curve.
             </summary>
-            <param name="Smooth">Interpolation can be used between this CurveKey and the next.</param><param name="Step">Interpolation cannot be used between this CurveKey and the next. Specifying a position between the two points returns this point.</param>
+        </member>
+        <member name="F:VRageMath.CurveContinuity.Smooth">
+            <summary>
+            Interpolation can be used between this CurveKey and the next.
+            </summary>
+        </member>
+        <member name="F:VRageMath.CurveContinuity.Step">
+            <summary>
+            Interpolation cannot be used between this CurveKey and the next. Specifying a position between the two points returns this point.
+            </summary>
         </member>
         <member name="T:VRageMath.CurveKey">
             <summary>
@@ -3250,14 +4726,61 @@
         <member name="T:VRageMath.CurveLoopType">
             <summary>
             Defines how the value of a Curve will be determined for positions before the first point on the Curve or after the last point on the Curve.
+            </summary>    
+        </member>
+        <member name="F:VRageMath.CurveLoopType.Constant">
+            <summary>
+            The Curve will evaluate to its first key for positions before the first point in the Curve and to the last key for positions after the last point.
             </summary>
-            <param name="Constant">The Curve will evaluate to its first key for positions before the first point in the Curve and to the last key for positions after the last point.</param><param name="Cycle">Positions specified past the ends of the curve will wrap around to the opposite side of the Curve.</param><param name="CycleOffset">Positions specified past the ends of the curve will wrap around to the opposite side of the Curve. The value will be offset by the difference between the values of the first and last CurveKey multiplied by the number of times the position wraps around. If the position is before the first point in the Curve, the difference will be subtracted from its value; otherwise, the difference will be added.</param><param name="Linear">Linear interpolation will be performed to determine the value.</param><param name="Oscillate">Positions specified past the ends of the Curve act as an offset from the same side of the Curve toward the opposite side.</param>
+        </member>
+        <member name="F:VRageMath.CurveLoopType.Cycle">
+            <summary>
+            Positions specified past the ends of the curve will wrap around to the opposite side of the Curve.
+            </summary>
+        </member>
+        <member name="F:VRageMath.CurveLoopType.CycleOffset">
+            <summary>
+            Positions specified past the ends of the curve will wrap around to the opposite side of the Curve. 
+            The value will be offset by the difference between the values of the first and last CurveKey multiplied by the number of times the position wraps around. 
+            If the position is before the first point in the Curve, the difference will be subtracted from its value; otherwise, the difference will be added.
+            </summary>         
+        </member>
+        <member name="F:VRageMath.CurveLoopType.Oscillate">
+            <summary>
+            Positions specified past the ends of the Curve act as an offset from the same side of the Curve toward the opposite side.
+            </summary>
+        </member>
+        <member name="F:VRageMath.CurveLoopType.Linear">
+            <summary>
+            Linear interpolation will be performed to determine the value.
+            </summary>
         </member>
         <member name="T:VRageMath.CurveTangent">
             <summary>
             Specifies different tangent types to be calculated for CurveKey points in a Curve.
+            </summary>    
+        </member>
+        <member name="F:VRageMath.CurveTangent.Flat">
+            <summary>
+            A Flat tangent always has a value equal to zero.
             </summary>
-            <param name="Flat">A Flat tangent always has a value equal to zero.</param><param name="Linear">A Linear tangent at a CurveKey is equal to the difference between its Value and the Value of the preceding or succeeding CurveKey. For example, in Curve MyCurve, where i is greater than zero and (i + 1) is less than the total number of CurveKeys in MyCurve, the linear TangentIn of MyCurve.Keys[i] is equal to: ( MyCurve.Keys[i].Value - MyCurve.Keys[i - 1].Value ) Similarly, the linear TangentOut is equal to: ( MyCurve.Keys[i + 1].Value - MyCurve.Keys[i].Value.)</param><param name="Smooth">A Smooth tangent smooths the inflection between a TangentIn and TangentOut by taking into account the values of both neighbors of the CurveKey. The smooth TangentIn of MyCurve.Keys[i] is equal to: ( ( MyCurve.Keys[i + 1].Value - MyCurve.Keys[i - 1].Value ) * ( ( MyCurve.Keys[i].Position - MyCurve.Keys[i - 1].Position ) / ( MyCurve.Keys[i + 1].Position - MyCurve.Keys[i-1].Position ) ) ) Similarly, the smooth TangentOut is equal to: ( ( MyCurve.Keys[i + 1].Value - MyCurve.Keys[i - 1].Value ) * ( ( MyCurve.Keys[i + 1].Position - MyCurve.Keys[i].Position ) / ( MyCurve.Keys[i + 1].Position - MyCurve.Keys[i - 1].Position ) ) )</param>
+        </member>
+        <member name="F:VRageMath.CurveTangent.Linear">
+            <summary>
+            A Linear tangent at a CurveKey is equal to the difference between its Value and the Value of the preceding or succeeding CurveKey. 
+            For example, in Curve MyCurve, where i is greater than zero and (i + 1) is less than the total number of CurveKeys in MyCurve, 
+            the linear TangentIn of MyCurve.Keys[i] is equal to: ( MyCurve.Keys[i].Value - MyCurve.Keys[i - 1].Value ) Similarly, 
+            the linear TangentOut is equal to: ( MyCurve.Keys[i + 1].Value - MyCurve.Keys[i].Value.)
+            </summary>
+        </member>
+        <member name="F:VRageMath.CurveTangent.Smooth">
+            <summary>
+            A Smooth tangent smooths the inflection between a TangentIn and TangentOut by taking into account the values of both neighbors of the CurveKey. 
+            The smooth TangentIn of MyCurve.Keys[i] is equal to: ( ( MyCurve.Keys[i + 1].Value - MyCurve.Keys[i - 1].Value ) * 
+            ( ( MyCurve.Keys[i].Position - MyCurve.Keys[i - 1].Position ) / ( MyCurve.Keys[i + 1].Position - MyCurve.Keys[i-1].Position ) ) ) 
+            Similarly, the smooth TangentOut is equal to: ( ( MyCurve.Keys[i + 1].Value - MyCurve.Keys[i - 1].Value ) * 
+            ( ( MyCurve.Keys[i + 1].Position - MyCurve.Keys[i].Position ) / ( MyCurve.Keys[i + 1].Position - MyCurve.Keys[i - 1].Position ) ) )
+            </summary>
         </member>
         <member name="T:VRageMath.MathHelper">
             <summary>
@@ -3779,13 +5302,36 @@
             <summary>
             Initializes a new instance of Matrix.
             </summary>
-            <param name="m11">Value to initialize m11 to.</param><param name="m12">Value to initialize m12 to.</param><param name="m13">Value to initialize m13 to.</param><param name="m14">Value to initialize m14 to.</param><param name="m21">Value to initialize m21 to.</param><param name="m22">Value to initialize m22 to.</param><param name="m23">Value to initialize m23 to.</param><param name="m24">Value to initialize m24 to.</param><param name="m31">Value to initialize m31 to.</param><param name="m32">Value to initialize m32 to.</param><param name="m33">Value to initialize m33 to.</param><param name="m34">Value to initialize m34 to.</param><param name="m41">Value to initialize m41 to.</param><param name="m42">Value to initialize m42 to.</param><param name="m43">Value to initialize m43 to.</param><param name="m44">Value to initialize m44 to.</param>
+            <param name="m11">Value to initialize m11 to.</param>
+            <param name="m12">Value to initialize m12 to.</param>
+            <param name="m13">Value to initialize m13 to.</param>
+            <param name="m14">Value to initialize m14 to.</param>
+            <param name="m21">Value to initialize m21 to.</param>
+            <param name="m22">Value to initialize m22 to.</param>
+            <param name="m23">Value to initialize m23 to.</param>
+            <param name="m24">Value to initialize m24 to.</param>
+            <param name="m31">Value to initialize m31 to.</param>
+            <param name="m32">Value to initialize m32 to.</param>
+            <param name="m33">Value to initialize m33 to.</param>
+            <param name="m34">Value to initialize m34 to.</param>
+            <param name="m41">Value to initialize m41 to.</param>
+            <param name="m42">Value to initialize m42 to.</param>
+            <param name="m43">Value to initialize m43 to.</param>
+            <param name="m44">Value to initialize m44 to.</param>
         </member>
         <member name="M:VRageMath.Matrix.#ctor(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
             <summary>
             Initializes a new instance of Matrix with rotation data
             </summary>
-            <param name="m11">Value to initialize m11 to.</param><param name="m12">Value to initialize m12 to.</param><param name="m13">Value to initialize m13 to.</param><param name="m14">Value to initialize m14 to.</param><param name="m21">Value to initialize m21 to.</param><param name="m22">Value to initialize m22 to.</param><param name="m23">Value to initialize m23 to.</param><param name="m24">Value to initialize m24 to.</param><param name="m31">Value to initialize m31 to.</param><param name="m32">Value to initialize m32 to.</param><param name="m33">Value to initialize m33 to.</param><param name="m34">Value to initialize m34 to.</param><param name="m41">Value to initialize m41 to.</param><param name="m42">Value to initialize m42 to.</param><param name="m43">Value to initialize m43 to.</param><param name="m44">Value to initialize m44 to.</param>
+            <param name="m11">Value to initialize m11 to.</param>
+            <param name="m12">Value to initialize m12 to.</param>
+            <param name="m13">Value to initialize m13 to.</param>        
+            <param name="m21">Value to initialize m21 to.</param>
+            <param name="m22">Value to initialize m22 to.</param>
+            <param name="m23">Value to initialize m23 to.</param>        
+            <param name="m31">Value to initialize m31 to.</param>
+            <param name="m32">Value to initialize m32 to.</param>
+            <param name="m33">Value to initialize m33 to.</param>        
         </member>
         <member name="M:VRageMath.Matrix.op_UnaryNegation(VRageMath.Matrix)">
             <summary>
@@ -4328,6 +5874,12 @@
             Such matrix consist solely of rotations, shearing, mirroring and scaling. It can be orthogonalized to create an orthogonal rotation matrix.
             </summary>
         </member>
+        <member name="M:VRageMath.Matrix.SetFrom(VRageMath.MatrixD@)">
+            <summary>
+            Set this ma
+            </summary>
+            <param name="m"></param>
+        </member>
         <member name="T:VRageMath.Matrix3x3">
             <summary>
             Defines a matrix.
@@ -4437,7 +5989,15 @@
             <summary>
             Initializes a new instance of Matrix3x3.
             </summary>
-            <param name="m11">Value to initialize m11 to.</param><param name="m12">Value to initialize m12 to.</param><param name="m13">Value to initialize m13 to.</param><param name="m14">Value to initialize m14 to.</param><param name="m21">Value to initialize m21 to.</param><param name="m22">Value to initialize m22 to.</param><param name="m23">Value to initialize m23 to.</param><param name="m24">Value to initialize m24 to.</param><param name="m31">Value to initialize m31 to.</param><param name="m32">Value to initialize m32 to.</param><param name="m33">Value to initialize m33 to.</param><param name="m34">Value to initialize m34 to.</param><param name="m41">Value to initialize m41 to.</param><param name="m42">Value to initialize m42 to.</param><param name="m43">Value to initialize m43 to.</param><param name="m44">Value to initialize m44 to.</param>
+            <param name="m11">Value to initialize m11 to.</param>
+            <param name="m12">Value to initialize m12 to.</param>
+            <param name="m13">Value to initialize m13 to.</param>        
+            <param name="m21">Value to initialize m21 to.</param>
+            <param name="m22">Value to initialize m22 to.</param>
+            <param name="m23">Value to initialize m23 to.</param>        
+            <param name="m31">Value to initialize m31 to.</param>
+            <param name="m32">Value to initialize m32 to.</param>
+            <param name="m33">Value to initialize m33 to.</param>        
         </member>
         <member name="M:VRageMath.Matrix3x3.CreateScale(System.Single,System.Single,System.Single)">
             <summary>
@@ -4811,13 +6371,36 @@
             <summary>
             Initializes a new instance of Matrix.
             </summary>
-            <param name="m11">Value to initialize m11 to.</param><param name="m12">Value to initialize m12 to.</param><param name="m13">Value to initialize m13 to.</param><param name="m14">Value to initialize m14 to.</param><param name="m21">Value to initialize m21 to.</param><param name="m22">Value to initialize m22 to.</param><param name="m23">Value to initialize m23 to.</param><param name="m24">Value to initialize m24 to.</param><param name="m31">Value to initialize m31 to.</param><param name="m32">Value to initialize m32 to.</param><param name="m33">Value to initialize m33 to.</param><param name="m34">Value to initialize m34 to.</param><param name="m41">Value to initialize m41 to.</param><param name="m42">Value to initialize m42 to.</param><param name="m43">Value to initialize m43 to.</param><param name="m44">Value to initialize m44 to.</param>
+            <param name="m11">Value to initialize m11 to.</param>
+            <param name="m12">Value to initialize m12 to.</param>
+            <param name="m13">Value to initialize m13 to.</param>
+            <param name="m14">Value to initialize m14 to.</param>
+            <param name="m21">Value to initialize m21 to.</param>
+            <param name="m22">Value to initialize m22 to.</param>
+            <param name="m23">Value to initialize m23 to.</param>
+            <param name="m24">Value to initialize m24 to.</param>
+            <param name="m31">Value to initialize m31 to.</param>
+            <param name="m32">Value to initialize m32 to.</param>
+            <param name="m33">Value to initialize m33 to.</param>
+            <param name="m34">Value to initialize m34 to.</param>
+            <param name="m41">Value to initialize m41 to.</param>
+            <param name="m42">Value to initialize m42 to.</param>
+            <param name="m43">Value to initialize m43 to.</param>
+            <param name="m44">Value to initialize m44 to.</param>
         </member>
         <member name="M:VRageMath.MatrixD.#ctor(System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)">
             <summary>
             Initializes a new instance of Matrix with rotation data
             </summary>
-            <param name="m11">Value to initialize m11 to.</param><param name="m12">Value to initialize m12 to.</param><param name="m13">Value to initialize m13 to.</param><param name="m14">Value to initialize m14 to.</param><param name="m21">Value to initialize m21 to.</param><param name="m22">Value to initialize m22 to.</param><param name="m23">Value to initialize m23 to.</param><param name="m24">Value to initialize m24 to.</param><param name="m31">Value to initialize m31 to.</param><param name="m32">Value to initialize m32 to.</param><param name="m33">Value to initialize m33 to.</param><param name="m34">Value to initialize m34 to.</param><param name="m41">Value to initialize m41 to.</param><param name="m42">Value to initialize m42 to.</param><param name="m43">Value to initialize m43 to.</param><param name="m44">Value to initialize m44 to.</param>
+            <param name="m11">Value to initialize m11 to.</param>
+            <param name="m12">Value to initialize m12 to.</param>
+            <param name="m13">Value to initialize m13 to.</param>        
+            <param name="m21">Value to initialize m21 to.</param>
+            <param name="m22">Value to initialize m22 to.</param>
+            <param name="m23">Value to initialize m23 to.</param>        
+            <param name="m31">Value to initialize m31 to.</param>
+            <param name="m32">Value to initialize m32 to.</param>
+            <param name="m33">Value to initialize m33 to.</param>        
         </member>
         <member name="M:VRageMath.MatrixD.op_UnaryNegation(VRageMath.MatrixD)">
             <summary>
@@ -4829,91 +6412,118 @@
             <summary>
             Compares a matrix for equality with another matrix.
             </summary>
-            <param name="matrix1">Source matrix.</param><param name="matrix2">Source matrix.</param>
+            <param name="matrix1">Source matrix.</param>
+            <param name="matrix2">Source matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.op_Inequality(VRageMath.MatrixD,VRageMath.MatrixD)">
             <summary>
             Tests a matrix for inequality with another matrix.
             </summary>
-            <param name="matrix1">The matrix on the left of the equal sign.</param><param name="matrix2">The matrix on the right of the equal sign.</param>
+            <param name="matrix1">The matrix on the left of the equal sign.</param>
+            <param name="matrix2">The matrix on the right of the equal sign.</param>
         </member>
         <member name="M:VRageMath.MatrixD.op_Addition(VRageMath.MatrixD,VRageMath.MatrixD)">
             <summary>
             Adds a matrix to another matrix.
             </summary>
-            <param name="matrix1">Source matrix.</param><param name="matrix2">Source matrix.</param>
+            <param name="matrix1">Source matrix.</param>
+            <param name="matrix2">Source matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.op_Subtraction(VRageMath.MatrixD,VRageMath.MatrixD)">
             <summary>
             Subtracts matrices.
             </summary>
-            <param name="matrix1">Source matrix.</param><param name="matrix2">Source matrix.</param>
+            <param name="matrix1">Source matrix.</param>
+            <param name="matrix2">Source matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.op_Multiply(VRageMath.MatrixD,VRageMath.MatrixD)">
             <summary>
             Multiplies a matrix by another matrix.
             </summary>
-            <param name="matrix1">Source matrix.</param><param name="matrix2">Source matrix.</param>
+            <param name="matrix1">Source matrix.</param>
+            <param name="matrix2">Source matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.op_Multiply(VRageMath.MatrixD,VRageMath.Matrix)">
             <summary>
             Multiplies a matrix by another matrix.
             </summary>
-            <param name="matrix1">Source matrix.</param><param name="matrix2">Source matrix.</param>
+            <param name="matrix1">Source matrix.</param>
+            <param name="matrix2">Source matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.op_Multiply(VRageMath.Matrix,VRageMath.MatrixD)">
             <summary>
             Multiplies a matrix by another matrix.
             </summary>
-            <param name="matrix1">Source matrix.</param><param name="matrix2">Source matrix.</param>
+            <param name="matrix1">Source matrix.</param>
+            <param name="matrix2">Source matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.op_Multiply(VRageMath.MatrixD,System.Double)">
             <summary>
             Multiplies a matrix by a scalar value.
             </summary>
-            <param name="matrix">Source matrix.</param><param name="scaleFactor">Scalar value.</param>
+            <param name="matrix">Source matrix.</param>
+            <param name="scaleFactor">Scalar value.</param>
         </member>
         <member name="M:VRageMath.MatrixD.op_Multiply(System.Double,VRageMath.MatrixD)">
             <summary>
             Multiplies a matrix by a scalar value.
             </summary>
-            <param name="scaleFactor">Scalar value.</param><param name="matrix">Source matrix.</param>
+            <param name="scaleFactor">Scalar value.</param>
+            <param name="matrix">Source matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.op_Division(VRageMath.MatrixD,VRageMath.MatrixD)">
             <summary>
             Divides the components of a matrix by the corresponding components of another matrix.
             </summary>
-            <param name="matrix1">Source matrix.</param><param name="matrix2">The divisor.</param>
+            <param name="matrix1">Source matrix.</param>
+            <param name="matrix2">The divisor.</param>
         </member>
         <member name="M:VRageMath.MatrixD.op_Division(VRageMath.MatrixD,System.Double)">
             <summary>
             Divides the components of a matrix by a scalar.
             </summary>
-            <param name="matrix1">Source matrix.</param><param name="divider">The divisor.</param>
+            <param name="matrix1">Source matrix.</param>
+            <param name="divider">The divisor.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateBillboard(VRageMath.Vector3D,VRageMath.Vector3D,VRageMath.Vector3D,System.Nullable{VRageMath.Vector3D})">
             <summary>
             Creates a spherical billboard that rotates around a specified object position.
             </summary>
-            <param name="objectPosition">Position of the object the billboard will rotate around.</param><param name="cameraPosition">Position of the camera.</param><param name="cameraUpVector">The up vector of the camera.</param><param name="cameraForwardVector">Optional forward vector of the camera.</param>
+            <param name="objectPosition">Position of the object the billboard will rotate around.</param>
+            <param name="cameraPosition">Position of the camera.</param>
+            <param name="cameraUpVector">The up vector of the camera.</param>
+            <param name="cameraForwardVector">Optional forward vector of the camera.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateBillboard(VRageMath.Vector3D@,VRageMath.Vector3D@,VRageMath.Vector3D@,System.Nullable{VRageMath.Vector3D},VRageMath.MatrixD@)">
             <summary>
             Creates a spherical billboard that rotates around a specified object position.
             </summary>
-            <param name="objectPosition">Position of the object the billboard will rotate around.</param><param name="cameraPosition">Position of the camera.</param><param name="cameraUpVector">The up vector of the camera.</param><param name="cameraForwardVector">Optional forward vector of the camera.</param><param name="result">[OutAttribute] The created billboard matrix.</param>
+            <param name="objectPosition">Position of the object the billboard will rotate around.</param>
+            <param name="cameraPosition">Position of the camera.</param>
+            <param name="cameraUpVector">The up vector of the camera.</param>
+            <param name="cameraForwardVector">Optional forward vector of the camera.</param>
+            <param name="result">[OutAttribute] The created billboard matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateConstrainedBillboard(VRageMath.Vector3D,VRageMath.Vector3D,VRageMath.Vector3D,System.Nullable{VRageMath.Vector3D},System.Nullable{VRageMath.Vector3D})">
             <summary>
             Creates a cylindrical billboard that rotates around a specified axis.
             </summary>
-            <param name="objectPosition">Position of the object the billboard will rotate around.</param><param name="cameraPosition">Position of the camera.</param><param name="rotateAxis">Axis to rotate the billboard around.</param><param name="cameraForwardVector">Optional forward vector of the camera.</param><param name="objectForwardVector">Optional forward vector of the object.</param>
+            <param name="objectPosition">Position of the object the billboard will rotate around.</param>
+            <param name="cameraPosition">Position of the camera.</param>
+            <param name="rotateAxis">Axis to rotate the billboard around.</param>
+            <param name="cameraForwardVector">Optional forward vector of the camera.</param>
+            <param name="objectForwardVector">Optional forward vector of the object.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateConstrainedBillboard(VRageMath.Vector3D@,VRageMath.Vector3D@,VRageMath.Vector3D@,System.Nullable{VRageMath.Vector3D},System.Nullable{VRageMath.Vector3D},VRageMath.MatrixD@)">
             <summary>
             Creates a cylindrical billboard that rotates around a specified axis.
             </summary>
-            <param name="objectPosition">Position of the object the billboard will rotate around.</param><param name="cameraPosition">Position of the camera.</param><param name="rotateAxis">Axis to rotate the billboard around.</param><param name="cameraForwardVector">Optional forward vector of the camera.</param><param name="objectForwardVector">Optional forward vector of the object.</param><param name="result">[OutAttribute] The created billboard matrix.</param>
+            <param name="objectPosition">Position of the object the billboard will rotate around.</param>
+            <param name="cameraPosition">Position of the camera.</param>
+            <param name="rotateAxis">Axis to rotate the billboard around.</param>
+            <param name="cameraForwardVector">Optional forward vector of the camera.</param>
+            <param name="objectForwardVector">Optional forward vector of the object.</param>
+            <param name="result">[OutAttribute] The created billboard matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateTranslation(VRageMath.Vector3D)">
             <summary>
@@ -4925,31 +6535,42 @@
             <summary>
             Creates a translation Matrix.
             </summary>
-            <param name="position">Amounts to translate by on the x, y, and z axes.</param><param name="result">[OutAttribute] The created translation Matrix.</param>
+            <param name="position">Amounts to translate by on the x, y, and z axes.</param>
+            <param name="result">[OutAttribute] The created translation Matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateTranslation(System.Double,System.Double,System.Double)">
             <summary>
             Creates a translation Matrix.
             </summary>
-            <param name="xPosition">Value to translate by on the x-axis.</param><param name="yPosition">Value to translate by on the y-axis.</param><param name="zPosition">Value to translate by on the z-axis.</param>
+            <param name="xPosition">Value to translate by on the x-axis.</param>
+            <param name="yPosition">Value to translate by on the y-axis.</param>
+            <param name="zPosition">Value to translate by on the z-axis.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateTranslation(System.Double,System.Double,System.Double,VRageMath.MatrixD@)">
             <summary>
             Creates a translation Matrix.
             </summary>
-            <param name="xPosition">Value to translate by on the x-axis.</param><param name="yPosition">Value to translate by on the y-axis.</param><param name="zPosition">Value to translate by on the z-axis.</param><param name="result">[OutAttribute] The created translation Matrix.</param>
+            <param name="xPosition">Value to translate by on the x-axis.</param>
+            <param name="yPosition">Value to translate by on the y-axis.</param>
+            <param name="zPosition">Value to translate by on the z-axis.</param>
+            <param name="result">[OutAttribute] The created translation Matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateScale(System.Double,System.Double,System.Double)">
             <summary>
             Creates a scaling Matrix.
             </summary>
-            <param name="xScale">Value to scale by on the x-axis.</param><param name="yScale">Value to scale by on the y-axis.</param><param name="zScale">Value to scale by on the z-axis.</param>
+            <param name="xScale">Value to scale by on the x-axis.</param>
+            <param name="yScale">Value to scale by on the y-axis.</param>
+            <param name="zScale">Value to scale by on the z-axis.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateScale(System.Double,System.Double,System.Double,VRageMath.MatrixD@)">
             <summary>
             Creates a scaling Matrix.
             </summary>
-            <param name="xScale">Value to scale by on the x-axis.</param><param name="yScale">Value to scale by on the y-axis.</param><param name="zScale">Value to scale by on the z-axis.</param><param name="result">[OutAttribute] The created scaling Matrix.</param>
+            <param name="xScale">Value to scale by on the x-axis.</param>
+            <param name="yScale">Value to scale by on the y-axis.</param>
+            <param name="zScale">Value to scale by on the z-axis.</param>
+            <param name="result">[OutAttribute] The created scaling Matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateScale(VRageMath.Vector3D)">
             <summary>
@@ -4961,7 +6582,8 @@
             <summary>
             Creates a scaling Matrix.
             </summary>
-            <param name="scales">Amounts to scale by on the x, y, and z axes.</param><param name="result">[OutAttribute] The created scaling Matrix.</param>
+            <param name="scales">Amounts to scale by on the x, y, and z axes.</param>
+            <param name="result">[OutAttribute] The created scaling Matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateScale(System.Double)">
             <summary>
@@ -4973,139 +6595,223 @@
             <summary>
             Creates a scaling Matrix.
             </summary>
-            <param name="scale">Value to scale by.</param><param name="result">[OutAttribute] The created scaling Matrix.</param>
+            <param name="scale">Value to scale by.</param>
+            <param name="result">[OutAttribute] The created scaling Matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateRotationX(System.Double)">
             <summary>
             Returns a matrix that can be used to rotate a set of vertices around the x-axis.
             </summary>
-            <param name="radians">The amount, in radians, in which to rotate around the x-axis. Note that you can use ToRadians to convert degrees to radians.</param>
+            <param name="radians">
+            The amount, in radians, in which to rotate around the x-axis. Note that you can use ToRadians to
+            convert degrees to radians.
+            </param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateRotationX(System.Double,VRageMath.MatrixD@)">
             <summary>
             Populates data into a user-specified matrix that can be used to rotate a set of vertices around the x-axis.
             </summary>
-            <param name="radians">The amount, in radians, in which to rotate around the x-axis. Note that you can use ToRadians to convert degrees to radians.</param><param name="result">[OutAttribute] The matrix in which to place the calculated data.</param>
+            <param name="radians">
+            The amount, in radians, in which to rotate around the x-axis. Note that you can use ToRadians to
+            convert degrees to radians.
+            </param>
+            <param name="result">[OutAttribute] The matrix in which to place the calculated data.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateRotationY(System.Double)">
             <summary>
             Returns a matrix that can be used to rotate a set of vertices around the y-axis.
             </summary>
-            <param name="radians">The amount, in radians, in which to rotate around the y-axis. Note that you can use ToRadians to convert degrees to radians.</param>
+            <param name="radians">
+            The amount, in radians, in which to rotate around the y-axis. Note that you can use ToRadians to
+            convert degrees to radians.
+            </param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateRotationY(System.Double,VRageMath.MatrixD@)">
             <summary>
             Populates data into a user-specified matrix that can be used to rotate a set of vertices around the y-axis.
             </summary>
-            <param name="radians">The amount, in radians, in which to rotate around the y-axis. Note that you can use ToRadians to convert degrees to radians.</param><param name="result">[OutAttribute] The matrix in which to place the calculated data.</param>
+            <param name="radians">
+            The amount, in radians, in which to rotate around the y-axis. Note that you can use ToRadians to
+            convert degrees to radians.
+            </param>
+            <param name="result">[OutAttribute] The matrix in which to place the calculated data.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateRotationZ(System.Double)">
             <summary>
             Returns a matrix that can be used to rotate a set of vertices around the z-axis.
             </summary>
-            <param name="radians">The amount, in radians, in which to rotate around the z-axis. Note that you can use ToRadians to convert degrees to radians.</param>
+            <param name="radians">
+            The amount, in radians, in which to rotate around the z-axis. Note that you can use ToRadians to
+            convert degrees to radians.
+            </param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateRotationZ(System.Double,VRageMath.MatrixD@)">
             <summary>
             Populates data into a user-specified matrix that can be used to rotate a set of vertices around the z-axis.
             </summary>
-            <param name="radians">The amount, in radians, in which to rotate around the z-axis. Note that you can use ToRadians to convert degrees to radians.</param><param name="result">[OutAttribute] The rotation matrix.</param>
+            <param name="radians">
+            The amount, in radians, in which to rotate around the z-axis. Note that you can use ToRadians to
+            convert degrees to radians.
+            </param>
+            <param name="result">[OutAttribute] The rotation matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateFromAxisAngle(VRageMath.Vector3D,System.Double)">
             <summary>
             Creates a new Matrix that rotates around an arbitrary vector.
             </summary>
-            <param name="axis">The axis to rotate around.</param><param name="angle">The angle to rotate around the vector.</param>
+            <param name="axis">The axis to rotate around.</param>
+            <param name="angle">The angle to rotate around the vector.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateFromAxisAngle(VRageMath.Vector3D@,System.Double,VRageMath.MatrixD@)">
             <summary>
             Creates a new Matrix that rotates around an arbitrary vector.
             </summary>
-            <param name="axis">The axis to rotate around.</param><param name="angle">The angle to rotate around the vector.</param><param name="result">[OutAttribute] The created Matrix.</param>
+            <param name="axis">The axis to rotate around.</param>
+            <param name="angle">The angle to rotate around the vector.</param>
+            <param name="result">[OutAttribute] The created Matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreatePerspectiveFieldOfView(System.Double,System.Double,System.Double,System.Double)">
             <summary>
             Builds a perspective projection matrix based on a field of view and returns by value.
             </summary>
-            <param name="fieldOfView">Field of view in the y direction, in radians.</param><param name="aspectRatio">Aspect ratio, defined as view space width divided by height. To match the aspect ratio of the viewport, the property AspectRatio.</param><param name="nearPlaneDistance">Distance to the near view plane.</param><param name="farPlaneDistance">Distance to the far view plane.</param>
+            <param name="fieldOfView">Field of view in the y direction, in radians.</param>
+            <param name="aspectRatio">
+            Aspect ratio, defined as view space width divided by height. To match the aspect ratio of the
+            viewport, the property AspectRatio.
+            </param>
+            <param name="nearPlaneDistance">Distance to the near view plane.</param>
+            <param name="farPlaneDistance">Distance to the far view plane.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreatePerspectiveFieldOfView(System.Double,System.Double,System.Double,System.Double,VRageMath.MatrixD@)">
             <summary>
             Builds a perspective projection matrix based on a field of view and returns by reference.
             </summary>
-            <param name="fieldOfView">Field of view in the y direction, in radians.</param><param name="aspectRatio">Aspect ratio, defined as view space width divided by height. To match the aspect ratio of the viewport, the property AspectRatio.</param><param name="nearPlaneDistance">Distance to the near view plane.</param><param name="farPlaneDistance">Distance to the far view plane.</param><param name="result">[OutAttribute] The perspective projection matrix.</param>
+            <param name="fieldOfView">Field of view in the y direction, in radians.</param>
+            <param name="aspectRatio">
+            Aspect ratio, defined as view space width divided by height. To match the aspect ratio of the
+            viewport, the property AspectRatio.
+            </param>
+            <param name="nearPlaneDistance">Distance to the near view plane.</param>
+            <param name="farPlaneDistance">Distance to the far view plane.</param>
+            <param name="result">[OutAttribute] The perspective projection matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreatePerspective(System.Double,System.Double,System.Double,System.Double)">
             <summary>
             Builds a perspective projection matrix and returns the result by value.
             </summary>
-            <param name="width">Width of the view volume at the near view plane.</param><param name="height">Height of the view volume at the near view plane.</param><param name="nearPlaneDistance">Distance to the near view plane.</param><param name="farPlaneDistance">Distance to the far view plane.</param>
+            <param name="width">Width of the view volume at the near view plane.</param>
+            <param name="height">Height of the view volume at the near view plane.</param>
+            <param name="nearPlaneDistance">Distance to the near view plane.</param>
+            <param name="farPlaneDistance">Distance to the far view plane.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreatePerspective(System.Double,System.Double,System.Double,System.Double,VRageMath.MatrixD@)">
             <summary>
             Builds a perspective projection matrix and returns the result by reference.
             </summary>
-            <param name="width">Width of the view volume at the near view plane.</param><param name="height">Height of the view volume at the near view plane.</param><param name="nearPlaneDistance">Distance to the near view plane.</param><param name="farPlaneDistance">Distance to the far view plane.</param><param name="result">[OutAttribute] The projection matrix.</param>
+            <param name="width">Width of the view volume at the near view plane.</param>
+            <param name="height">Height of the view volume at the near view plane.</param>
+            <param name="nearPlaneDistance">Distance to the near view plane.</param>
+            <param name="farPlaneDistance">Distance to the far view plane.</param>
+            <param name="result">[OutAttribute] The projection matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreatePerspectiveOffCenter(System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)">
             <summary>
             Builds a customized, perspective projection matrix.
             </summary>
-            <param name="left">Minimum x-value of the view volume at the near view plane.</param><param name="right">Maximum x-value of the view volume at the near view plane.</param><param name="bottom">Minimum y-value of the view volume at the near view plane.</param><param name="top">Maximum y-value of the view volume at the near view plane.</param><param name="nearPlaneDistance">Distance to the near view plane.</param><param name="farPlaneDistance">Distance to of the far view plane.</param>
+            <param name="left">Minimum x-value of the view volume at the near view plane.</param>
+            <param name="right">Maximum x-value of the view volume at the near view plane.</param>
+            <param name="bottom">Minimum y-value of the view volume at the near view plane.</param>
+            <param name="top">Maximum y-value of the view volume at the near view plane.</param>
+            <param name="nearPlaneDistance">Distance to the near view plane.</param>
+            <param name="farPlaneDistance">Distance to of the far view plane.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreatePerspectiveOffCenter(System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,VRageMath.MatrixD@)">
             <summary>
             Builds a customized, perspective projection matrix.
             </summary>
-            <param name="left">Minimum x-value of the view volume at the near view plane.</param><param name="right">Maximum x-value of the view volume at the near view plane.</param><param name="bottom">Minimum y-value of the view volume at the near view plane.</param><param name="top">Maximum y-value of the view volume at the near view plane.</param><param name="nearPlaneDistance">Distance to the near view plane.</param><param name="farPlaneDistance">Distance to of the far view plane.</param><param name="result">[OutAttribute] The created projection matrix.</param>
+            <param name="left">Minimum x-value of the view volume at the near view plane.</param>
+            <param name="right">Maximum x-value of the view volume at the near view plane.</param>
+            <param name="bottom">Minimum y-value of the view volume at the near view plane.</param>
+            <param name="top">Maximum y-value of the view volume at the near view plane.</param>
+            <param name="nearPlaneDistance">Distance to the near view plane.</param>
+            <param name="farPlaneDistance">Distance to of the far view plane.</param>
+            <param name="result">[OutAttribute] The created projection matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateOrthographic(System.Double,System.Double,System.Double,System.Double)">
             <summary>
             Builds an orthogonal projection matrix.
             </summary>
-            <param name="width">Width of the view volume.</param><param name="height">Height of the view volume.</param><param name="zNearPlane">Minimum z-value of the view volume.</param><param name="zFarPlane">Maximum z-value of the view volume.</param>
+            <param name="width">Width of the view volume.</param>
+            <param name="height">Height of the view volume.</param>
+            <param name="zNearPlane">Minimum z-value of the view volume.</param>
+            <param name="zFarPlane">Maximum z-value of the view volume.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateOrthographic(System.Double,System.Double,System.Double,System.Double,VRageMath.MatrixD@)">
             <summary>
             Builds an orthogonal projection matrix.
             </summary>
-            <param name="width">Width of the view volume.</param><param name="height">Height of the view volume.</param><param name="zNearPlane">Minimum z-value of the view volume.</param><param name="zFarPlane">Maximum z-value of the view volume.</param><param name="result">[OutAttribute] The projection matrix.</param>
+            <param name="width">Width of the view volume.</param>
+            <param name="height">Height of the view volume.</param>
+            <param name="zNearPlane">Minimum z-value of the view volume.</param>
+            <param name="zFarPlane">Maximum z-value of the view volume.</param>
+            <param name="result">[OutAttribute] The projection matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateOrthographicOffCenter(System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)">
             <summary>
             Builds a customized, orthogonal projection matrix.
             </summary>
-            <param name="left">Minimum x-value of the view volume.</param><param name="right">Maximum x-value of the view volume.</param><param name="bottom">Minimum y-value of the view volume.</param><param name="top">Maximum y-value of the view volume.</param><param name="zNearPlane">Minimum z-value of the view volume.</param><param name="zFarPlane">Maximum z-value of the view volume.</param>
+            <param name="left">Minimum x-value of the view volume.</param>
+            <param name="right">Maximum x-value of the view volume.</param>
+            <param name="bottom">Minimum y-value of the view volume.</param>
+            <param name="top">Maximum y-value of the view volume.</param>
+            <param name="zNearPlane">Minimum z-value of the view volume.</param>
+            <param name="zFarPlane">Maximum z-value of the view volume.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateOrthographicOffCenter(System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,VRageMath.MatrixD@)">
             <summary>
             Builds a customized, orthogonal projection matrix.
             </summary>
-            <param name="left">Minimum x-value of the view volume.</param><param name="right">Maximum x-value of the view volume.</param><param name="bottom">Minimum y-value of the view volume.</param><param name="top">Maximum y-value of the view volume.</param><param name="zNearPlane">Minimum z-value of the view volume.</param><param name="zFarPlane">Maximum z-value of the view volume.</param><param name="result">[OutAttribute] The projection matrix.</param>
+            <param name="left">Minimum x-value of the view volume.</param>
+            <param name="right">Maximum x-value of the view volume.</param>
+            <param name="bottom">Minimum y-value of the view volume.</param>
+            <param name="top">Maximum y-value of the view volume.</param>
+            <param name="zNearPlane">Minimum z-value of the view volume.</param>
+            <param name="zFarPlane">Maximum z-value of the view volume.</param>
+            <param name="result">[OutAttribute] The projection matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateLookAt(VRageMath.Vector3D,VRageMath.Vector3D,VRageMath.Vector3D)">
             <summary>
             Creates a view matrix.
             </summary>
-            <param name="cameraPosition">The position of the camera.</param><param name="cameraTarget">The target towards which the camera is pointing.</param><param name="cameraUpVector">The direction that is "up" from the camera's point of view.</param>
+            <param name="cameraPosition">The position of the camera.</param>
+            <param name="cameraTarget">The target towards which the camera is pointing.</param>
+            <param name="cameraUpVector">The direction that is "up" from the camera's point of view.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateLookAt(VRageMath.Vector3D@,VRageMath.Vector3D@,VRageMath.Vector3D@,VRageMath.MatrixD@)">
             <summary>
             Creates a view matrix.
             </summary>
-            <param name="cameraPosition">The position of the camera.</param><param name="cameraTarget">The target towards which the camera is pointing.</param><param name="cameraUpVector">The direction that is "up" from the camera's point of view.</param><param name="result">[OutAttribute] The created view matrix.</param>
+            <param name="cameraPosition">The position of the camera.</param>
+            <param name="cameraTarget">The target towards which the camera is pointing.</param>
+            <param name="cameraUpVector">The direction that is "up" from the camera's point of view.</param>
+            <param name="result">[OutAttribute] The created view matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateWorld(VRageMath.Vector3D,VRageMath.Vector3D,VRageMath.Vector3D)">
             <summary>
             Creates a world matrix with the specified parameters.
             </summary>
-            <param name="position">Position of the object. This value is used in translation operations.</param><param name="forward">Forward direction of the object.</param><param name="up">Upward direction of the object; usually [0, 1, 0].</param>
+            <param name="position">Position of the object. This value is used in translation operations.</param>
+            <param name="forward">Forward direction of the object.</param>
+            <param name="up">Upward direction of the object; usually [0, 1, 0].</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateWorld(VRageMath.Vector3D@,VRageMath.Vector3D@,VRageMath.Vector3D@,VRageMath.MatrixD@)">
             <summary>
             Creates a world matrix with the specified parameters.
             </summary>
-            <param name="position">Position of the object. This value is used in translation operations.</param><param name="forward">Forward direction of the object.</param><param name="up">Upward direction of the object; usually [0, 1, 0].</param><param name="result">[OutAttribute] The created world matrix.</param>
+            <param name="position">Position of the object. This value is used in translation operations.</param>
+            <param name="forward">Forward direction of the object.</param>
+            <param name="up">Upward direction of the object; usually [0, 1, 0].</param>
+            <param name="result">[OutAttribute] The created world matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateFromQuaternion(VRageMath.Quaternion)">
             <summary>
@@ -5117,31 +6823,49 @@
             <summary>
             Creates a rotation Matrix from a Quaternion.
             </summary>
-            <param name="quaternion">Quaternion to create the Matrix from.</param><param name="result">[OutAttribute] The created Matrix.</param>
+            <param name="quaternion">Quaternion to create the Matrix from.</param>
+            <param name="result">[OutAttribute] The created Matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateFromYawPitchRoll(System.Double,System.Double,System.Double)">
             <summary>
             Creates a new rotation matrix from a specified yaw, pitch, and roll.
             </summary>
-            <param name="yaw">Angle of rotation, in radians, around the y-axis.</param><param name="pitch">Angle of rotation, in radians, around the x-axis.</param><param name="roll">Angle of rotation, in radians, around the z-axis.</param>
+            <param name="yaw">Angle of rotation, in radians, around the y-axis.</param>
+            <param name="pitch">Angle of rotation, in radians, around the x-axis.</param>
+            <param name="roll">Angle of rotation, in radians, around the z-axis.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateFromYawPitchRoll(System.Double,System.Double,System.Double,VRageMath.MatrixD@)">
             <summary>
             Fills in a rotation matrix from a specified yaw, pitch, and roll.
             </summary>
-            <param name="yaw">Angle of rotation, in radians, around the y-axis.</param><param name="pitch">Angle of rotation, in radians, around the x-axis.</param><param name="roll">Angle of rotation, in radians, around the z-axis.</param><param name="result">[OutAttribute] An existing matrix filled in to represent the specified yaw, pitch, and roll.</param>
+            <param name="yaw">Angle of rotation, in radians, around the y-axis.</param>
+            <param name="pitch">Angle of rotation, in radians, around the x-axis.</param>
+            <param name="roll">Angle of rotation, in radians, around the z-axis.</param>
+            <param name="result">[OutAttribute] An existing matrix filled in to represent the specified yaw, pitch, and roll.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateShadow(VRageMath.Vector3D,VRageMath.Plane)">
             <summary>
             Creates a Matrix that flattens geometry into a specified Plane as if casting a shadow from a specified light source.
             </summary>
-            <param name="lightDirection">A Vector3 specifying the direction from which the light that will cast the shadow is coming.</param><param name="plane">The Plane onto which the new matrix should flatten geometry so as to cast a shadow.</param>
+            <param name="lightDirection">
+            A Vector3 specifying the direction from which the light that will cast the shadow is
+            coming.
+            </param>
+            <param name="plane">The Plane onto which the new matrix should flatten geometry so as to cast a shadow.</param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateShadow(VRageMath.Vector3D@,VRageMath.Plane@,VRageMath.MatrixD@)">
             <summary>
             Fills in a Matrix to flatten geometry into a specified Plane as if casting a shadow from a specified light source.
             </summary>
-            <param name="lightDirection">A Vector3 specifying the direction from which the light that will cast the shadow is coming.</param><param name="plane">The Plane onto which the new matrix should flatten geometry so as to cast a shadow.</param><param name="result">[OutAttribute] A Matrix that can be used to flatten geometry onto the specified plane from the specified direction.</param>
+            <param name="lightDirection">
+            A Vector3 specifying the direction from which the light that will cast the shadow is
+            coming.
+            </param>
+            <param name="plane">The Plane onto which the new matrix should flatten geometry so as to cast a shadow.</param>
+            <param name="result">
+            [OutAttribute] A Matrix that can be used to flatten geometry onto the specified plane from the
+            specified direction.
+            </param>
         </member>
         <member name="M:VRageMath.MatrixD.CreateReflection(VRageMath.Plane)">
             <summary>
@@ -5153,19 +6877,23 @@
             <summary>
             Fills in an existing Matrix so that it reflects the coordinate system about a specified Plane.
             </summary>
-            <param name="value">The Plane about which to create a reflection.</param><param name="result">[OutAttribute] A Matrix that creates the reflection.</param>
+            <param name="value">The Plane about which to create a reflection.</param>
+            <param name="result">[OutAttribute] A Matrix that creates the reflection.</param>
         </member>
         <member name="M:VRageMath.MatrixD.Transform(VRageMath.MatrixD,VRageMath.Quaternion)">
             <summary>
             Transforms a Matrix by applying a Quaternion rotation.
             </summary>
-            <param name="value">The Matrix to transform.</param><param name="rotation">The rotation to apply, expressed as a Quaternion.</param>
+            <param name="value">The Matrix to transform.</param>
+            <param name="rotation">The rotation to apply, expressed as a Quaternion.</param>
         </member>
         <member name="M:VRageMath.MatrixD.Transform(VRageMath.MatrixD@,VRageMath.Quaternion@,VRageMath.MatrixD@)">
             <summary>
             Transforms a Matrix by applying a Quaternion rotation.
             </summary>
-            <param name="value">The Matrix to transform.</param><param name="rotation">The rotation to apply, expressed as a Quaternion.</param><param name="result">[OutAttribute] An existing Matrix filled in with the result of the transform.</param>
+            <param name="value">The Matrix to transform.</param>
+            <param name="rotation">The rotation to apply, expressed as a Quaternion.</param>
+            <param name="result">[OutAttribute] An existing Matrix filled in with the result of the transform.</param>
         </member>
         <member name="M:VRageMath.MatrixD.ToString">
             <summary>
@@ -5204,7 +6932,8 @@
             <summary>
             Transposes the rows and columns of a matrix.
             </summary>
-            <param name="matrix">Source matrix.</param><param name="result">[OutAttribute] Transposed matrix.</param>
+            <param name="matrix">Source matrix.</param>
+            <param name="result">[OutAttribute] Transposed matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.Determinant">
             <summary>
@@ -5221,46 +6950,47 @@
             <summary>
             Calculates the inverse of a matrix.
             </summary>
-            <param name="matrix">The source matrix.</param><param name="result">[OutAttribute] The inverse of matrix. The same matrix can be used for both arguments.</param>
+            <param name="matrix">The source matrix.</param>
+            <param name="result">[OutAttribute] The inverse of matrix. The same matrix can be used for both arguments.</param>
         </member>
         <member name="M:VRageMath.MatrixD.Lerp(VRageMath.MatrixD,VRageMath.MatrixD,System.Double)">
             <summary>
             Linearly interpolates between the corresponding values of two matrices.
             </summary>
-            <param name="matrix1">Source matrix.</param><param name="matrix2">Source matrix.</param><param name="amount">Interpolation value.</param>
+            <param name="matrix1">Source matrix.</param>
+            <param name="matrix2">Source matrix.</param>
+            <param name="amount">Interpolation value.</param>
         </member>
         <member name="M:VRageMath.MatrixD.Lerp(VRageMath.MatrixD@,VRageMath.MatrixD@,System.Double,VRageMath.MatrixD@)">
             <summary>
             Linearly interpolates between the corresponding values of two matrices.
             </summary>
-            <param name="matrix1">Source matrix.</param><param name="matrix2">Source matrix.</param><param name="amount">Interpolation value.</param><param name="result">[OutAttribute] Resulting matrix.</param>
+            <param name="matrix1">Source matrix.</param>
+            <param name="matrix2">Source matrix.</param>
+            <param name="amount">Interpolation value.</param>
+            <param name="result">[OutAttribute] Resulting matrix.</param>
         </member>
-        <member name="M:VRageMath.MatrixD.Slerp(VRageMath.MatrixD@,VRageMath.MatrixD@,System.Single,VRageMath.MatrixD@)">
+        <member name="M:VRageMath.MatrixD.Slerp(VRageMath.MatrixD@,VRageMath.MatrixD@,System.Double,VRageMath.MatrixD@)">
             <summary>
             Performs spherical linear interpolation of position and rotation.
             </summary>
         </member>
-        <member name="M:VRageMath.MatrixD.SlerpScale(VRageMath.MatrixD@,VRageMath.MatrixD@,System.Single,VRageMath.MatrixD@)">
+        <member name="M:VRageMath.MatrixD.SlerpScale(VRageMath.MatrixD@,VRageMath.MatrixD@,System.Double,VRageMath.MatrixD@)">
             <summary>
             Performs spherical linear interpolation of position and rotation and scale.
             </summary>
         </member>
-        <member name="M:VRageMath.MatrixD.Slerp(VRageMath.MatrixD,VRageMath.MatrixD,System.Single,VRageMath.MatrixD@)">
+        <member name="M:VRageMath.MatrixD.Slerp(VRageMath.MatrixD,VRageMath.MatrixD,System.Double)">
             <summary>
             Performs spherical linear interpolation of position and rotation.
             </summary>
         </member>
-        <member name="M:VRageMath.MatrixD.Slerp(VRageMath.MatrixD,VRageMath.MatrixD,System.Single)">
-            <summary>
-            Performs spherical linear interpolation of position and rotation.
-            </summary>
-        </member>
-        <member name="M:VRageMath.MatrixD.SlerpScale(VRageMath.MatrixD,VRageMath.MatrixD,System.Single,VRageMath.MatrixD@)">
+        <member name="M:VRageMath.MatrixD.SlerpScale(VRageMath.MatrixD,VRageMath.MatrixD,System.Double,VRageMath.MatrixD@)">
             <summary>
             Performs spherical linear interpolation of position and rotation and scale.
             </summary>
         </member>
-        <member name="M:VRageMath.MatrixD.SlerpScale(VRageMath.MatrixD,VRageMath.MatrixD,System.Single)">
+        <member name="M:VRageMath.MatrixD.SlerpScale(VRageMath.MatrixD,VRageMath.MatrixD,System.Double)">
             <summary>
             Performs spherical linear interpolation of position and rotation and scale.
             </summary>
@@ -5275,91 +7005,113 @@
             <summary>
             Negates individual elements of a matrix.
             </summary>
-            <param name="matrix">Source matrix.</param><param name="result">[OutAttribute] Negated matrix.</param>
+            <param name="matrix">Source matrix.</param>
+            <param name="result">[OutAttribute] Negated matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.Add(VRageMath.MatrixD,VRageMath.MatrixD)">
             <summary>
             Adds a matrix to another matrix.
             </summary>
-            <param name="matrix1">Source matrix.</param><param name="matrix2">Source matrix.</param>
+            <param name="matrix1">Source matrix.</param>
+            <param name="matrix2">Source matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.Add(VRageMath.MatrixD@,VRageMath.MatrixD@,VRageMath.MatrixD@)">
             <summary>
             Adds a matrix to another matrix.
             </summary>
-            <param name="matrix1">Source matrix.</param><param name="matrix2">Source matrix.</param><param name="result">[OutAttribute] Resulting matrix.</param>
+            <param name="matrix1">Source matrix.</param>
+            <param name="matrix2">Source matrix.</param>
+            <param name="result">[OutAttribute] Resulting matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.Subtract(VRageMath.Matrix,VRageMath.Matrix)">
             <summary>
             Subtracts matrices.
             </summary>
-            <param name="matrix1">Source matrix.</param><param name="matrix2">Source matrix.</param>
+            <param name="matrix1">Source matrix.</param>
+            <param name="matrix2">Source matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.Subtract(VRageMath.MatrixD@,VRageMath.MatrixD@,VRageMath.MatrixD@)">
             <summary>
             Subtracts matrices.
             </summary>
-            <param name="matrix1">Source matrix.</param><param name="matrix2">Source matrix.</param><param name="result">[OutAttribute] Result of the subtraction.</param>
+            <param name="matrix1">Source matrix.</param>
+            <param name="matrix2">Source matrix.</param>
+            <param name="result">[OutAttribute] Result of the subtraction.</param>
         </member>
         <member name="M:VRageMath.MatrixD.Multiply(VRageMath.MatrixD,VRageMath.MatrixD)">
             <summary>
             Multiplies a matrix by another matrix.
             </summary>
-            <param name="matrix1">Source matrix.</param><param name="matrix2">Source matrix.</param>
+            <param name="matrix1">Source matrix.</param>
+            <param name="matrix2">Source matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.Multiply(VRageMath.MatrixD,VRageMath.Matrix)">
             <summary>
             Multiplies a matrix by another matrix.
             </summary>
-            <param name="matrix1">Source matrix.</param><param name="matrix2">Source matrix.</param>
+            <param name="matrix1">Source matrix.</param>
+            <param name="matrix2">Source matrix.</param>
         </member>
         <member name="M:VRageMath.MatrixD.Multiply(VRageMath.MatrixD@,VRageMath.Matrix@,VRageMath.MatrixD@)">
             <summary>
             Multiplies a matrix by another matrix.
             </summary>
-            <param name="matrix1">Source matrix.</param><param name="matrix2">Source matrix.</param><param name="result">[OutAttribute] Result of the multiplication.</param>
+            <param name="matrix1">Source matrix.</param>
+            <param name="matrix2">Source matrix.</param>
+            <param name="result">[OutAttribute] Result of the multiplication.</param>
         </member>
         <member name="M:VRageMath.MatrixD.Multiply(VRageMath.MatrixD@,VRageMath.MatrixD@,VRageMath.MatrixD@)">
             <summary>
             Multiplies a matrix by another matrix.
             </summary>
-            <param name="matrix1">Source matrix.</param><param name="matrix2">Source matrix.</param><param name="result">[OutAttribute] Result of the multiplication.</param>
+            <param name="matrix1">Source matrix.</param>
+            <param name="matrix2">Source matrix.</param>
+            <param name="result">[OutAttribute] Result of the multiplication.</param>
         </member>
         <member name="M:VRageMath.MatrixD.Multiply(VRageMath.MatrixD,System.Double)">
             <summary>
             Multiplies a matrix by a scalar value.
             </summary>
-            <param name="matrix1">Source matrix.</param><param name="scaleFactor">Scalar value.</param>
+            <param name="matrix1">Source matrix.</param>
+            <param name="scaleFactor">Scalar value.</param>
         </member>
         <member name="M:VRageMath.MatrixD.Multiply(VRageMath.MatrixD@,System.Double,VRageMath.MatrixD@)">
             <summary>
             Multiplies a matrix by a scalar value.
             </summary>
-            <param name="matrix1">Source matrix.</param><param name="scaleFactor">Scalar value.</param><param name="result">[OutAttribute] The result of the multiplication.</param>
+            <param name="matrix1">Source matrix.</param>
+            <param name="scaleFactor">Scalar value.</param>
+            <param name="result">[OutAttribute] The result of the multiplication.</param>
         </member>
         <member name="M:VRageMath.MatrixD.Divide(VRageMath.MatrixD,VRageMath.MatrixD)">
             <summary>
             Divides the components of a matrix by the corresponding components of another matrix.
             </summary>
-            <param name="matrix1">Source matrix.</param><param name="matrix2">The divisor.</param>
+            <param name="matrix1">Source matrix.</param>
+            <param name="matrix2">The divisor.</param>
         </member>
         <member name="M:VRageMath.MatrixD.Divide(VRageMath.MatrixD@,VRageMath.MatrixD@,VRageMath.MatrixD@)">
             <summary>
             Divides the components of a matrix by the corresponding components of another matrix.
             </summary>
-            <param name="matrix1">Source matrix.</param><param name="matrix2">The divisor.</param><param name="result">[OutAttribute] Result of the division.</param>
+            <param name="matrix1">Source matrix.</param>
+            <param name="matrix2">The divisor.</param>
+            <param name="result">[OutAttribute] Result of the division.</param>
         </member>
         <member name="M:VRageMath.MatrixD.Divide(VRageMath.MatrixD,System.Double)">
             <summary>
             Divides the components of a matrix by a scalar.
             </summary>
-            <param name="matrix1">Source matrix.</param><param name="divider">The divisor.</param>
+            <param name="matrix1">Source matrix.</param>
+            <param name="divider">The divisor.</param>
         </member>
         <member name="M:VRageMath.MatrixD.Divide(VRageMath.MatrixD@,System.Double,VRageMath.MatrixD@)">
             <summary>
             Divides the components of a matrix by a scalar.
             </summary>
-            <param name="matrix1">Source matrix.</param><param name="divider">The divisor.</param><param name="result">[OutAttribute] Result of the division.</param>
+            <param name="matrix1">Source matrix.</param>
+            <param name="divider">The divisor.</param>
+            <param name="result">[OutAttribute] Result of the division.</param>
         </member>
         <member name="M:VRageMath.MatrixD.GetOrientation">
             <summary>
@@ -5369,8 +7121,10 @@
         </member>
         <member name="M:VRageMath.MatrixD.HasNoTranslationOrPerspective">
             <summary>
-            Returns true if this matrix represents invertible (you can call Invert on it) linear (it does not contain translation or perspective transformation) transformation.
-            Such matrix consist solely of rotations, shearing, mirroring and scaling. It can be orthogonalized to create an orthogonal rotation matrix.
+            Returns true if this matrix represents invertible (you can call Invert on it) linear (it does not contain translation
+            or perspective transformation) transformation.
+            Such matrix consist solely of rotations, shearing, mirroring and scaling. It can be orthogonalized to create an
+            orthogonal rotation matrix.
             </summary>
         </member>
         <member name="M:VRageMath.MyBlockOrientation.TransformDirection(VRageMath.Base6Directions.Direction)">
@@ -5445,15 +7199,15 @@
         </member>
         <member name="T:VRageMath.Vector3Extensions">
             <summary>
-            Usefull Vector3 extensions
+            Useful Vector3 extensions
             </summary>
         </member>
         <member name="M:VRageMath.Vector3Extensions.Project(VRageMath.Vector3,VRageMath.Vector3)">
             <summary>
             Calculates projection vector
             </summary>
-            <param name="sb">The sb.</param>
-            <param name="length">The length.</param>
+            <param name="projectedOntoVector"></param>
+            <param name="projectedVector"></param>
         </member>
         <member name="M:VRageMath.BoundingFrustumExtensions.ToBoundingSphere(VRageMath.BoundingFrustum,VRageMath.Vector3[])">
             <summary>
@@ -5464,12 +7218,12 @@
             <param name="corners">Temporary memory to save corner when getting from frustum.</param>
             <returns>BoundingSphere</returns>
         </member>
-        <member name="M:VRageMath.MyMortonCode3D.splitBits(System.Int32)">
+        <member name="M:VRageMath.MyMortonCode3D.SplitBits(System.Int32)">
             <summary>
             Split 10 lowest bits of the number so that there are 3 empty slots between them.
             </summary>
         </member>
-        <member name="M:VRageMath.MyMortonCode3D.joinBits(System.Int32)">
+        <member name="M:VRageMath.MyMortonCode3D.JoinBits(System.Int32)">
             <summary>
             Reverses splitBits operation.
             </summary>
@@ -5637,7 +7391,9 @@
             <summary>
             Initializes a new instance of the HalfVector3 class.
             </summary>
-            <param name="x">Initial value for the x component.</param><param name="y">Initial value for the y component.</param><param name="z">Initial value for the z component.</param><param name="w">Initial value for the w component.</param>
+            <param name="x">Initial value for the x component.</param>
+            <param name="y">Initial value for the y component.</param>
+            <param name="z">Initial value for the z component.</param>        
         </member>
         <member name="M:VRageMath.PackedVector.HalfVector3.#ctor(VRageMath.Vector3)">
             <summary>
@@ -5932,7 +7688,7 @@
             </summary>
             <param name="value">The Vector3 to multiply by.</param><param name="result">[OutAttribute] The resulting value.</param>
         </member>
-        <member name="M:VRageMath.Plane.DotNormal(VRageMath.Vector3)">
+        <member name="M:VRageMath.Plane.DotNormal(VRageMath.Vector3D)">
             <summary>
             Returns the dot product of a specified Vector3 and the Normal vector of this Plane.
             </summary>
@@ -5973,6 +7729,14 @@
             Checks whether the current Plane intersects a BoundingSphere.
             </summary>
             <param name="sphere">The BoundingSphere to check for intersection with.</param><param name="result">[OutAttribute] An enumeration indicating whether the Plane intersects the BoundingSphere.</param>
+        </member>
+        <member name="M:VRageMath.Plane.Intersection(VRageMath.Vector3D@,VRageMath.Vector3D@)">
+            <summary>
+            Gets intersection point in Plane.
+            </summary>
+            <param name="from">Starting point of a ray.</param>
+            <param name="direction">Ray direction.</param>
+            <returns>Point of intersection.</returns>
         </member>
         <member name="T:VRageMath.PlaneD">
             <summary>
@@ -6080,15 +7844,18 @@
         </member>
         <member name="M:VRageMath.PlaneD.Transform(VRageMath.PlaneD,VRageMath.MatrixD)">
             <summary>
-            Transforms a normalized PlaneD by a Matrix.
+            Transforms a normalized plane by a Matrix.
             </summary>
-            <param name="PlaneD">The normalized PlaneD to transform. This PlaneD must already be normalized, so that its Normal vector is of unit length, before this method is called.</param><param name="matrix">The transform Matrix to apply to the PlaneD.</param>
+            <param name="plane">The normalized plane to transform. This plane must already be normalized, so that its Normal vector is of unit length, before this method is called.</param>        
+            <param name="matrix">The transform Matrix to apply to the plane.</param>
         </member>
         <member name="M:VRageMath.PlaneD.Transform(VRageMath.PlaneD@,VRageMath.MatrixD@,VRageMath.PlaneD@)">
             <summary>
-            Transforms a normalized PlaneD by a Matrix.
+            Transforms a normalized plane by a Matrix.
             </summary>
-            <param name="PlaneD">The normalized PlaneD to transform. This PlaneD must already be normalized, so that its Normal vector is of unit length, before this method is called.</param><param name="matrix">The transform Matrix to apply to the PlaneD.</param><param name="result">[OutAttribute] An existing PlaneD filled in with the results of applying the transform.</param>
+            <param name="plane">The normalized plane to transform. This plane must already be normalized, so that its Normal vector is of unit length, before this method is called.</param>
+            <param name="matrix">The transform Matrix to apply to the plane.</param>
+            <param name="result">[OutAttribute] An existing PlaneD filled in with the results of applying the transform.</param>
         </member>
         <member name="M:VRageMath.PlaneD.Dot(VRageMath.Vector4)">
             <summary>
@@ -6167,8 +7934,22 @@
         <member name="T:VRageMath.PlaneIntersectionType">
             <summary>
             Describes the intersection between a plane and a bounding volume.
+            </summary>    
+        </member>
+        <member name="F:VRageMath.PlaneIntersectionType.Front">
+            <summary>
+            There is no intersection, and the bounding volume is in the positive half-space of the Plane.
             </summary>
-            <param name="Back">There is no intersection, and the bounding volume is in the negative half-space of the Plane.</param><param name="Front">There is no intersection, and the bounding volume is in the positive half-space of the Plane.</param><param name="Intersecting">The Plane is intersected.</param>
+        </member>
+        <member name="F:VRageMath.PlaneIntersectionType.Back">
+            <summary>
+            There is no intersection, and the bounding volume is in the negative half-space of the Plane.
+            </summary>
+        </member>
+        <member name="F:VRageMath.PlaneIntersectionType.Intersecting">
+            <summary>
+            The Plane is intersected.
+            </summary>
         </member>
         <member name="T:VRageMath.Point">
             <summary>
@@ -6302,6 +8083,12 @@
             Multiplies two quaternions.
             </summary>
             <param name="quaternion1">Source quaternion.</param><param name="quaternion2">Source quaternion.</param>
+        </member>
+        <member name="M:VRageMath.Quaternion.op_Multiply(VRageMath.Quaternion,VRageMath.Vector3)">
+            <summary>
+            Multiplies a vector by a quaternion. Resulting vector rotated by quaternion
+            </summary>
+            <param name="quaternion">Source quaternion.</param><param name="vector">Vector to be rotated.</param>
         </member>
         <member name="M:VRageMath.Quaternion.op_Multiply(VRageMath.Quaternion,System.Single)">
             <summary>
@@ -6649,6 +8436,12 @@
             </summary>
             <param name="quaternion1">Source quaternion.</param><param name="quaternion2">Source quaternion.</param>
         </member>
+        <member name="M:VRageMath.QuaternionD.op_Multiply(VRageMath.QuaternionD,VRageMath.Vector3D)">
+            <summary>
+            Multiplies a vector by a quaternion. Resulting a vector rotated by quaternion.
+            </summary>
+            <param name="quaternion">Source quaternion.</param><param name="vector">Vector to be rotated.</param>
+        </member>
         <member name="M:VRageMath.QuaternionD.op_Multiply(VRageMath.QuaternionD,System.Double)">
             <summary>
             Multiplies a quaternion by a scalar value.
@@ -6925,13 +8718,15 @@
             <summary>
             Determines whether two instances of Ray are equal.
             </summary>
-            <param name="a">The object to the left of the equality operator.</param><param name="b">The object to the right of the equality operator.</param>
+            <param name="a">The object to the left of the equality operator.</param>
+            <param name="b">The object to the right of the equality operator.</param>
         </member>
         <member name="M:VRageMath.Ray.op_Inequality(VRageMath.Ray,VRageMath.Ray)">
             <summary>
             Determines whether two instances of Ray are not equal.
             </summary>
-            <param name="a">The object to the left of the inequality operator.</param><param name="b">The object to the right of the inequality operator.</param>
+            <param name="a">The object to the left of the inequality operator.</param>
+            <param name="b">The object to the right of the inequality operator.</param>
         </member>
         <member name="M:VRageMath.Ray.Equals(VRageMath.Ray)">
             <summary>
@@ -7326,12 +9121,10 @@
         </member>
         <member name="M:VRageMath.RectangleF.Equals(VRageMath.RectangleF)">
             <summary>
-            Determines whether the specified <see cref="T:System.Object"/> is equal to this instance.
+            Equals to other rectangle
             </summary>
-            <param name="obj">The <see cref="T:System.Object"/> to compare with this instance.</param>
-            <returns>
-              <c>true</c> if the specified <see cref="T:System.Object"/> is equal to this instance; otherwise, <c>false</c>.
-            </returns>
+            <param name="other"></param>
+            <returns></returns>
         </member>
         <member name="M:VRageMath.RectangleF.Intersect(VRageMath.RectangleF@,VRageMath.RectangleF@,VRageMath.RectangleF@)">
             <summary>
@@ -7395,6 +9188,16 @@
             When the range is an angle this method changes it to the sines of the angle.
             
             The angle is expected to be in degrees.
+        </member>
+        <member name="F:VRageMath.Spatial.MyClusterTree.EntityAdded">
+            <summary>
+            On Entity Added, entity ID, cluster ID
+            </summary>
+        </member>
+        <member name="F:VRageMath.Spatial.MyClusterTree.EntityRemoved">
+            <summary>
+            On Entity Removed, entity ID, cluster ID
+            </summary>
         </member>
         <member name="M:VRageMath.Spatial.MyClusterTree.IMyActivationHandler.Activate(System.Object,System.UInt64)">
             <summary>
@@ -7534,6 +9337,8 @@
             </summary>
             <param name="aabb">The aabb.</param>
             <param name="userData">The user data.</param>
+            <param name="rebalance"></param>
+            <param name="userFlags"></param>
             <returns></returns>
         </member>
         <member name="M:VRageMath.MyDynamicAABBTree.RemoveProxy(System.Int32)">
@@ -9183,7 +10988,7 @@
         </member>
         <member name="T:VRageMath.Vector3D">
             <summary>
-            Defines a vector with three components.
+            Defines a vector with three components. Vector3 with double floating point precision
             </summary>
         </member>
         <member name="F:VRageMath.Vector3D.X">
@@ -9905,7 +11710,7 @@
         </member>
         <member name="T:VRageMath.Vector3L_RangeIterator">
             <summary>
-            A class for simpler traversal of ranges of longeger vectors
+            A class for simpler traversal of ranges of long vectors
             </summary>
         </member>
         <member name="F:VRageMath.Vector3L_RangeIterator.Current">
@@ -10129,7 +11934,8 @@
             <summary>
             Divides a vector by a scalar value.
             </summary>
-            <param name="value1">Source vector.</param><param name="divider">The divisor.</param>
+            <param name="lhs"></param>
+            <param name="rhs"></param>
         </member>
         <member name="M:VRageMath.Vector4.ToString">
             <summary>
@@ -10605,7 +12411,8 @@
             <summary>
             Divides a vector by a scalar value.
             </summary>
-            <param name="value1">Source vector.</param><param name="divider">The divisor.</param>
+            <param name="lhs">Source vector.</param>
+            <param name="rhs">The divisor.</param>
         </member>
         <member name="M:VRageMath.Vector4D.ToString">
             <summary>
