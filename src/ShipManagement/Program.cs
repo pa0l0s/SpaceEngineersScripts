@@ -79,6 +79,10 @@ namespace ScriptingClass
             {
                 SetHome();
             }
+            else if (argument == "SETAI")
+            {
+                SetAi();
+            }
             else
             {
                 ShipManagement();
@@ -86,6 +90,25 @@ namespace ScriptingClass
 
         }
 
+        private void SetAi()
+        {
+            try
+            {
+                var aiBlocks = new List<IMyTerminalBlock>();
+                GridTerminalSystem.SearchBlocksOfName("SWFISD2.AI Recorder (Task) Dock",aiBlocks);
+                if(aiBlocks.Count < 1) { throw new Exception("No \"SWFISD2.AI Recorder (Task) Dock\" block"); }
+                var aiBlock = aiBlocks.FirstOrDefault();
+                Echo($"{aiBlock.GetType()}");
+
+                var recorders = new List<IMyPathRecorderBlock>();
+                GridTerminalSystem.GetBlocksOfType<IMyPathRecorderBlock>(recorders);
+
+                //throw new NotImplementedException();
+            }
+            catch(Exception ex) {
+                Echo($"Error in SetAi: {ex.Message}");
+            }
+        }
 
         private string _shortGridName;
 
@@ -117,7 +140,7 @@ namespace ScriptingClass
             var batteries = new List<IMyBatteryBlock>();
             GridTerminalSystem.GetBlocksOfType(batteries);
             batteries = batteries.Where(x => x.IsSameConstructAs(Me)).ToList();
-            batteries.RemoveAt(0); //One battery remain ucontrolled tu support programming block work
+            batteries.RemoveAt(0); //One battery remain ucontrolled to support programming block work
 
             // Check if the connector is locked
             if (connector.Status == MyShipConnectorStatus.Connected)

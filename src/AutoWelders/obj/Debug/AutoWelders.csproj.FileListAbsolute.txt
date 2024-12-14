@@ -36,7 +36,6 @@ D:\source\Repos\SpaceEngineersScripts\src\AutoWelders\bin\Debug\VRage.Game.xml
 D:\source\Repos\SpaceEngineersScripts\src\AutoWelders\bin\Debug\VRage.Game.dll.config
 D:\source\Repos\SpaceEngineersScripts\src\AutoWelders\bin\Debug\VRage.Library.xml
 D:\source\Repos\SpaceEngineersScripts\src\AutoWelders\bin\Debug\VRage.Math.xml
-D:\source\Repos\SpaceEngineersScripts\src\AutoWelders\obj\Debug\AutoWelders.csproj.CopyComplete
 D:\source\Repos\SpaceEngineersScripts\src\AutoWelders\obj\Debug\SpaceEnginersScripts.dll
 D:\source\Repos\SpaceEngineersScripts\src\AutoWelders\obj\Debug\SpaceEnginersScripts.pdb
 C:\tmp\source\Repos\SpaceEngineersScripts\src\AutoWelders\bin\Debug\SpaceEnginersScripts.dll
@@ -63,3 +62,8 @@ C:\tmp\source\Repos\SpaceEngineersScripts\src\AutoWelders\obj\Debug\SpaceEnginer
 D:\source\Repos\SpaceEngineersScripts\src\AutoWelders\bin\Debug\VRage.dll
 D:\Source\Repos\SpaceEngineersScripts\src\AutoWelders\obj\Debug\AutoWelders.csproj.AssemblyReference.cache
 D:\Source\Repos\SpaceEngineersScripts\src\AutoWelders\obj\Debug\AutoWelders.csproj.CoreCompileInputs.cache
+D:\Source\Repos\SpaceEngineersScripts\src\AutoWelders\bin\Debug\Sandbox.Game.xml
+D:\Source\Repos\SpaceEngineersScripts\src\AutoWelders\bin\Debug\SpaceEngineers.Game.xml
+D:\Source\Repos\SpaceEngineersScripts\src\AutoWelders\bin\Debug\VRage.xml
+D:\Source\Repos\SpaceEngineersScripts\src\AutoWelders\bin\Debug\VRage.Game.XmlSerializers.dll
+D:\Source\Repos\SpaceEngineersScripts\src\AutoWelders\obj\Debug\AutoWeld.ECE618AF.Up2Date
