@@ -17,7 +17,9 @@ namespace ScriptingClass
 {
 	public class Program : MyGridProgram
 	{
-		public Program()
+        //--------------START COPY TO GAME--------------//
+
+        public Program()
 
 		{
 
@@ -103,8 +105,57 @@ namespace ScriptingClass
                 var recorders = new List<IMyPathRecorderBlock>();
                 GridTerminalSystem.GetBlocksOfType<IMyPathRecorderBlock>(recorders);
 
-                //throw new NotImplementedException();
-            }
+                if(recorders.Count < 1) { throw new Exception("No \"IMyPathRecorderBlock\" block"); }
+
+                var dockRecorder = recorders.FirstOrDefault(x=>x.CustomName.Contains("Dock"));
+
+                if (dockRecorder == null) //{ throw new Exception("No recorder with \"Dock\" in name block"); }
+                {
+                    //Get first recorder and name it Dock
+                    dockRecorder = recorders.FirstOrDefault();
+                    recorders.Remove(dockRecorder); //this recorder is used
+                }
+
+                var actions = new List<ITerminalAction>();
+                dockRecorder.GetActions(actions);
+                foreach( var action in actions)
+                {
+                    Echo($"{action.Name}");
+                }
+
+                if (dockRecorder != null)
+                {
+                    Echo($"Using IMyPathRecorderBlock: {dockRecorder.CustomName} to set docking waypoints. Additionnal actions net to be set manually. Torn off Collision Avoidance on Approach 40 and start timmer block Dock at final waypoit Dock.");
+
+
+                    if (!dockRecorder.CustomName.EndsWith("Dock"))
+                    {
+                        // Rename the remoteController block
+                        dockRecorder.CustomName = $"{dockRecorder.CustomName}Dock";
+                    }
+                    // Setup IMyPathRecorderBlock
+                    //dockRecorder.SetCollisionAvoidance(true);
+                    //dockRecorder.SetDockingMode(true);
+                    //dockRecorder.FlightMode = FlightMode.OneWay;
+                    //dockRecorder.SpeedLimit = 100;
+
+                    var gridNameCapitalLetters = GetShortGridName();
+
+                    //dockRecorder.GetActions   .ClearWaypoints();
+
+                    // Add a waypoint 300m above the current position of the remote controller
+                    var waypoint1 = new MyWaypointInfo(gridNameCapitalLetters + ".Appropach 300",
+                        dockRecorder.GetPosition() + dockRecorder.WorldMatrix.Up * 300);
+
+
+                    //dockRecorder
+                    var addWaypointAction = actions.FirstOrDefault(x => x.Name.ToString().Contains("Add Waypoint"));
+                    addWaypointAction.Apply(dockRecorder);
+
+                }
+
+                    //throw new NotImplementedException();
+                }
             catch(Exception ex) {
                 Echo($"Error in SetAi: {ex.Message}");
             }
@@ -248,13 +299,13 @@ namespace ScriptingClass
                 {
                     // Rename the remoteController block
                     remoteController.CustomName = $"{remoteController.CustomName}Dock";
-
-                    // Setup remoteController
-                    remoteController.SetCollisionAvoidance(true);
-                    remoteController.SetDockingMode(true);
-                    remoteController.FlightMode = FlightMode.OneWay;
-                    remoteController.SpeedLimit = 100;
                 }
+
+                // Setup remoteController
+                remoteController.SetCollisionAvoidance(true);
+                remoteController.SetDockingMode(true);
+                remoteController.FlightMode = FlightMode.OneWay;
+                remoteController.SpeedLimit = 100;
 
                 var gridNameCapitalLetters = GetShortGridName();
 
@@ -429,5 +480,7 @@ namespace ScriptingClass
             return oldCustomName;
         }
 
+
+        //--------------END COPY TO GAME--------------//
     }
 }
