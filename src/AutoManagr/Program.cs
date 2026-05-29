@@ -976,6 +976,10 @@ namespace ScriptingClass
 
         public class TurnOnBlocksDisabledBySerwerManager : IManager
         {
+            private const string defaultIgnoreNameTag = "Ignore";
+
+            private string _ignoreNameTag;
+
             private const string LargeStoneCrusherSubtypeName = "LargeStoneCrusher";
             private Program _program;
             private IMyProgrammableBlock _me;
@@ -983,6 +987,8 @@ namespace ScriptingClass
             {
                 _program = program;
                 _me = me;
+
+                _ignoreNameTag = defaultIgnoreNameTag;
             }
 
             public IEnumerable<IManagerTask> GetTasks()
@@ -990,17 +996,21 @@ namespace ScriptingClass
                 var assemblerTypeBlocks = new List<IMyTerminalBlock>();
                 _program.GridTerminalSystem.GetBlocksOfType<IMyAssembler>(assemblerTypeBlocks);
 
-                var assemblers = assemblerTypeBlocks.Where(x => !x.BlockDefinition.SubtypeName.ToLower().Contains(LargeStoneCrusherSubtypeName.ToLower()) && x.CubeGrid == _me.CubeGrid).ToList(); //Only assemblers from current grid
+                var assemblers = assemblerTypeBlocks
+                    .Where(x => !x.BlockDefinition.SubtypeName.ToLower().Contains(LargeStoneCrusherSubtypeName.ToLower()) && x.CubeGrid == _me.CubeGrid)
+                    .Where(x => !x.DisplayNameText.ToLower().Contains(_ignoreNameTag.ToLower())).ToList(); //Only assemblers from current grid
 
                 var refineriesTypeBlocks = new List<IMyTerminalBlock>();
                 _program.GridTerminalSystem.GetBlocksOfType<IMyRefinery>(refineriesTypeBlocks);
 
-                var refineries = refineriesTypeBlocks.Where(x => x.CubeGrid == _me.CubeGrid).ToList(); //Only from current grid
+                var refineries = refineriesTypeBlocks
+                    .Where(x => x.CubeGrid == _me.CubeGrid).Where(x => !x.DisplayNameText.ToLower().Contains(_ignoreNameTag.ToLower())).ToList(); //Only from current grid
 
                 var gravityGeneratorTypeBlocks = new List<IMyTerminalBlock>();
                 _program.GridTerminalSystem.GetBlocksOfType<IMyGravityGenerator>(gravityGeneratorTypeBlocks);
 
-                var gravityGenerators = gravityGeneratorTypeBlocks.Where(x => x.CubeGrid == _me.CubeGrid).ToList(); //Only from current grid
+                var gravityGenerators = gravityGeneratorTypeBlocks
+                    .Where(x => x.CubeGrid == _me.CubeGrid).Where(x => !x.DisplayNameText.ToLower().Contains(_ignoreNameTag.ToLower())).ToList(); //Only from current grid
 
                 var blocks = new List<IMyTerminalBlock>();
                 blocks.AddRange(assemblers);

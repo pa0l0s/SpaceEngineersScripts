@@ -62,7 +62,7 @@ namespace ScriptingClass
 			}
 			CleanupTimeouts();
 
-			doorManager.ManageDoors();
+			//doorManager.ManageDoors();
 		}
 
 		void DisplayStatus()
