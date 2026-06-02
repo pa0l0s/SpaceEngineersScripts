@@ -97,7 +97,7 @@ namespace ScriptingClass
         void Main()
         {
             _rotator.DoTask(); //rotator is done every step always.
-            Echo(string.Format($"Tasks in queue: {_taskQueue.Count}"));
+            Echo($"Tasks in queue: {_taskQueue.Count} | Managers pending: {_managersQueue.Count}");
 
             if (_managersQueue.Count == 0)
             {
@@ -145,284 +145,363 @@ namespace ScriptingClass
                 }
             }
 
-
+            EchoRuntimeLoad();
         }
 
+        // Logs computer (programmable block) load metrics. Useful in multiplayer
+        // to verify that we are keeping the per-tick budget low.
+        void EchoRuntimeLoad()
+        {
+            double instrPct = Runtime.MaxInstructionCount > 0
+                ? 100.0 * Runtime.CurrentInstructionCount / Runtime.MaxInstructionCount
+                : 0.0;
+            double depthPct = Runtime.MaxCallChainDepth > 0
+                ? 100.0 * Runtime.CurrentCallChainDepth / Runtime.MaxCallChainDepth
+                : 0.0;
+
+            Echo($"Load: last {Runtime.LastRunTimeMs:0.00} ms, gap {Runtime.TimeSinceLastRun.TotalMilliseconds:0} ms");
+            Echo($"Instr: {Runtime.CurrentInstructionCount}/{Runtime.MaxInstructionCount} ({instrPct:0.0}%)");
+            Echo($"Depth: {Runtime.CurrentCallChainDepth}/{Runtime.MaxCallChainDepth} ({depthPct:0.0}%)");
+        }
+
+        /// <summary>
+        /// Scans local grid for damaged blocks and runs the closest welders.
+        ///
+        /// Designed for low per-tick load: GetTasks() only yields cheap descriptor
+        /// objects, then the Main loop dequeues ONE subtask per tick (sorted by
+        /// GetPriority(), lower first):
+        ///   1. UpdateRepairTask        (one per active repair — turns welder off when target is healed/timed out)
+        ///   2. CleanupRepairsTask      (drop finished/expired repairs)
+        ///   3. RefreshWeldersTask      (re-fetch welders, skipping Ignored)
+        ///   3. RefreshGridBlocksTask   (re-fetch local grid blocks)
+        ///   4. CheckBlockTask          (batches of CheckBlocksPerTick blocks)
+        ///   5. TurnOffIdleWeldersTask  (off any cached welder not in an active repair)
+        ///
+        /// Caches survive between rounds, so the per-block tasks emitted in round N
+        /// operate on the snapshot populated by the refresh tasks of round N-1.
+        /// Welders with IgnoreNameTag in CustomName are never touched by this
+        /// manager (same convention as SimpleInventoryManager).
+        /// </summary>
         public class DamageManager : IManager
         {
             private Program _program;
             private IMyProgrammableBlock _me;
-            private List<MyRepairInfo> _activeRepairs;
-            float minimumBlockHealth = 0.85f;
-            float stopRepairHealth = 0.99f;
-            TimeSpan repairTimeout = TimeSpan.FromSeconds(60);
-            float maximumWelderDamagedDistance = 9.0f; //If lower has problems with distance to big blocks like big thrusters.
-            TimeSpan timeoutDispose = TimeSpan.FromMinutes(5);
-            bool showDamagedOnHud = true;
-            int numberOfWeldersToFindNearest = 3; //Will search for 3 nearest to damaged block welders and try run them all to spped up repair.
+
+            public List<IMyCubeBlock> CachedGridBlocks { get; private set; }
+            public List<IMyTerminalBlock> CachedWelders { get; private set; }
+            public List<MyRepairInfo> ActiveRepairs { get; private set; }
+
+            public float MinimumBlockHealth = 0.85f;
+            public float StopRepairHealth = 0.99f;
+            public TimeSpan RepairTimeout = TimeSpan.FromSeconds(60);
+            // If lower the script struggles with the size of big blocks like large thrusters.
+            public float MaximumWelderDamagedDistance = 9.0f;
+            public TimeSpan TimeoutDispose = TimeSpan.FromMinutes(5);
+            public bool ShowDamagedOnHud = true;
+            // For each damaged block we will pick this many nearest welders and turn them on.
+            public int NumberOfWeldersToFindNearest = 3;
+            // How many blocks one CheckBlockTask processes per tick. Tune to balance
+            // per-tick instruction budget vs scan latency on large grids.
+            public int CheckBlocksPerTick = 50;
+            // Welders (and any blocks) whose CustomName contains this tag are left
+            // alone, matching the convention used in SimpleInventoryManager.
+            public string IgnoreNameTag = "Ignore";
 
             public DamageManager(Program program, IMyProgrammableBlock me)
             {
                 _program = program;
                 _me = me;
 
-                _activeRepairs = new List<MyRepairInfo>();
+                CachedGridBlocks = new List<IMyCubeBlock>();
+                CachedWelders = new List<IMyTerminalBlock>();
+                ActiveRepairs = new List<MyRepairInfo>();
             }
 
             public IEnumerable<IManagerTask> GetTasks()
             {
-                var tasks = new List<IManagerTask>();
-                GetDamagedBlocks();
-                DisableWeldersWhenRapairDone();
-                if (showDamagedOnHud)
+                // 1. First re-check every remembered repair: if the block is back
+                // to health (or the repair timed out / block is gone) the welder
+                // is switched off here, before we do any new scanning work.
+                var repairsSnapshot = new List<MyRepairInfo>(ActiveRepairs);
+                foreach (var repair in repairsSnapshot)
                 {
-                    //HighlightDamaged();
+                    yield return new UpdateRepairTask(_program, this, repair);
                 }
-                CleanupTimeouts();
-                return tasks;
-            }
 
-            void GetDamagedBlocks()
-            {
-                //List<IMyTerminalBlock> blocks = new List<IMyTerminalBlock>();
-                //this.GridTerminalSystem.GetBlocks(blocks);
+                // 2. Drop entries that UpdateRepairTask marked Done/Timeout so the
+                // scan and the idle-shutoff below operate on a fresh set.
+                yield return new CleanupRepairsTask(this);
 
-                List<IMyCubeBlock> blocksCube = new List<IMyCubeBlock>();
-                _program.GridTerminalSystem.GetBlocksOfType<IMyCubeBlock>(blocksCube);
-                blocksCube = blocksCube.Where(x => x.CubeGrid == _me.CubeGrid).ToList();
+                // 3. Refresh caches for the upcoming scan / for next round.
+                yield return new RefreshWeldersTask(_program, this);
+                yield return new RefreshGridBlocksTask(_program, _me, this);
 
-                var textSb = new StringBuilder();
-                textSb.AppendFormat($"Serching in {blocksCube.Count} blocks...");
-                textSb.AppendFormat($"Repairs: {_activeRepairs.Count} Timeout:{_activeRepairs.Count(x => x.Timeout)}");
-
-                _program.Echo(textSb.ToString());
-
-                blocksCube.ForEach(block =>
+                // 4. Scan blocks in batches. CheckBlockTask adds new entries to
+                // ActiveRepairs when it finds damage and turns on the nearest
+                // welder(s) — those welders are then "busy" for step 5.
+                var blocksSnapshot = new List<IMyCubeBlock>(CachedGridBlocks);
+                int batchSize = CheckBlocksPerTick > 0 ? CheckBlocksPerTick : 1;
+                for (int start = 0; start < blocksSnapshot.Count; start += batchSize)
                 {
-                    if (block != null)
-                    {
-                        if (GetMyTerminalBlockHealth(ref block) < this.minimumBlockHealth)
-                        {
-                            ShowOnHud(block, true);
-
-                            //GetWelsersAndStartRepair(block);
-                        }
-
-                        else if (!block.IsFunctional)
-                        {
-                            ShowOnHud(block, true);
-
-                            //GetWelsersAndStartRepair(block);
-                        }
-
-                        else
-                        {
-                            ShowOnHud(block, false);
-                        }
-                    }
-                });
-            }
-
-            void GetWelsersAndStartRepair(IMyCubeBlock block)
-            {
-                List<IMyTerminalBlock> allWelders = new List<IMyTerminalBlock>();
-                _program.GridTerminalSystem.GetBlocksOfType<IMyShipWelder>(allWelders);
-
-                _program.Echo(string.Format($"Damaged block: {block.DisplayNameText}, {block.EntityId}"));
-                var nearestWelders = allWelders.OrderBy(welder => Vector3D.Distance(block.GetPosition(), welder.GetPosition())).Take(numberOfWeldersToFindNearest).ToList();
-                nearestWelders.ForEach(welder =>
-                {
-                    RepairDamaged(block, welder);
+                    int count = Math.Min(batchSize, blocksSnapshot.Count - start);
+                    var batch = blocksSnapshot.GetRange(start, count);
+                    yield return new CheckBlockTask(_program, this, batch);
                 }
-                );
 
+                // 5. Final safety pass: any cached (non-Ignored) welder that is
+                // not tied to an active repair gets turned off. This guarantees
+                // welders go OFF once no damaged blocks remain.
+                yield return new TurnOffIdleWeldersTask(_program, this);
             }
 
-            void RepairDamaged(IMyCubeBlock block, IMyTerminalBlock nearestWelder)
+            // Dr. Novikov snippet: http://forums.keenswh.com/threads/snippet-get-block-health.7368130/
+            public float GetBlockHealth(IMyCubeBlock block)
             {
-                if (_activeRepairs.FirstOrDefault(x => x.Welder == nearestWelder && x.DamagedBlock == block) == null) //&& DistanceSquared(nearestWelder, block)<maximumWelderDamagedDistance
+                IMySlimBlock slim = block.CubeGrid.GetCubeBlock(block.Position);
+                return (slim.BuildIntegrity - slim.CurrentDamage) / slim.MaxIntegrity;
+            }
+
+            public void ShowOnHud(IMyCubeBlock block, bool show)
+            {
+                if (!ShowDamagedOnHud) return;
+                var terminal = block as IMyTerminalBlock;
+                if (terminal == null || terminal is IMyRadioAntenna) return;
+
+                try
                 {
-                    _program.Echo(string.Format($"Welder: {nearestWelder.DisplayNameText}, {nearestWelder.EntityId}"));
-
-                    if (Vector3D.Distance(nearestWelder.GetPosition(), block.GetPosition()) < maximumWelderDamagedDistance)
-                    {
-
-                        try
-                        {
-                            nearestWelder.ApplyAction("OnOff_On");
-                        }
-                        catch (Exception ex)
-                        {
-                            _program.Echo(ex.Message);
-                        }
-
-                        _activeRepairs.Add(new MyRepairInfo(nearestWelder, block, DistanceSquared(nearestWelder, block)));
-                    }
-                    else
-                    {
-                        _program.Echo("Distance to big " + nearestWelder.DisplayNameText + ":" + DistanceSquared(nearestWelder, block).ToString());
-                    }
+                    terminal.ApplyAction(show ? "ShowOnHUD_On" : "ShowOnHUD_Off");
+                }
+                catch (Exception ex)
+                {
+                    // Some exceptions are caused by grids connected via connector.
+                    _program.Echo(ex.Message);
                 }
             }
 
-            void DisableWeldersWhenRapairDone()
+            public class RefreshGridBlocksTask : IManagerTask
             {
-                _activeRepairs.ForEach(activeRepair =>
+                Program _program;
+                IMyProgrammableBlock _me;
+                DamageManager _mgr;
+
+                public RefreshGridBlocksTask(Program program, IMyProgrammableBlock me, DamageManager mgr)
                 {
-                    var damagedBlock = activeRepair.DamagedBlock;
-                    if (GetMyTerminalBlockHealth(ref damagedBlock) > this.stopRepairHealth)
-                    {
-                        try
-                        {
-                            activeRepair.Welder.ApplyAction("OnOff_Off");
-                        }
-                        catch (Exception ex)
-                        {
-                            _program.Echo(ex.Message);
-                        }
-                        activeRepair.Done = true;
-                        var text = activeRepair.Welder.CustomName + " Done";
-                        _program.Echo(text);
-                    }
-                    else if ((DateTime.UtcNow.Ticks - activeRepair.CreateDate.Ticks - repairTimeout.Ticks) > 0)
-                    {
-                        try
-                        {
-                            activeRepair.Welder.ApplyAction("OnOff_Off");
-                        }
-                        catch (Exception ex)
-                        {
-                            _program.Echo(ex.Message);
-                        }
-                        activeRepair.Timeout = true;
-                        var text = activeRepair.Welder.CustomName + " Timeout" + (DateTime.UtcNow.Ticks - activeRepair.CreateDate.Ticks - repairTimeout.Ticks).ToString();
-                        _program.Echo(text);
-                    }
-                });
-
-                _activeRepairs.RemoveAll(x => x.Done);
-            }
-
-            void HighlightDamaged()
-            {
-                List<IMyTerminalBlock> blocks = new List<IMyTerminalBlock>();
-                _program.GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(blocks);
-
-                for (int i = 0; i < blocks.Count; i++)
-                {
-                    if (blocks[i] != null && !(blocks[i] is IMyRadioAntenna))
-                    {
-                        if (!blocks[i].IsFunctional)
-                        {
-
-                            try
-                            {
-                                if (blocks[i] != null)
-                                {
-                                    blocks[i].ApplyAction("ShowOnHUD_On");
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                //Some exceptions are caused by grids connected via connector
-                                _program.Echo(ex.Message + blocks[i].DisplayNameText);
-                            }
-                        }
-
-                        else
-                        {
-                            try
-                            {
-                                //blocks[i].RequestShowOnHUD(false); 
-                                //blocks[i]?.ApplyAction("ShowOnHUD_Off");
-                                if (blocks[i] != null)
-                                {
-                                    blocks[i].ApplyAction("ShowOnHUD_Off");
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                //Some exceptions are caused by grids connected via connector
-                                _program.Echo(ex.Message + blocks[i].DisplayNameText);
-
-                            }
-                        }
-                    }
-
+                    _program = program;
+                    _me = me;
+                    _mgr = mgr;
                 }
 
-            }
-
-            void CleanupTimeouts()
-            {
-                _activeRepairs.RemoveAll(x => x.Timeout && (DateTime.UtcNow.Ticks - x.CreateDate.Ticks - timeoutDispose.Ticks) > 0);
-            }
-
-            private void ShowOnHud(IMyCubeBlock block, bool show)
-            {
-                if (block is IMyTerminalBlock)
+                public void DoTask()
                 {
-                    ShowOnHud((IMyTerminalBlock)block, show);
+                    var blocks = new List<IMyCubeBlock>();
+                    _program.GridTerminalSystem.GetBlocksOfType<IMyCubeBlock>(blocks);
 
-                }
-            }
-
-            private void ShowOnHud(IMyTerminalBlock block, bool show)
-            {
-                if (showDamagedOnHud && !(block is IMyRadioAntenna))
-                {
-                    if (show)
+                    _mgr.CachedGridBlocks.Clear();
+                    for (int i = 0; i < blocks.Count; i++)
                     {
-
-                        try
-                        {
-                            if (block != null)
-                            {
-                                block.ApplyAction("ShowOnHUD_On");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            //Some exceptions are caused by grids connected via connector
-                            _program.Echo(ex.Message + block.DisplayNameText);
-                        }
-
+                        if (blocks[i].CubeGrid == _me.CubeGrid)
+                            _mgr.CachedGridBlocks.Add(blocks[i]);
                     }
-                    else
+
+                    _program.Echo($"Damage scan cached {_mgr.CachedGridBlocks.Count} grid blocks, {_mgr.ActiveRepairs.Count} active repairs");
+                }
+
+                public int GetPriority() { return 3; }
+            }
+
+            public class RefreshWeldersTask : IManagerTask
+            {
+                Program _program;
+                DamageManager _mgr;
+
+                public RefreshWeldersTask(Program program, DamageManager mgr)
+                {
+                    _program = program;
+                    _mgr = mgr;
+                }
+
+                public void DoTask()
+                {
+                    var welders = new List<IMyTerminalBlock>();
+                    _program.GridTerminalSystem.GetBlocksOfType<IMyShipWelder>(welders);
+
+                    string ignore = _mgr.IgnoreNameTag.ToLower();
+                    _mgr.CachedWelders.Clear();
+                    for (int i = 0; i < welders.Count; i++)
                     {
-
-                        try
-                        {
-                            if (block != null)
-                            {
-                                block.ApplyAction("ShowOnHUD_Off");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            //Some exceptions are caused by grids connected via connector
-                            _program.Echo(ex.Message + block.DisplayNameText);
-                        }
-
+                        if (!welders[i].CustomName.ToLower().Contains(ignore))
+                            _mgr.CachedWelders.Add(welders[i]);
                     }
                 }
+
+                public int GetPriority() { return 3; }
             }
 
-            //Dr. Novikov snippet: http://forums.keenswh.com/threads/snippet-get-block-health.7368130/ 
-            public float GetMyTerminalBlockHealth(ref IMyCubeBlock block)
+            public class CheckBlockTask : IManagerTask
             {
-                IMySlimBlock slimblock = block.CubeGrid.GetCubeBlock(block.Position);
-                float MaxIntegrity = slimblock.MaxIntegrity;
-                float BuildIntegrity = slimblock.BuildIntegrity;
-                float CurrentDamage = slimblock.CurrentDamage;
+                Program _program;
+                DamageManager _mgr;
+                List<IMyCubeBlock> _batch;
 
-                return (BuildIntegrity - CurrentDamage) / MaxIntegrity;
+                public CheckBlockTask(Program program, DamageManager mgr, List<IMyCubeBlock> batch)
+                {
+                    _program = program;
+                    _mgr = mgr;
+                    _batch = batch;
+                }
+
+                public void DoTask()
+                {
+                    if (_batch == null) return;
+
+                    for (int i = 0; i < _batch.Count; i++)
+                    {
+                        var block = _batch[i];
+                        if (block == null) continue;
+
+                        float health;
+                        try { health = _mgr.GetBlockHealth(block); }
+                        catch { continue; } // block was likely destroyed between rounds
+
+                        bool damaged = health < _mgr.MinimumBlockHealth || !block.IsFunctional;
+                        _mgr.ShowOnHud(block, damaged);
+
+                        if (damaged) StartRepair(block);
+                    }
+                }
+
+                private void StartRepair(IMyCubeBlock block)
+                {
+                    Vector3D blockPos = block.GetPosition();
+
+                    var nearest = _mgr.CachedWelders
+                        .OrderBy(w => Vector3D.DistanceSquared(blockPos, w.GetPosition()))
+                        .Take(_mgr.NumberOfWeldersToFindNearest);
+
+                    foreach (var welder in nearest)
+                    {
+                        bool already = false;
+                        for (int i = 0; i < _mgr.ActiveRepairs.Count; i++)
+                        {
+                            var r = _mgr.ActiveRepairs[i];
+                            if (r.Welder == welder && r.DamagedBlock == block) { already = true; break; }
+                        }
+                        if (already) continue;
+
+                        double distance = Vector3D.Distance(welder.GetPosition(), blockPos);
+                        if (distance > _mgr.MaximumWelderDamagedDistance) continue;
+
+                        try { welder.ApplyAction("OnOff_On"); }
+                        catch (Exception ex) { _program.Echo(ex.Message); }
+
+                        _mgr.ActiveRepairs.Add(new MyRepairInfo(welder, block, distance));
+                        _program.Echo($"Repair: {welder.CustomName} -> {block.DisplayNameText}");
+                    }
+                }
+
+                public int GetPriority() { return 4; }
             }
-            //--------------- 
 
-            public double DistanceSquared(IMyCubeBlock block1, IMyCubeBlock block2)
+            public class UpdateRepairTask : IManagerTask
             {
-                return Vector3D.Distance(block1.GetPosition(), block2.GetPosition());
+                Program _program;
+                DamageManager _mgr;
+                MyRepairInfo _repair;
+
+                public UpdateRepairTask(Program program, DamageManager mgr, MyRepairInfo repair)
+                {
+                    _program = program;
+                    _mgr = mgr;
+                    _repair = repair;
+                }
+
+                public void DoTask()
+                {
+                    if (_repair.Done || _repair.Timeout) return;
+
+                    float health;
+                    try { health = _mgr.GetBlockHealth(_repair.DamagedBlock); }
+                    catch
+                    {
+                        // damaged block went away — stop the welder and mark done
+                        TurnOffWelder();
+                        _repair.Done = true;
+                        return;
+                    }
+
+                    if (health > _mgr.StopRepairHealth)
+                    {
+                        TurnOffWelder();
+                        _repair.Done = true;
+                        _program.Echo($"{_repair.Welder.CustomName} done");
+                    }
+                    else if ((DateTime.UtcNow - _repair.CreateDate) > _mgr.RepairTimeout)
+                    {
+                        TurnOffWelder();
+                        _repair.Timeout = true;
+                        _program.Echo($"{_repair.Welder.CustomName} timeout");
+                    }
+                }
+
+                private void TurnOffWelder()
+                {
+                    try { _repair.Welder.ApplyAction("OnOff_Off"); }
+                    catch (Exception ex) { _program.Echo(ex.Message); }
+                }
+
+                public int GetPriority() { return 1; }
+            }
+
+            public class CleanupRepairsTask : IManagerTask
+            {
+                DamageManager _mgr;
+
+                public CleanupRepairsTask(DamageManager mgr) { _mgr = mgr; }
+
+                public void DoTask()
+                {
+                    _mgr.ActiveRepairs.RemoveAll(r => r.Done);
+                    _mgr.ActiveRepairs.RemoveAll(r =>
+                        r.Timeout && (DateTime.UtcNow - r.CreateDate) > _mgr.TimeoutDispose);
+                }
+
+                public int GetPriority() { return 2; }
+            }
+
+            public class TurnOffIdleWeldersTask : IManagerTask
+            {
+                Program _program;
+                DamageManager _mgr;
+
+                public TurnOffIdleWeldersTask(Program program, DamageManager mgr)
+                {
+                    _program = program;
+                    _mgr = mgr;
+                }
+
+                public void DoTask()
+                {
+                    for (int i = 0; i < _mgr.CachedWelders.Count; i++)
+                    {
+                        var welder = _mgr.CachedWelders[i];
+
+                        bool busy = false;
+                        for (int j = 0; j < _mgr.ActiveRepairs.Count; j++)
+                        {
+                            if (_mgr.ActiveRepairs[j].Welder == welder) { busy = true; break; }
+                        }
+                        if (busy) continue;
+
+                        // Skip if already off — avoids paying ApplyAction cost every round.
+                        var functional = welder as IMyFunctionalBlock;
+                        if (functional == null || !functional.Enabled) continue;
+
+                        try { welder.ApplyAction("OnOff_Off"); }
+                        catch (Exception ex) { _program.Echo(ex.Message); }
+                    }
+                }
+
+                public int GetPriority() { return 5; }
             }
 
             public class MyRepairInfo
@@ -443,71 +522,6 @@ namespace ScriptingClass
                 public bool Timeout { get; set; }
                 public bool Done { get; set; }
                 public double WelderDamagedDistance { get; set; }
-            }
-
-            public class RepairManagerTask : IManagerTask
-            {
-                private Program _program;
-                private IMyCubeBlock _block;
-                private IMyTerminalBlock _nearestWelder;
-                private List<MyRepairInfo> _activeRepairs;
-                private float _maximumWelderDamagedDistance;
-
-                public RepairManagerTask(Program program, IMyCubeBlock block, IMyTerminalBlock nearestWelder, ref List<MyRepairInfo> activeRepairs, float maximumWelderDamagedDistance)
-                {
-                    _program = program;
-                    _block = block;
-                    _nearestWelder = nearestWelder;
-                    _activeRepairs = activeRepairs;
-                    _maximumWelderDamagedDistance = maximumWelderDamagedDistance;
-                }
-                public void DoTask()
-                {
-                    RepairDamaged(_block, _nearestWelder);
-                }
-
-                public int GetPriority()
-                {
-                    return 2;
-                }
-
-                void RepairDamaged(IMyCubeBlock block, IMyTerminalBlock nearestWelder)
-                {
-                    if (_activeRepairs.FirstOrDefault(x => x.Welder == nearestWelder && x.DamagedBlock == block) == null) //&& DistanceSquared(nearestWelder, block)<maximumWelderDamagedDistance
-                    {
-                        _program.Echo(string.Format($"Welder: {nearestWelder.DisplayNameText}, {nearestWelder.EntityId}"));
-
-                        if (DistanceSquared(nearestWelder.GetPosition(), block.GetPosition()) < _maximumWelderDamagedDistance)
-                        {
-
-                            try
-                            {
-                                nearestWelder.ApplyAction("OnOff_On");
-                            }
-                            catch (Exception ex)
-                            {
-                                _program.Echo(ex.Message);
-                            }
-
-                            _activeRepairs.Add(new MyRepairInfo(nearestWelder, block, DistanceSquared(nearestWelder, block)));
-                        }
-                        else
-                        {
-                            _program.Echo("Distance to big " + nearestWelder.DisplayNameText + ":" + DistanceSquared(nearestWelder, block).ToString());
-                        }
-                    }
-                }
-                public float DistanceSquared(IMyCubeBlock block1, IMyCubeBlock block2)
-                {
-                    return DistanceSquared(block1.GetPosition(), block2.GetPosition());
-                }
-                public float DistanceSquared(Vector3D point1, Vector3D point2)
-                {
-                    //var dist = Math.Sqrt(point1.Zip(point2, (a, b) => (a - b) * (a - b)).Sum());
-                    float distance = (float)Math.Sqrt(Math.Pow(point1.X - point2.X, 2) + Math.Pow(point1.Y - point2.Y, 2) + Math.Pow(point1.Z - point2.Z, 2));
-                    return distance;
-                }
-
             }
         }
 
