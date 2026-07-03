@@ -299,8 +299,65 @@ namespace ScriptingClass
             _status = _hasPlayer ? "Guarding player" : "Guarding (no player seen)";
         }
 
+        void RunAttack()
+        {
+            ReadSensor();
+            RaycastConfirmHostile();
+
+            if (!HostileInBubble()) { CeaseFire(); _state = State.Guard; _status = "target lost -> Guard"; return; }
+
+            Vector3D center = GuardCenter();
+            Vector3D pos = _rc.GetPosition();
+            Vector3D up = UpVec();
+
+            // Positioning: stay inside the bubble; only back off if the hostile crowds < MinStandoff.
+            Vector3D toHostile = Reject(_hostilePos - pos, up);
+            double dist = toHostile.Length();
+            Vector3D target = pos;
+            if (dist < MinStandoff && dist > 1e-3)
+                target = pos - Vector3D.Normalize(toHostile) * (MinStandoff - dist);
+
+            Vector3D off = Reject(target - center, up);
+            if (off.Length() > GuardRadius && off.Length() > 1e-6)
+                target = center + Vector3D.Normalize(off) * GuardRadius;
+
+            ControlFlight(target, true, HoverAltitude, _hostilePos, true);
+
+            if (_cameraConfirmed) OpenFire(); else CeaseFire();
+            _status = "Attacking " + (_cameraConfirmed ? "(firing)" : "(aiming)");
+        }
+
+        // Confirm a hostile is within the forward camera's aim cone and range before firing.
+        // Also refines the hostile track from the raycast hit.
+        void RaycastConfirmHostile()
+        {
+            _cameraConfirmed = false;
+            if (_camera == null || !HostileFresh()) return;
+            try { _camera.EnableRaycast = true; } catch { }
+
+            Vector3D dir = _hostilePos - _camera.GetPosition();
+            double d = dir.Length();
+            if (d < 1.0 || d > WeaponRange) return;
+
+            MatrixD cm = _camera.WorldMatrix;
+            Vector3D local = Vector3D.TransformNormal(dir, MatrixD.Transpose(cm));
+            double yaw = MathHelper.ToDegrees(Math.Atan2(local.X, -local.Z));
+            double pitch = MathHelper.ToDegrees(Math.Atan2(local.Y, -local.Z));
+            if (Math.Abs(yaw) > AimConeDegrees || Math.Abs(pitch) > AimConeDegrees) return;
+
+            if (!_camera.CanScan(d)) return;
+            MyDetectedEntityInfo info = _camera.Raycast(d, 0f, 0f);
+            if (!info.IsEmpty() && info.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies)
+            {
+                _hostilePos = info.Position; _hostileVel = info.Velocity;
+                _hostileId = info.EntityId; _hostileLastSeen = _now; _hasHostile = true;
+                _cameraConfirmed = true;
+            }
+        }
+
+        void OpenFire()  { for (int i = 0; i < _guns.Count; i++) try { _guns[i].SetValueBool("Shoot", true);  } catch { } }
+
         // --- stubs replaced in later tasks ---
-        void RunAttack() { HoverHold(); _status = "Attack (stub)"; }
         void RunRtb()    { HoverHold(); _status = "RTB (stub)"; }
         void RunDocked() { _status = "Docked (stub)"; }
         bool ShouldRtb() { return false; }
