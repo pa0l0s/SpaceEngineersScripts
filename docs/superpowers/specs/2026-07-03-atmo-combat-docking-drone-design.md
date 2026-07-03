@@ -87,10 +87,14 @@ Velocity and mass come from `IMyShipController.GetShipVelocities()`,
 - Entered when a **hostile** is detected (Sensor hostile-in-box and/or forward
   camera raycast) **AND** the hostile is within `GuardRadius + EngageMargin` of
   the last-known player position.
-- Behavior: yaw to face the hostile, hold `StandoffRange` from it (translation
-  target = point `StandoffRange` from hostile along the drone→hostile line, but
-  **clamped to stay inside the guard bubble** so the drone never strays far from
-  the player), maintain altitude.
+- Behavior: yaw to face the hostile and maintain altitude. The **guard-bubble
+  tether dominates** positioning: the drone stays within `GuardRadius` of the
+  last-known player position at all times. Within that constraint it keeps at
+  least `MinStandoff` from the hostile (backs off if the hostile crowds it) but
+  never leaves the bubble to open range. Because gatlings reach `WeaponRange`
+  (far larger than the bubble), staying in the bubble is always close enough to
+  shoot. Translation target = current hover point, nudged to honor `MinStandoff`
+  and stay inside the bubble.
 - **Fire** the vanilla gatlings (`IMySmallGatlingGun`/`IMyUserControllableGun`
   `Shoot` action or `ShootOnce`) only when a **forward camera raycast confirms a
   hostile entity within a small aim cone and within `WeaponRange`**. Cease fire
@@ -154,7 +158,7 @@ IgnoreNameTag        = "Ignore"
 HoverAltitude        = 30    // m above surface (Guard)
 GuardRadius          = 50    // m loiter bubble around player
 EngageMargin         = 15    // m past GuardRadius a hostile may be to still engage
-StandoffRange        = 120   // m preferred distance to hostile when attacking
+MinStandoff          = 25    // m; back off if a hostile crowds closer than this
 WeaponRange          = 600   // m max gatling engagement / raycast confirm range
 AimConeDegrees       = 5     // gun-fire aim tolerance (camera-confirmed)
 MaxTiltDegrees       = 25    // cap on translation tilt
