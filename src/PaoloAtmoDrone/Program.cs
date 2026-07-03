@@ -274,14 +274,95 @@ namespace ScriptingClass
             Echo(text);
         }
 
+        void RunGuard()
+        {
+            ReadSensor();
+
+            // Expire a stale player track (keep last-known pos, but stop trusting it as "live").
+            if (_hasPlayer && (_now - _playerLastSeen).TotalSeconds > PlayerLostSeconds)
+                _hasPlayer = false; // GuardCenter() then falls back to hold/current pos
+
+            if (HostileInBubble()) { _state = State.Attack; _status = "Attack!"; return; }
+
+            Vector3D center = GuardCenter();
+            Vector3D pos = _rc.GetPosition();
+            Vector3D up = UpVec();
+            Vector3D horOff = Reject(pos - center, up);
+
+            Vector3D target;
+            if (horOff.Length() > GuardRadius && horOff.Length() > 1e-6)
+                target = center + Vector3D.Normalize(horOff) * GuardRadius; // return to bubble edge
+            else
+                target = pos; // inside bubble -> station-keep (PD damping settles it)
+
+            ControlFlight(target, true, HoverAltitude, center, _hasPlayer || _hasHold);
+            _status = _hasPlayer ? "Guarding player" : "Guarding (no player seen)";
+        }
+
         // --- stubs replaced in later tasks ---
-        void RunGuard()  { HoverHold(); _status = "Guard (stub)"; }
         void RunAttack() { HoverHold(); _status = "Attack (stub)"; }
         void RunRtb()    { HoverHold(); _status = "RTB (stub)"; }
         void RunDocked() { _status = "Docked (stub)"; }
-        void ReadSensor() { }
         bool ShouldRtb() { return false; }
         void DoSetDock() { _status = "setdock (stub)"; }
+
+        bool _sensorConfigured;
+
+        void ConfigureSensor()
+        {
+            if (_sensor == null) return;
+            try
+            {
+                _sensor.Enabled = true;
+                float r = (float)Math.Max(GuardRadius, 50.0); r = Math.Min(r, 50f); // sensor max extent is 50m
+                _sensor.FrontExtend = r; _sensor.BackExtend = r; _sensor.LeftExtend = r;
+                _sensor.RightExtend = r;  _sensor.TopExtend = r;  _sensor.BottomExtend = r;
+                _sensor.DetectOwner = true;
+                _sensor.DetectFriendly = true;
+                _sensor.DetectPlayers = true;
+                _sensor.DetectEnemy = true;
+                _sensor.DetectNeutral = false;
+                _sensor.DetectSmallShips = true;
+                _sensor.DetectLargeShips = true;
+                _sensor.DetectStations = false;
+                _sensor.DetectSubgrids = false;
+                _sensor.DetectAsteroids = false;
+                _sensor.DetectFloatingObjects = false;
+                _sensorConfigured = true;
+            }
+            catch { }
+        }
+
+        // One sensor reports one LastDetectedEntity. Classify it: the OWNER character updates
+        // the player track; an ENEMY updates the hostile track. (Faction-mates are not treated
+        // as the guarded player -- the drone guards its owner.)
+        void ReadSensor()
+        {
+            if (!_sensorConfigured) ConfigureSensor();
+            if (_sensor == null) return;
+            MyDetectedEntityInfo info; try { info = _sensor.LastDetectedEntity; } catch { return; }
+            if (info.IsEmpty()) return;
+
+            if (info.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies)
+            {
+                _hostilePos = info.Position; _hostileVel = info.Velocity;
+                _hostileId = info.EntityId; _hasHostile = true; _hostileLastSeen = _now;
+            }
+            else if (info.Type == MyDetectedEntityType.CharacterHuman &&
+                     info.Relationship == MyRelationsBetweenPlayerAndBlock.Owner)
+            {
+                _lastPlayerPos = info.Position; _hasPlayer = true; _playerLastSeen = _now;
+            }
+        }
+
+        bool HostileFresh() { return _hasHostile && (_now - _hostileLastSeen).TotalSeconds <= HostileLostSeconds; }
+
+        bool HostileInBubble()
+        {
+            if (!HostileFresh()) return false;
+            Vector3D center = GuardCenter();
+            return Vector3D.Distance(_hostilePos, center) <= (GuardRadius + EngageMargin);
+        }
 
         double BatteryFraction()
         {
