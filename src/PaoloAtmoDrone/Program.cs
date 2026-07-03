@@ -78,6 +78,11 @@ namespace ScriptingClass
         const double TransKp = 0.6, TransKd = 1.8;            // horizontal PD -> accel
         const double AttGain = 6.0;                           // attitude error -> gyro rad/s
         const double MaxAngularSpeed = 6.0;                   // rad/s clamp per gyro axis
+        const double AttitudeSign = -1.0;                     // gyro-command polarity. SE gyro override
+                                                              // is sign-inverted vs. the intuitive angular
+                                                              // velocity, so the stabilizing sign is -1.
+                                                              // If the drone still corrects the WRONG way
+                                                              // (rotates toward inverted), flip to +1.0.
         const double MaxClimbAccel = 20.0, MaxDescendAccel = 12.0; // m/s^2 clamp on climb term
         const double DockDescendSpeedFactor = 0.4;            // scales AltKpAbs during terminal descent
 
@@ -755,7 +760,10 @@ namespace ScriptingClass
             MatrixD wm = _rc.WorldMatrix;
             Vector3D upErr = Vector3D.Normalize(wm.Up).Cross(Vector3D.Normalize(desiredUp));
             Vector3D fwdErr = Vector3D.Normalize(wm.Forward).Cross(Vector3D.Normalize(desiredForward));
-            Vector3D errWorld = upErr + fwdErr;
+            // AttitudeSign flips the whole command polarity to match SE's gyro-override sign
+            // convention (see the const). Wrong polarity here = positive feedback = the drone
+            // rotates itself to inverted, which is the failure this guards against.
+            Vector3D errWorld = (upErr + fwdErr) * AttitudeSign;
 
             Vector3D errBody = Vector3D.TransformNormal(errWorld, MatrixD.Transpose(wm));
             // errBody.X along Right, .Y along Up, .Z along Forward. Map to ApplyGyroOverride's
@@ -855,7 +863,15 @@ namespace ScriptingClass
             desiredForward = Vector3D.Normalize(desiredForward);
 
             ApplyAttitude(desiredUp, desiredForward);
-            ApplyThrust(mass, accelMag);
+
+            // Crash-prevention: the thrusters push along the drone's OWN up-axis (wm.Up). Only
+            // command thrust to the extent that axis is aligned with where we WANT thrust to go.
+            // When the drone is badly mis-oriented (axis >90 deg from desiredUp, e.g. inverted),
+            // this is <=0, so we cut thrust instead of firing it into the ground. Near level it
+            // is ~1 (full authority). This also tapers thrust during large tilts.
+            double upAlign = VDot(Vector3D.Normalize(wm.Up), desiredUp);
+            if (upAlign < 0) upAlign = 0;
+            ApplyThrust(mass, accelMag * upAlign);
             _lastClimbAccel = climbAccel;
         }
 
