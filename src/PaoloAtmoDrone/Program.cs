@@ -283,6 +283,90 @@ namespace ScriptingClass
                 try { _gyros[i].GyroOverride = false; _gyros[i].Pitch = 0f; _gyros[i].Yaw = 0f; _gyros[i].Roll = 0f; } catch { }
         }
 
+        // The one flight primitive. Horizontal position is always driven toward worldTarget.
+        // Vertical: aglMode=true holds aglAlt metres above the surface (PID on elevation);
+        // aglMode=false drives the drone to worldTarget's absolute vertical position (docking).
+        void ControlFlight(Vector3D worldTarget, bool aglMode, double aglAlt, Vector3D facePoint, bool hasFace)
+        {
+            if (_rc == null) return;
+            double dt = Runtime.TimeSinceLastRun.TotalSeconds;
+            if (dt <= 0 || dt > 0.5) dt = 1.0 / 60.0;
+
+            MatrixD wm = _rc.WorldMatrix;
+            Vector3D pos = _rc.GetPosition();
+            Vector3D g; try { g = _rc.GetNaturalGravity(); } catch { g = Vector3D.Zero; }
+            double gMag = g.Length();
+            Vector3D up = gMag > 1e-3 ? -Vector3D.Normalize(g) : wm.Up;
+
+            MyShipVelocities sv; try { sv = _rc.GetShipVelocities(); } catch { return; }
+            Vector3D vel = sv.LinearVelocity;
+            double mass; try { mass = _rc.CalculateShipMass().PhysicalMass; } catch { return; }
+
+            // --- vertical term -> climb acceleration ---
+            double climbAccel;
+            if (aglMode)
+            {
+                double elev;
+                if (_rc.TryGetPlanetElevation(MyPlanetElevation.Surface, out elev))
+                    climbAccel = _altPid.Update(aglAlt - elev, dt);
+                else
+                    climbAccel = -VDot(vel, up) * 2.0; // no surface: just damp vertical speed
+            }
+            else
+            {
+                double upErr = VDot(worldTarget - pos, up);
+                double upVel = VDot(vel, up);
+                climbAccel = upErr * AltKpAbs - upVel * AltKdAbs;
+            }
+            climbAccel = Clamp(climbAccel, -MaxDescendAccel, MaxClimbAccel);
+
+            // --- horizontal term -> desired horizontal acceleration (tilt) ---
+            Vector3D horErr = Reject(worldTarget - pos, up);
+            Vector3D horVel = Reject(vel, up);
+            Vector3D aHor = horErr * TransKp - horVel * TransKd;
+            double aHorMax = (gMag > 1e-3 ? gMag : 9.81) * Math.Tan(MathHelper.ToRadians((float)MaxTiltDegrees));
+            if (aHor.Length() > aHorMax && aHor.Length() > 1e-6) aHor = Vector3D.Normalize(aHor) * aHorMax;
+
+            // --- combine -> desired thrust direction & magnitude ---
+            Vector3D desiredAccel = up * (gMag + climbAccel) + aHor;
+            double accelMag = desiredAccel.Length();
+            Vector3D desiredUp = accelMag > 1e-6 ? Vector3D.Normalize(desiredAccel) : up;
+
+            // --- facing (yaw) ---
+            Vector3D desiredForward;
+            if (hasFace)
+            {
+                Vector3D f = Reject(facePoint - pos, desiredUp);
+                desiredForward = f.LengthSquared() > 1e-6 ? Vector3D.Normalize(f) : Reject(wm.Forward, desiredUp);
+            }
+            else desiredForward = Reject(wm.Forward, desiredUp);
+            if (desiredForward.LengthSquared() < 1e-6) desiredForward = wm.Forward;
+            desiredForward = Vector3D.Normalize(desiredForward);
+
+            ApplyAttitude(desiredUp, desiredForward);
+            ApplyThrust(mass, accelMag);
+            _lastClimbAccel = climbAccel;
+        }
+
+        // Downward thrusters push the drone UP. Override = required up-thrust / max available.
+        void ApplyThrust(double mass, double accelAlongUp)
+        {
+            double totalMax = 0;
+            for (int i = 0; i < _downThrusters.Count; i++)
+                try { totalMax += _downThrusters[i].MaxEffectiveThrust; } catch { }
+            if (totalMax < 1.0) return;
+            float ovr = (float)Clamp(mass * accelAlongUp / totalMax, 0.0, 1.0);
+            for (int i = 0; i < _downThrusters.Count; i++)
+                try { _downThrusters[i].Enabled = true; _downThrusters[i].ThrustOverridePercentage = ovr; } catch { }
+        }
+
+        // Station-keep: latch the current position the first time, then hold it at HoverAltitude.
+        void HoverHold()
+        {
+            if (!_hasHold) { if (_rc != null) { _holdPos = _rc.GetPosition(); _hasHold = true; } }
+            ControlFlight(_holdPos, true, HoverAltitude, Vector3D.Zero, false);
+        }
+
         /// to here
     }
 }
