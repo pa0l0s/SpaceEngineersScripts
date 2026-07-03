@@ -20,12 +20,17 @@ namespace ScriptingClass
         ///
         /// HARDWARE (all on the drone's own single small grid; tag any block "Ignore" to skip):
         ///   * Remote Control (forward), Gyroscope(s), 2x Atmospheric Thrusters pointing DOWN,
-        ///     2x forward Gatling Guns, forward Sensor, forward Camera, Antenna,
+        ///     2x forward Gatling Guns, Sensor(s), forward Camera, Antenna,
         ///     downward Small Connector, Reactor(s) + Batteries.
+        ///   SENSORS: one Sensor works but can only report ONE contact at a time, so it can't track
+        ///     the owner AND enemies reliably at once. For solid simultaneous follow + threat detect,
+        ///     add a SECOND sensor and put EnemySensorTag ("Threat") in its name: the tagged one
+        ///     detects enemies, the other follows the owner. With one sensor it does both (flickers).
         ///
         /// BEHAVIOR:
-        ///   Guard  - loiters within GuardRadius of its OWNER (forward Sensor detects the owner),
-        ///            hovering at HoverAltitude above the surface.
+        ///   Guard  - loiters within GuardRadius of its OWNER (owner Sensor detects the owner),
+        ///            hovering at HoverAltitude above the surface. The thrust axis is HARD-limited to
+        ///            MaxTiltDegrees from vertical; to descend it lowers throttle, never tilts past that.
         ///   Attack - a hostile that enters the guard bubble is engaged; the drone yaws to face it
         ///            and fires the gatlings ONLY when the forward camera confirms a hostile in the
         ///            aim cone. It stays tethered inside the bubble (never chases far from the owner).
@@ -50,6 +55,10 @@ namespace ScriptingClass
         // ------------------------------- CONFIG -------------------------------
         const string IgnoreNameTag   = "Ignore";     // repo convention: excludes a block
         const string BaseBeaconTag   = "[Base]";     // beacon/antenna name substring at base
+        const string EnemySensorTag  = "Threat";     // a Sensor whose name contains this is the ENEMY
+                                                     // sensor; others are the owner/follow sensor. With
+                                                     // 2 sensors you get reliable follow + threat detect;
+                                                     // with 1 it does both (flicker-prone, see ReadSensor).
         const string StatusLcdName    = "Drone LCD"; // optional status surface; falls back to RC/cockpit
         const int    StatusSurfaceIndex = 0;
         const string IgcChannel      = "PaoloAtmoDrone";
@@ -62,7 +71,7 @@ namespace ScriptingClass
         const double MinStandoff     = 25.0;   // m; back off if a hostile crowds closer than this
         const double WeaponRange     = 600.0;  // m max gatling engagement / raycast-confirm range
         const double AimConeDegrees  = 5.0;    // gun-fire aim tolerance (camera-confirmed)
-        const double MaxTiltDegrees  = 25.0;   // cap on translation tilt
+        const double MaxTiltDegrees  = 45.0;   // HARD cap: thrust axis never tilts >this from gravity-up
 
         const double PlayerLostSeconds  = 5.0; // hold last-known player pos this long, then station-keep
         const double HostileLostSeconds = 4.0; // drop a hostile after this long unseen
@@ -99,7 +108,8 @@ namespace ScriptingClass
         readonly List<IMyUserControllableGun> _guns = new List<IMyUserControllableGun>();
         readonly List<IMyBatteryBlock> _batteries = new List<IMyBatteryBlock>();
         readonly List<IMyReactor> _reactors = new List<IMyReactor>();
-        IMySensorBlock _sensor;
+        IMySensorBlock _ownerSensor;   // detects the owner to follow
+        IMySensorBlock _enemySensor;   // detects enemies in range (may be the SAME block if only one)
         IMyCameraBlock _camera;
         IMyRadioAntenna _antenna;
         IMyShipConnector _connector;
@@ -544,39 +554,89 @@ namespace ScriptingClass
 
         bool _sensorConfigured;
 
-        void ConfigureSensor()
+        // Assign the owner (follow) and enemy (threat) sensor roles. A Sensor named with
+        // EnemySensorTag is the enemy sensor; others are the owner sensor. With one sensor it
+        // fills BOTH roles (same block object). Called from ScanBlocks.
+        void AssignSensors()
         {
-            if (_sensor == null) return;
+            _ownerSensor = null; _enemySensor = null;
+            _scratch.Clear();
+            GridTerminalSystem.GetBlocksOfType<IMySensorBlock>(_scratch, b => OnOwnGrid(b) && !IsIgnored(b));
+
+            IMySensorBlock firstUntagged = null, secondUntagged = null;
+            for (int i = 0; i < _scratch.Count; i++)
+            {
+                var s = _scratch[i] as IMySensorBlock;
+                if (s == null) continue;
+                if (s.CustomName.IndexOf(EnemySensorTag, StringComparison.OrdinalIgnoreCase) >= 0)
+                { if (_enemySensor == null) _enemySensor = s; }
+                else if (firstUntagged == null) firstUntagged = s;
+                else if (secondUntagged == null) secondUntagged = s;
+            }
+
+            _ownerSensor = firstUntagged;
+            if (_enemySensor == null) _enemySensor = secondUntagged;      // 2nd untagged sensor = enemy
+            // Fill any empty role from the other so one sensor serves both.
+            if (_ownerSensor == null) _ownerSensor = _enemySensor;
+            if (_enemySensor == null) _enemySensor = _ownerSensor;
+            _sensorConfigured = false;                                    // reconfigure after (re)assign
+        }
+
+        void ConfigureSensors()
+        {
+            if (_ownerSensor != null && _ownerSensor == _enemySensor)
+                ConfigureOneSensor(_ownerSensor, true, true);   // single sensor: detect both
+            else
+            {
+                ConfigureOneSensor(_ownerSensor, true, false);  // follow: owner/friendly only
+                ConfigureOneSensor(_enemySensor, false, true);  // threats: enemies only
+            }
+            _sensorConfigured = true;
+        }
+
+        // Detect flags combine a RELATIONSHIP filter (Owner/Friendly/Enemy) with an ENTITY-TYPE
+        // filter (Players/Ships): an enemy character needs DetectEnemy+DetectPlayers, an enemy
+        // ship needs DetectEnemy+DetectSmallShips, etc.
+        void ConfigureOneSensor(IMySensorBlock s, bool ownerRole, bool enemyRole)
+        {
+            if (s == null) return;
             try
             {
-                _sensor.Enabled = true;
+                s.Enabled = true;
                 float r = (float)Math.Min(GuardRadius, 50.0); // clamp to the 50m sensor max extent
-                _sensor.FrontExtend = r; _sensor.BackExtend = r; _sensor.LeftExtend = r;
-                _sensor.RightExtend = r;  _sensor.TopExtend = r;  _sensor.BottomExtend = r;
-                _sensor.DetectOwner = true;
-                _sensor.DetectFriendly = true;
-                _sensor.DetectPlayers = true;
-                _sensor.DetectEnemy = true;
-                _sensor.DetectNeutral = false;
-                _sensor.DetectSmallShips = true;
-                _sensor.DetectLargeShips = true;
-                _sensor.DetectStations = false;
-                _sensor.DetectSubgrids = false;
-                _sensor.DetectAsteroids = false;
-                _sensor.DetectFloatingObjects = false;
-                _sensorConfigured = true;
+                s.FrontExtend = r; s.BackExtend = r; s.LeftExtend = r;
+                s.RightExtend = r;  s.TopExtend = r;  s.BottomExtend = r;
+                s.DetectOwner    = ownerRole;
+                s.DetectFriendly = ownerRole;
+                s.DetectEnemy    = enemyRole;
+                s.DetectNeutral  = false;
+                s.DetectPlayers  = ownerRole || enemyRole;  // owner character and/or enemy on foot
+                s.DetectSmallShips = enemyRole;             // enemy vehicles
+                s.DetectLargeShips = enemyRole;
+                s.DetectStations = false;
+                s.DetectSubgrids = false;
+                s.DetectAsteroids = false;
+                s.DetectFloatingObjects = false;
             }
             catch { }
         }
 
-        // One sensor reports one LastDetectedEntity. Classify it: the OWNER character updates
-        // the player track; an ENEMY updates the hostile track. (Faction-mates are not treated
-        // as the guarded player -- the drone guards its owner.)
+        // Each sensor reports one LastDetectedEntity; classify it. With two sensors the owner
+        // sensor only ever sees the owner and the enemy sensor only enemies, so both the player
+        // and hostile tracks stay live. With ONE sensor both roles point at the same block, so a
+        // single detection is classified either way (and the two tracks can flicker when a player
+        // AND an enemy are both in range -- that's the reason to add a 2nd, EnemySensorTag sensor).
         void ReadSensor()
         {
-            if (!_sensorConfigured) ConfigureSensor();
-            if (_sensor == null) return;
-            MyDetectedEntityInfo info; try { info = _sensor.LastDetectedEntity; } catch { return; }
+            if (!_sensorConfigured) ConfigureSensors();
+            ClassifyDetection(_ownerSensor);
+            if (_enemySensor != _ownerSensor) ClassifyDetection(_enemySensor);
+        }
+
+        void ClassifyDetection(IMySensorBlock s)
+        {
+            if (s == null) return;
+            MyDetectedEntityInfo info; try { info = s.LastDetectedEntity; } catch { return; }
             if (info.IsEmpty()) return;
 
             if (info.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies)
@@ -641,7 +701,7 @@ namespace ScriptingClass
         void ScanBlocks()
         {
             _rc = FirstOwn<IMyRemoteControl>();
-            _sensor = FirstOwn<IMySensorBlock>();
+            AssignSensors();
             _camera = FirstOwn<IMyCameraBlock>();
             _connector = FirstOwn<IMyShipConnector>();
             _antenna = FirstOwn<IMyRadioAntenna>();
@@ -716,7 +776,7 @@ namespace ScriptingClass
             if (_rc == null) _sb.Append("RemoteControl ");
             if (_gyros.Count == 0) _sb.Append("Gyro ");
             if (_downThrusters.Count == 0) _sb.Append("Thruster ");
-            if (_sensor == null) _sb.Append("(Sensor?) ");
+            if (_ownerSensor == null && _enemySensor == null) _sb.Append("(Sensor?) ");
             return _sb.ToString().Trim();
         }
 
@@ -850,6 +910,22 @@ namespace ScriptingClass
             Vector3D desiredAccel = up * (gMag + climbAccel) + aHor;
             double accelMag = desiredAccel.Length();
             Vector3D desiredUp = accelMag > 1e-6 ? Vector3D.Normalize(desiredAccel) : up;
+
+            // HARD tilt limit: the thrust axis may never point more than MaxTiltDegrees from
+            // gravity-up, no matter what. (The aHor cap above uses gMag, but the real tilt is
+            // atan(|aHor|/(gMag+climbAccel)) — which exceeds the cap while descending. So we
+            // re-clamp the final direction here.) Descending is done ONLY by reducing throttle
+            // (lower climbAccel -> less thrust), never by tilting past this limit.
+            double maxTiltRad = MathHelper.ToRadians((float)MaxTiltDegrees);
+            if (VDot(desiredUp, up) < Math.Cos(maxTiltRad))
+            {
+                Vector3D horizDir = Reject(desiredUp, up);
+                if (horizDir.LengthSquared() > 1e-12)
+                    desiredUp = Vector3D.Normalize(up * Math.Cos(maxTiltRad)
+                                                 + Vector3D.Normalize(horizDir) * Math.Sin(maxTiltRad));
+                else
+                    desiredUp = up;
+            }
 
             // --- facing (yaw) ---
             Vector3D desiredForward;
