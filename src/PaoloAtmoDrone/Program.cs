@@ -320,7 +320,7 @@ namespace ScriptingClass
             // Manual station-keep (from the "stop"/"hold" command): hold the latched point and
             // ignore player-follow until a guard/undock/reset command clears it. Still defend if
             // a hostile enters the bubble around the hold point.
-            if (_manualHold)
+            if (_manualHold && _hasHold)
             {
                 if (HostileInBubble()) { _state = State.Attack; _status = "Attack!"; return; }
                 ControlFlight(_holdPos, true, HoverAltitude, Vector3D.Zero, false);
