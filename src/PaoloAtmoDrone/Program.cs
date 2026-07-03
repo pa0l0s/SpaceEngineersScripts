@@ -15,6 +15,38 @@ namespace ScriptingClass
     {
         /// Copy code from here
 
+        /// <summary>
+        /// PaoloAtmoDrone — bottom-thruster atmospheric combat & docking drone (by Paolo).
+        ///
+        /// HARDWARE (all on the drone's own single small grid; tag any block "Ignore" to skip):
+        ///   * Remote Control (forward), Gyroscope(s), 2x Atmospheric Thrusters pointing DOWN,
+        ///     2x forward Gatling Guns, forward Sensor, forward Camera, Antenna,
+        ///     downward Small Connector, Reactor(s) + Batteries.
+        ///
+        /// BEHAVIOR:
+        ///   Guard  - loiters within GuardRadius of its OWNER (forward Sensor detects the owner),
+        ///            hovering at HoverAltitude above the surface.
+        ///   Attack - a hostile that enters the guard bubble is engaged; the drone yaws to face it
+        ///            and fires the gatlings ONLY when the forward camera confirms a hostile in the
+        ///            aim cone. It stays tethered inside the bubble (never chases far from the owner).
+        ///   RTB    - triggered when (batteries < RtbBatteryPct AND no Uranium) OR gatlings out of
+        ///            ammo. Flies to the saved dock and connects.
+        ///   Docked - thrust cut, gyros free, batteries recharge. Resume with "guard"/"undock".
+        ///
+        /// COMMANDS (run the PB with an argument):
+        ///   setdock - fly the drone onto the base connector (Connected), then run this to save the
+        ///             docking pose. Saves the ABSOLUTE pose plus, if a beacon named containing
+        ///             BaseBeaconTag is visible, a beacon-relative offset.
+        ///   guard / rtb / undock / stop / reset
+        ///
+        /// NOTE: the PB API cannot read a remote beacon's live position, so a base that moves out of
+        /// view is homed via its last saved ABSOLUTE pose. A static home base docks exactly.
+        ///
+        /// IN-GAME TUNING: gyro sign conventions and PID gains are the two things to verify first.
+        /// If the drone rolls/pitches the WRONG way, flip the sign on the offending axis in
+        /// ApplyAttitude. If hover is sluggish or oscillates, adjust AltK*/TransK* and MaxTiltDegrees.
+        /// </summary>
+
         // ------------------------------- CONFIG -------------------------------
         const string IgnoreNameTag   = "Ignore";     // repo convention: excludes a block
         const string BaseBeaconTag   = "[Base]";     // beacon/antenna name substring at base
