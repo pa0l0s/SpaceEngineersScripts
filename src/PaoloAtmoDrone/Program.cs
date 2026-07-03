@@ -234,6 +234,55 @@ namespace ScriptingClass
 
         void CeaseFire() { for (int i = 0; i < _guns.Count; i++) try { _guns[i].SetValueBool("Shoot", false); } catch { } }
 
+        // Drive gyros so the drone's Up aligns to desiredUp (thrust direction) and its
+        // Forward aligns to desiredForward (facing). Error is the sum of two cross products
+        // (each an axis*sin(angle) that rotates a current axis onto its target), expressed
+        // in the body frame, then handed to the proven ApplyGyroOverride transform.
+        void ApplyAttitude(Vector3D desiredUp, Vector3D desiredForward)
+        {
+            if (_rc == null) return;
+            MatrixD wm = _rc.WorldMatrix;
+            Vector3D upErr = Vector3D.Normalize(wm.Up).Cross(Vector3D.Normalize(desiredUp));
+            Vector3D fwdErr = Vector3D.Normalize(wm.Forward).Cross(Vector3D.Normalize(desiredForward));
+            Vector3D errWorld = upErr + fwdErr;
+
+            Vector3D errBody = Vector3D.TransformNormal(errWorld, MatrixD.Transpose(wm));
+            // errBody.X along Right, .Y along Up, .Z along Forward. Map to ApplyGyroOverride's
+            // (pitch about -Right, yaw about Up, roll about Forward) convention:
+            double pitch = Clamp(-errBody.X * AttGain, -MaxAngularSpeed, MaxAngularSpeed);
+            double yaw   = Clamp( errBody.Y * AttGain, -MaxAngularSpeed, MaxAngularSpeed);
+            double roll  = Clamp( errBody.Z * AttGain, -MaxAngularSpeed, MaxAngularSpeed);
+
+            for (int i = 0; i < _gyros.Count; i++)
+            {
+                try { _gyros[i].Enabled = true; _gyros[i].GyroPower = 1f; } catch { }
+                ApplyGyroOverride(pitch, yaw, roll, _gyros[i], wm);
+            }
+        }
+
+        // Whip-style override: angular velocity given as (pitch,yaw,roll) about the reference
+        // frame's axes, converted into each gyro's own local axes. Ported from MissileGuidance.
+        void ApplyGyroOverride(double pitchSpeed, double yawSpeed, double rollSpeed, IMyGyro gyro, MatrixD refMatrix)
+        {
+            try
+            {
+                Vector3D rotationVec = new Vector3D(-pitchSpeed, yawSpeed, rollSpeed);
+                Vector3D worldRot = Vector3D.TransformNormal(rotationVec, refMatrix);
+                Vector3D gyroLocal = Vector3D.TransformNormal(worldRot, MatrixD.Transpose(gyro.WorldMatrix));
+                gyro.Pitch = (float)gyroLocal.X;
+                gyro.Yaw = (float)gyroLocal.Y;
+                gyro.Roll = (float)gyroLocal.Z;
+                gyro.GyroOverride = true;
+            }
+            catch { }
+        }
+
+        void ReleaseGyros()
+        {
+            for (int i = 0; i < _gyros.Count; i++)
+                try { _gyros[i].GyroOverride = false; _gyros[i].Pitch = 0f; _gyros[i].Yaw = 0f; _gyros[i].Roll = 0f; } catch { }
+        }
+
         /// to here
     }
 }
