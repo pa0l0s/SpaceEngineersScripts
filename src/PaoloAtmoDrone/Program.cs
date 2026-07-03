@@ -58,6 +58,7 @@ namespace ScriptingClass
         const double CruiseAltitude  = 40.0;   // m above surface while transiting to base
         const double GuardRadius     = 50.0;   // m loiter bubble around the player
         const double EngageMargin    = 15.0;   // m past GuardRadius a hostile may be & still engage
+        const double AttackExitMargin = 10.0;  // extra m before Attack releases (Guard<->Attack hysteresis)
         const double MinStandoff     = 25.0;   // m; back off if a hostile crowds closer than this
         const double WeaponRange     = 600.0;  // m max gatling engagement / raycast-confirm range
         const double AimConeDegrees  = 5.0;    // gun-fire aim tolerance (camera-confirmed)
@@ -114,7 +115,7 @@ namespace ScriptingClass
         bool _cameraConfirmed;
 
         // Hold point (station-keep / stop)
-        Vector3D _holdPos; bool _hasHold;
+        Vector3D _holdPos; bool _hasHold; bool _manualHold;
 
         // Docking persistence
         bool _hasDock; MatrixD _dockAbs;          // connector world pose when docked (absolute)
@@ -208,12 +209,12 @@ namespace ScriptingClass
                 {
                     switch (_state)
                     {
-                        case State.Init:   _state = State.Guard; break;
+                        case State.Init:   _state = State.Guard; RunGuard(); break;
                         case State.Guard:  RunGuard();  break;
                         case State.Attack: RunAttack(); break;
                         case State.Rtb:    RunRtb();    break;
                         case State.Docked: RunDocked(); break;
-                        case State.Error:  _state = State.Guard; break; // recovered
+                        case State.Error:  _state = State.Guard; RunGuard(); break; // recovered, resume control
                     }
 
                     if (_state == State.Guard || _state == State.Attack)
@@ -241,21 +242,27 @@ namespace ScriptingClass
             string a = arg.ToLowerInvariant();
 
             if (a == "setdock") { DoSetDock(); return; }
-            if (a == "reset") { _needScan = true; _altPid.Reset(); _hasHold = false; _state = State.Guard; _status = "reset"; return; }
-            if (a == "guard") { if (_state == State.Docked) DoUndock(); _state = State.Guard; _hasHold = false; _status = "guard"; return; }
+            if (a == "reset") { _needScan = true; _altPid.Reset(); _hasHold = false; _manualHold = false; _state = State.Guard; _status = "reset"; return; }
+            if (a == "guard") { if (_state == State.Docked) DoUndock(); _state = State.Guard; _hasHold = false; _manualHold = false; _status = "guard"; return; }
             if (a == "rtb") { EnterRtb(); return; }
-            if (a == "undock") { DoUndock(); _state = State.Guard; _hasHold = false; _status = "undock"; return; }
-            if (a == "stop" || a == "hold") { _hasHold = false; _state = State.Guard; _holdNextTickAsHold(); return; }
+            if (a == "undock") { DoUndock(); _state = State.Guard; _hasHold = false; _manualHold = false; _status = "undock"; return; }
+            if (a == "stop" || a == "hold")
+            {
+                if (_state == State.Docked) DoUndock();
+                if (_rc != null) { _holdPos = _rc.GetPosition(); _hasHold = true; }
+                _manualHold = true;
+                _state = State.Guard;
+                _status = "hold";
+                return;
+            }
         }
-
-        // helper: force the next Guard tick to latch a fresh hold point == current pos.
-        void _holdNextTickAsHold() { _hasHold = false; _hasPlayer = false; }
 
         void EnterRtb()
         {
             _state = State.Rtb;
             _rtbPhase = RtbPhase.Cruise;
             _altPid.Reset();
+            _hasHold = false; _manualHold = false;
             CeaseFire();
             _status = "RTB";
         }
@@ -310,6 +317,17 @@ namespace ScriptingClass
         {
             ReadSensor();
 
+            // Manual station-keep (from the "stop"/"hold" command): hold the latched point and
+            // ignore player-follow until a guard/undock/reset command clears it. Still defend if
+            // a hostile enters the bubble around the hold point.
+            if (_manualHold)
+            {
+                if (HostileInBubble()) { _state = State.Attack; _status = "Attack!"; return; }
+                ControlFlight(_holdPos, true, HoverAltitude, Vector3D.Zero, false);
+                _status = "Holding position";
+                return;
+            }
+
             // Expire a stale player track (keep last-known pos, but stop trusting it as "live").
             if (_hasPlayer && (_now - _playerLastSeen).TotalSeconds > PlayerLostSeconds)
                 _hasPlayer = false; // GuardCenter() then falls back to hold/current pos
@@ -336,7 +354,11 @@ namespace ScriptingClass
             ReadSensor();
             RaycastConfirmHostile();
 
-            if (!HostileInBubble()) { CeaseFire(); _state = State.Guard; _status = "target lost -> Guard"; return; }
+            // Hysteresis: release only when the hostile leaves the bubble by a margin (or goes
+            // stale), so a contact hovering at the edge doesn't flip Guard<->Attack every tick.
+            bool stillEngage = HostileFresh() &&
+                Vector3D.Distance(_hostilePos, GuardCenter()) <= (GuardRadius + EngageMargin + AttackExitMargin);
+            if (!stillEngage) { CeaseFire(); _state = State.Guard; _status = "target lost -> Guard"; return; }
 
             Vector3D center = GuardCenter();
             Vector3D pos = _rc.GetPosition();
@@ -479,14 +501,14 @@ namespace ScriptingClass
                     break;
 
                 case RtbPhase.Descend:
-                    // slow descent onto the pad; softer vertical gain for a gentle touch
+                    // slow descent onto the pad; softer vertical gain for a gentle touch. If we
+                    // drift horizontally off the pad, climb back and re-approach so we never keep
+                    // pushing down while mis-aligned. (Actual docking happens via the connector
+                    // status check at the top of RunRtb: Connectable -> Connect -> Docked.)
+                    if (horToApproach > CruiseHorTol) { _rtbPhase = RtbPhase.Approach; _status = "RTB: re-approach"; break; }
                     _altPid.Reset();
                     ControlFlightDescend(rcDock, dockPos);
                     _status = "RTB: descend";
-                    break;
-
-                case RtbPhase.Docked:
-                    EnterDocked();
                     break;
             }
         }
@@ -523,7 +545,7 @@ namespace ScriptingClass
             try
             {
                 _sensor.Enabled = true;
-                float r = (float)Math.Max(GuardRadius, 50.0); r = Math.Min(r, 50f); // sensor max extent is 50m
+                float r = (float)Math.Min(GuardRadius, 50.0); // clamp to the 50m sensor max extent
                 _sensor.FrontExtend = r; _sensor.BackExtend = r; _sensor.LeftExtend = r;
                 _sensor.RightExtend = r;  _sensor.TopExtend = r;  _sensor.BottomExtend = r;
                 _sensor.DetectOwner = true;
@@ -711,6 +733,7 @@ namespace ScriptingClass
 
         Vector3D GuardCenter()
         {
+            if (_manualHold && _hasHold) return _holdPos;
             if (_hasPlayer) return _lastPlayerPos;
             if (_hasHold) return _holdPos;
             return _rc != null ? _rc.GetPosition() : Vector3D.Zero;
