@@ -357,11 +357,131 @@ namespace ScriptingClass
 
         void OpenFire()  { for (int i = 0; i < _guns.Count; i++) try { _guns[i].SetValueBool("Shoot", true);  } catch { } }
 
-        // --- stubs replaced in later tasks ---
-        void RunRtb()    { HoverHold(); _status = "RTB (stub)"; }
-        void RunDocked() { _status = "Docked (stub)"; }
-        bool ShouldRtb() { return false; }
-        void DoSetDock() { _status = "setdock (stub)"; }
+        bool ShouldRtb()
+        {
+            bool powerOut = BatteryFraction() < RtbBatteryPct && !HasUranium();
+            bool ammoOut = AmmoOut();
+            return powerOut || ammoOut;
+        }
+
+        // The base beacon is only visible in GTS while the drone is on/connected to the base
+        // construct. We capture it opportunistically; RTB uses the relative offset when the
+        // beacon is visible, else the saved absolute pose.
+        void FindBaseBeacon()
+        {
+            _baseBeacon = null;
+            _scratch.Clear();
+            GridTerminalSystem.GetBlocksOfType<IMyBeacon>(_scratch,
+                b => b.CustomName.IndexOf(BaseBeaconTag, StringComparison.OrdinalIgnoreCase) >= 0);
+            if (_scratch.Count > 0) _baseBeacon = _scratch[0] as IMyBeacon;
+        }
+
+        void DoSetDock()
+        {
+            if (_connector == null) { _status = "setdock: no connector"; return; }
+            MyShipConnectorStatus st; try { st = _connector.Status; } catch { st = MyShipConnectorStatus.Unconnected; }
+            if (st != MyShipConnectorStatus.Connected) { _status = "setdock: connect to base first"; return; }
+
+            _dockAbs = _connector.WorldMatrix;   // absolute pose while docked
+            _hasDock = true;
+
+            FindBaseBeacon();
+            if (_baseBeacon != null)
+            {
+                _dockRel = MatrixD.Multiply(_connector.WorldMatrix, MatrixD.Invert(_baseBeacon.WorldMatrix));
+                _hasDockRel = true;
+            }
+            Save();
+            _status = "dock saved" + (_hasDockRel ? " (+beacon)" : " (absolute)");
+        }
+
+        // The world pose our connector should reach when docked. Prefer beacon-relative when the
+        // beacon is currently visible (base may have moved); otherwise the saved absolute pose.
+        MatrixD DockWorld()
+        {
+            FindBaseBeacon();
+            if (_hasDockRel && _baseBeacon != null)
+                return MatrixD.Multiply(_dockRel, _baseBeacon.WorldMatrix);
+            return _dockAbs;
+        }
+
+        void RunRtb()
+        {
+            if (!_hasDock) { _status = "RTB: no dock saved (run setdock)"; HoverHold(); return; }
+            if (_connector == null) { _status = "RTB: no connector"; HoverHold(); return; }
+
+            MyShipConnectorStatus st; try { st = _connector.Status; } catch { st = MyShipConnectorStatus.Unconnected; }
+            if (st == MyShipConnectorStatus.Connected) { EnterDocked(); return; }
+            if (st == MyShipConnectorStatus.Connectable) { try { _connector.Connect(); } catch { } }
+
+            MatrixD dp = DockWorld();
+            Vector3D dockPos = dp.Translation;
+            // Approach along the mating axis. A belly-down connector's Forward points into the
+            // base connector (~downward), so back off along -Forward to sit above the pad.
+            Vector3D approachConn = dockPos - dp.Forward * ApproachHeight;
+
+            // Convert connector-space targets to Remote-Control targets via the live world offset.
+            Vector3D rcPos = _rc.GetPosition();
+            Vector3D offset = rcPos - _connector.GetPosition();
+            Vector3D rcApproach = approachConn + offset;
+            Vector3D rcDock = dockPos + offset;
+
+            Vector3D up = UpVec();
+            double horToApproach = Reject(rcApproach - rcPos, up).Length();
+
+            switch (_rtbPhase)
+            {
+                case RtbPhase.Cruise:
+                    // transit at a safe AGL altitude until roughly above the approach point
+                    ControlFlight(rcApproach, true, CruiseAltitude, dockPos, true);
+                    if (horToApproach < CruiseHorTol) _rtbPhase = RtbPhase.Approach;
+                    _status = "RTB: cruise";
+                    break;
+
+                case RtbPhase.Approach:
+                    // absolute 3D move to the approach point above the pad
+                    ControlFlight(rcApproach, false, 0, dockPos, true);
+                    if (Vector3D.Distance(rcPos, rcApproach) < ApproachPosTol) _rtbPhase = RtbPhase.Descend;
+                    if (horToApproach > CruiseHorTol * 2) _rtbPhase = RtbPhase.Cruise; // drifted off, retry
+                    _status = "RTB: approach";
+                    break;
+
+                case RtbPhase.Descend:
+                    // slow descent onto the pad; softer vertical gain for a gentle touch
+                    _altPid.Reset();
+                    ControlFlightDescend(rcDock, dockPos);
+                    _status = "RTB: descend";
+                    break;
+
+                case RtbPhase.Docked:
+                    EnterDocked();
+                    break;
+            }
+        }
+
+        // Terminal descent: absolute-vertical control with reduced climb authority so it settles
+        // gently onto the connector instead of overshooting.
+        void ControlFlightDescend(Vector3D rcDock, Vector3D facePoint)
+        {
+            // Temporarily soften absolute vertical response by nudging the target only slightly
+            // below current, letting gravity + damping bring it down.
+            Vector3D up = UpVec();
+            Vector3D pos = _rc.GetPosition();
+            Vector3D horTarget = Reject(rcDock - pos, up) + pos;               // full horizontal correction
+            double downStep = 1.5;                                              // m step target below current
+            Vector3D vTarget = pos - up * downStep;
+            Vector3D target = Reject(horTarget - pos, up) + vTarget;           // combine horizontal + gentle down
+            ControlFlight(target, false, 0, facePoint, true);
+        }
+
+        void RunDocked()
+        {
+            // Stay parked: keep thrust cut and gyros free. Recharge continues. Leave via
+            // guard/undock command. (No auto-relaunch by design.)
+            for (int i = 0; i < _downThrusters.Count; i++)
+                try { _downThrusters[i].ThrustOverridePercentage = 0f; } catch { }
+            _status = "Docked (recharging)";
+        }
 
         bool _sensorConfigured;
 
