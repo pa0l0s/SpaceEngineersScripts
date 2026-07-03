@@ -115,12 +115,210 @@ namespace ScriptingClass
         public Program()
         {
             Runtime.UpdateFrequency = UpdateFrequency.Update10;
+            LoadState();
         }
 
-        public void Save() { }
+        public void Save()
+        {
+            _sb.Clear();
+            _sb.Append(_hasDock ? "1" : "0").Append(';').Append(MatrixToStorage(_dockAbs)).Append(';');
+            _sb.Append(_hasDockRel ? "1" : "0").Append(';').Append(MatrixToStorage(_dockRel));
+            Storage = _sb.ToString();
+        }
+
+        void LoadState()
+        {
+            if (string.IsNullOrEmpty(Storage)) return;
+            string[] p = Storage.Split(';');
+            if (p.Length >= 4)
+            {
+                _hasDock = p[0] == "1"; _dockAbs = StorageToMatrix(p[1]);
+                _hasDockRel = p[2] == "1"; _dockRel = StorageToMatrix(p[3]);
+            }
+        }
+
+        static string MatrixToStorage(MatrixD m)
+        {
+            double[] v = new double[] {
+                m.M11,m.M12,m.M13,m.M14, m.M21,m.M22,m.M23,m.M24,
+                m.M31,m.M32,m.M33,m.M34, m.M41,m.M42,m.M43,m.M44 };
+            string[] s = new string[16];
+            for (int i = 0; i < 16; i++) s[i] = v[i].ToString(System.Globalization.CultureInfo.InvariantCulture);
+            return string.Join(",", s);
+        }
+
+        static MatrixD StorageToMatrix(string s)
+        {
+            string[] p = (s ?? "").Split(',');
+            if (p.Length < 16) return MatrixD.Identity;
+            double[] v = new double[16];
+            for (int i = 0; i < 16; i++)
+                double.TryParse(p[i], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out v[i]);
+            return new MatrixD(v[0],v[1],v[2],v[3], v[4],v[5],v[6],v[7], v[8],v[9],v[10],v[11], v[12],v[13],v[14],v[15]);
+        }
 
         public void Main(string argument, UpdateType updateSource)
         {
+            _now = DateTime.UtcNow;
+            try
+            {
+                if (_needScan || _rc == null) ScanBlocks();
+
+                HandleCommand((argument ?? "").Trim());
+
+                if (!EssentialsOk())
+                {
+                    _state = State.Error;
+                    _status = "MISSING: " + MissingEssentials();
+                    SafeStop();
+                }
+                else
+                {
+                    switch (_state)
+                    {
+                        case State.Init:   _state = State.Guard; break;
+                        case State.Guard:  RunGuard();  break;
+                        case State.Attack: RunAttack(); break;
+                        case State.Rtb:    RunRtb();    break;
+                        case State.Docked: RunDocked(); break;
+                        case State.Error:  _state = State.Guard; break; // recovered
+                    }
+
+                    if (_state == State.Guard || _state == State.Attack)
+                        if (ShouldRtb()) EnterRtb();
+                }
+
+                // Update1 while flying, Update10 when idle/docked/error.
+                Runtime.UpdateFrequency =
+                    (_state == State.Guard || _state == State.Attack || _state == State.Rtb)
+                    ? UpdateFrequency.Update1 : UpdateFrequency.Update10;
+            }
+            catch (Exception ex)
+            {
+                _status = "ERR: " + ex.Message;
+                SafeStop();
+            }
+
+            if (_tick % TelemetryEveryTicks == 0) Telemetry();
+            _tick++;
+        }
+
+        void HandleCommand(string arg)
+        {
+            if (arg.Length == 0) return;
+            string a = arg.ToLowerInvariant();
+
+            if (a == "setdock") { DoSetDock(); return; }
+            if (a == "reset") { _needScan = true; _altPid.Reset(); _hasHold = false; _state = State.Guard; _status = "reset"; return; }
+            if (a == "guard") { if (_state == State.Docked) DoUndock(); _state = State.Guard; _hasHold = false; _status = "guard"; return; }
+            if (a == "rtb") { EnterRtb(); return; }
+            if (a == "undock") { DoUndock(); _state = State.Guard; _hasHold = false; _status = "undock"; return; }
+            if (a == "stop" || a == "hold") { _hasHold = false; _state = State.Guard; _holdNextTickAsHold(); return; }
+        }
+
+        // helper: force the next Guard tick to latch a fresh hold point == current pos.
+        void _holdNextTickAsHold() { _hasHold = false; _hasPlayer = false; }
+
+        void EnterRtb()
+        {
+            _state = State.Rtb;
+            _rtbPhase = RtbPhase.Cruise;
+            _altPid.Reset();
+            CeaseFire();
+            _status = "RTB";
+        }
+
+        void EnterDocked()
+        {
+            _state = State.Docked;
+            _rtbPhase = RtbPhase.Docked;
+            for (int i = 0; i < _downThrusters.Count; i++)
+                try { _downThrusters[i].ThrustOverridePercentage = 0f; } catch { }
+            ReleaseGyros();
+            for (int i = 0; i < _batteries.Count; i++)
+                try { _batteries[i].ChargeMode = ChargeMode.Recharge; } catch { }
+            CeaseFire();
+            _status = "Docked";
+        }
+
+        void DoUndock()
+        {
+            if (_connector != null) try { _connector.Disconnect(); } catch { }
+            for (int i = 0; i < _batteries.Count; i++)
+                try { _batteries[i].ChargeMode = ChargeMode.Auto; } catch { }
+            _altPid.Reset();
+        }
+
+        void Telemetry()
+        {
+            _sb.Clear();
+            _sb.Append("PaoloAtmoDrone\n");
+            _sb.Append("State: ").Append(_state.ToString());
+            if (_state == State.Rtb) _sb.Append(" (").Append(_rtbPhase.ToString()).Append(')');
+            _sb.Append('\n');
+            _sb.Append("Batt:  ").Append((int)(BatteryFraction() * 100)).Append("%\n");
+            _sb.Append("Ammo:  ").Append(AmmoOut() ? "OUT" : "OK").Append('\n');
+            _sb.Append("Fuel:  ").Append(HasUranium() ? "U-OK" : "NO-U").Append('\n');
+            _sb.Append("Msg:   ").Append(_status);
+
+            string text = _sb.ToString();
+            if (_surface != null)
+            {
+                try { _surface.ContentType = ContentType.TEXT_AND_IMAGE; _surface.FontSize = 0.8f; _surface.WriteText(text); } catch { }
+            }
+            if (_antenna != null)
+            {
+                try { _antenna.EnableBroadcasting = true; _antenna.HudText = "Drone:" + _state.ToString(); } catch { }
+            }
+            try { IGC.SendBroadcastMessage(IgcChannel, text); } catch { }
+            Echo(text);
+        }
+
+        // --- stubs replaced in later tasks ---
+        void RunGuard()  { HoverHold(); _status = "Guard (stub)"; }
+        void RunAttack() { HoverHold(); _status = "Attack (stub)"; }
+        void RunRtb()    { HoverHold(); _status = "RTB (stub)"; }
+        void RunDocked() { _status = "Docked (stub)"; }
+        void ReadSensor() { }
+        bool ShouldRtb() { return false; }
+        void DoSetDock() { _status = "setdock (stub)"; }
+
+        double BatteryFraction()
+        {
+            double cur = 0, max = 0;
+            for (int i = 0; i < _batteries.Count; i++)
+                try { cur += _batteries[i].CurrentStoredPower; max += _batteries[i].MaxStoredPower; } catch { }
+            return max > 1e-6 ? cur / max : 1.0;
+        }
+
+        bool HasUranium()
+        {
+            for (int i = 0; i < _reactors.Count; i++)
+            {
+                IMyInventory inv; try { inv = _reactors[i].GetInventory(0); } catch { continue; }
+                if (inv == null) continue;
+                var items = new List<MyInventoryItem>();
+                try { inv.GetItems(items); } catch { continue; }
+                for (int j = 0; j < items.Count; j++)
+                    if (items[j].Type.SubtypeId.IndexOf("Uranium", StringComparison.OrdinalIgnoreCase) >= 0 && items[j].Amount.RawValue > 0)
+                        return true;
+            }
+            return false;
+        }
+
+        bool AmmoOut()
+        {
+            if (_guns.Count == 0) return false;
+            for (int i = 0; i < _guns.Count; i++)
+            {
+                IMyInventory inv; try { inv = _guns[i].GetInventory(0); } catch { continue; }
+                if (inv == null) continue;
+                var items = new List<MyInventoryItem>();
+                try { inv.GetItems(items); } catch { continue; }
+                for (int j = 0; j < items.Count; j++)
+                    if (items[j].Amount.RawValue > 0) return false; // any magazine anywhere => not out
+            }
+            return true;
         }
 
         void ScanBlocks()
