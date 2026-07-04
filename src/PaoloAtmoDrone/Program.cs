@@ -65,7 +65,10 @@ namespace ScriptingClass
 
         const double HoverAltitude   = 30.0;   // m above surface while guarding
         const double CruiseAltitude  = 40.0;   // m above surface while transiting to base
-        const double GuardRadius     = 50.0;   // m loiter bubble around the player
+        const double GuardRadius     = 50.0;   // m loiter bubble around the player (also sensor extent)
+        const double FollowDistance  = 30.0;   // m: when the player is detected, actively follow to keep
+                                               // them THIS close (well inside sensor range) so the sensor
+                                               // never loses them. Auto-capped below the sensor extent.
         const double EngageMargin    = 15.0;   // m past GuardRadius a hostile may be & still engage
         const double AttackExitMargin = 10.0;  // extra m before Attack releases (Guard<->Attack hysteresis)
         const double MinStandoff     = 25.0;   // m; back off if a hostile crowds closer than this
@@ -349,19 +352,36 @@ namespace ScriptingClass
 
             if (HostileInBubble()) { _state = State.Attack; _status = "Attack!"; return; }
 
-            Vector3D center = GuardCenter();
             Vector3D pos = _rc.GetPosition();
             Vector3D up = UpVec();
-            Vector3D horOff = Reject(pos - center, up);
 
-            Vector3D target;
-            if (horOff.Length() > GuardRadius && horOff.Length() > 1e-6)
-                target = center + Vector3D.Normalize(horOff) * GuardRadius; // return to bubble edge
+            if (_hasPlayer)
+            {
+                // Actively FOLLOW: close to within FollowDistance so the player stays comfortably
+                // inside sensor range (never rides the edge and drops out). Only approach, never
+                // retreat, so it doesn't back away when the player walks up to it. FollowDistance
+                // is capped below the live sensor extent so detection stays solid.
+                double sensorExtent = Math.Min(GuardRadius, 50.0);
+                double follow = Math.Min(FollowDistance, sensorExtent * 0.8);
+                Vector3D toPlayer = Reject(_lastPlayerPos - pos, up);
+                double d = toPlayer.Length();
+                Vector3D target = (d > follow && d > 1e-6)
+                    ? _lastPlayerPos - Vector3D.Normalize(toPlayer) * follow  // move in to follow ring
+                    : pos;                                                    // close enough -> hover
+                ControlFlight(target, true, HoverAltitude, _lastPlayerPos, true);
+                _status = "Following player (" + (int)d + "m)";
+            }
             else
-                target = pos; // inside bubble -> station-keep (PD damping settles it)
-
-            ControlFlight(target, true, HoverAltitude, center, _hasPlayer || _hasHold);
-            _status = _hasPlayer ? "Guarding player" : "Guarding (no player seen)";
+            {
+                // No live player: hold near the last-known / hold point within GuardRadius.
+                Vector3D center = GuardCenter();
+                Vector3D horOff = Reject(pos - center, up);
+                Vector3D target = (horOff.Length() > GuardRadius && horOff.Length() > 1e-6)
+                    ? center + Vector3D.Normalize(horOff) * GuardRadius
+                    : pos;
+                ControlFlight(target, true, HoverAltitude, center, _hasHold);
+                _status = "Guarding (no player seen)";
+            }
         }
 
         void RunAttack()
