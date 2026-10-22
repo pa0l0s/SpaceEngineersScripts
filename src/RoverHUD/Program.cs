@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Sandbox.ModAPI.Ingame;
+using Sandbox.ModAPI.Interfaces;
 using SpaceEngineers.Game.ModAPI.Ingame;
+using VRage.Game;
 using VRage.Game.GUI.TextPanel;
 using VRage.Game.ModAPI.Ingame;
 using VRage.Game.ModAPI.Ingame.Utilities;
@@ -21,10 +23,10 @@ namespace ScriptingClass
         /// (plus optional extra LCDs). Shows what the vanilla HUD does not:
         ///   POWER   - battery %, stored MWh, in/out, net flow, time to empty/full,
         ///             solar / H2 engine / reactor output, total load
-        ///   CARGO   - fill %, volume, cargo / ship mass, totals per category
+        ///   CARGO   - fill %, volume, cargo / ship mass, volume per category
         ///             (ice, ore, ingots, components, ammo, other)
-        ///   DRIVE   - speed, pitch/roll + tip-over warning, gravity, altitude,
-        ///             wheels attached, suspension power/friction, handbrake
+        ///   DRIVE   - speed / speed limit, pitch/roll + tip-over warning, gravity,
+        ///             altitude, wheels attached, power/strength/friction, gyro power
         ///   SYSTEMS - H2 / O2 tanks, connector, drills, damaged blocks
         ///   CYCLE   - rotates through all of the above (for cockpits with < 4 screens)
         ///
@@ -42,7 +44,17 @@ namespace ScriptingClass
         ///
         /// Extra LCD: put "[Rover:cargo]" (or any screen name) in its CustomName.
         ///
+        /// AUTO-TUNING (section [Tune] in CustomData, every round ~2 s):
+        ///   wheel Strength ~ load^0.35, wheel Power ~ load, wheel Speed Limit
+        ///   ~ gravity^0.6 and a bit lower when loaded, gyro power ~ mass. "Load" =
+        ///   mass * gravity per wheel, so Moon / Mars / Earth adapt by themselves.
+        ///   Blocks with "Ignore" in the name are left alone.
+        ///   To teach it your taste: "tune off", set Strength/Power/Speed Limit/
+        ///   gyro power by hand until it drives well, then "calibrate".
+        ///
         /// Arguments: "refresh" - re-scan blocks + re-read CustomData now.
+        ///            "tune off" / "tune on" - pause / resume auto-tuning.
+        ///            "calibrate" - store the current hand-set values as [Tune].
         ///
         /// Server-friendly: AutoManagr-style task queue, ONE small task per run
         /// (Update10). A full round (scan + render all screens) takes ~10-15 runs.
@@ -66,6 +78,11 @@ namespace ScriptingClass
         const char BarFill = '█';
         const char BarEmpty = '░';
         const string ExtraTag = "[Rover:";
+        // Auto-tune clamps. The per-rover constants live in [Tune] in CustomData.
+        const double StrengthMin = 5, PowerMin = 20;
+        const double SpeedMin = 20, SpeedMax = 200;   // km/h
+        const double GyroPowerMin = 0.1;
+        const string SpeedLimitProp = "Speed Limit";  // wheel terminal property, km/h
         static readonly Color NormalColor = new Color(80, 230, 160);
         static readonly Color AlertColor = new Color(255, 80, 60);
         static readonly Color BgColor = new Color(0, 0, 0);
@@ -79,7 +96,7 @@ namespace ScriptingClass
             public Screen Kind;
         }
 
-        // Cargo categories. Ice/Ore/Ingot are summed in kg, the rest in pieces.
+        // Cargo categories, each summed as volume in liters.
         const int CatIce = 0, CatOre = 1, CatIngot = 2, CatComp = 3, CatAmmo = 4, CatOther = 5;
         static readonly string[] CatNames = { "Ice", "Ore", "Ingots", "Components", "Ammo", "Other" };
 
@@ -118,6 +135,7 @@ namespace ScriptingClass
         readonly List<IMyMotorSuspension> _wheels = new List<IMyMotorSuspension>();
         readonly List<IMyShipConnector> _connectors = new List<IMyShipConnector>();
         readonly List<IMyShipDrill> _drills = new List<IMyShipDrill>();
+        readonly List<IMyGyro> _gyros = new List<IMyGyro>();
         readonly List<IMyTerminalBlock> _allBlocks = new List<IMyTerminalBlock>();
 
         // ---- published data (what the screens show) ----
@@ -129,10 +147,14 @@ namespace ScriptingClass
         double _cargoVol, _cargoMaxVol, _cargoMass;
         readonly double[] _cat = new double[6];
 
-        double _speed, _pitch, _roll, _tilt, _gravityG, _altitude, _baseMass, _totalMass;
+        double _speed, _pitch, _roll, _tilt, _gravityG, _altitude, _baseMass, _totalMass, _physMass;
         bool _hasGravity, _hasAltitude, _flipped, _handBrake;
         int _wheelsAttached;
-        double _wheelPower, _wheelFriction;
+        double _wheelPower, _wheelFriction, _wheelStrength, _wheelSpeedLimit, _gyroPower;
+
+        // ---- auto-tuning config (from [Tune] in CustomData) ----
+        bool _autoSuspension = true, _autoSpeed = true, _autoGyro = true, _tunePaused, _hasSpeedLimit;
+        double _strengthK, _strengthExp, _powerPerTon, _speedAt1g, _speedGravExp, _gyroTonsPerGyro;
 
         double _h2Fill, _o2Fill;
         int _h2Count, _o2Count;
@@ -172,7 +194,13 @@ namespace ScriptingClass
 
         public void Main(string argument, UpdateType updateSource)
         {
-            if (argument == "refresh") _refreshRequested = true;
+            switch (argument)
+            {
+                case "refresh": _refreshRequested = true; break;
+                case "tune off": _tunePaused = true; _status = "Tuning paused - adjust by hand, then 'calibrate'"; break;
+                case "tune on": _tunePaused = false; _status = "Tuning on"; break;
+                case "calibrate": Calibrate(); break;
+            }
 
             if (_taskQueue.Count == 0)
             {
@@ -270,7 +298,8 @@ namespace ScriptingClass
             public IEnumerable<IManagerTask> GetTasks()
             {
                 yield return new ActionTask(0, _p.ScanDrive);
-                yield return new ActionTask(1, _p.ScanSystems);
+                yield return new ActionTask(1, _p.ApplyTuning);
+                yield return new ActionTask(2, _p.ScanSystems);
             }
         }
 
@@ -325,7 +354,7 @@ namespace ScriptingClass
             GridTerminalSystem.GetBlocksOfType(_allBlocks, b => b.IsSameConstructAs(Me));
 
             _batteries.Clear(); _producers.Clear(); _inventoryBlocks.Clear(); _tanks.Clear();
-            _wheels.Clear(); _connectors.Clear(); _drills.Clear(); _displays.Clear();
+            _wheels.Clear(); _connectors.Clear(); _drills.Clear(); _gyros.Clear(); _displays.Clear();
 
             IMyShipController named = null, main = null, first = null;
             var extras = new List<IMyTerminalBlock>();
@@ -354,6 +383,9 @@ namespace ScriptingClass
                 var drill = b as IMyShipDrill;
                 if (drill != null) { _drills.Add(drill); continue; }
 
+                var gyro = b as IMyGyro;
+                if (gyro != null) { _gyros.Add(gyro); continue; }
+
                 var cockpit = b as IMyCockpit;
                 if (cockpit != null && cockpit.SurfaceCount > 0)
                 {
@@ -366,6 +398,7 @@ namespace ScriptingClass
             }
 
             _cockpit = named ?? main ?? first;
+            _hasSpeedLimit = _wheels.Count > 0 && _wheels[0].GetProperty(SpeedLimitProp) != null;
 
             var provider = _cockpit as IMyTextSurfaceProvider;
             if (provider != null)
@@ -396,30 +429,70 @@ namespace ScriptingClass
             if (!_ini.TryParse(Me.CustomData, out result))
             {
                 // Not INI - do not overwrite whatever the user keeps there.
-                _status = "CustomData is not INI - using defaults";
+                // Tuning constants are unknown then - never drive blocks blind.
+                _status = "CustomData is not INI - defaults, tuning off";
+                _autoSuspension = _autoSpeed = _autoGyro = false;
                 return;
             }
-            if (!_ini.ContainsSection("RoverHUD"))
-            {
-                _ini.Set("RoverHUD", "Cockpit", "");
-                _ini.Set("RoverHUD", "FontScale", DefaultFontScale);
-                for (int i = 0; i < _screenConfig.Length; i++)
-                    _ini.Set("RoverHUD", "Screen" + i, _screenConfig[i]);
-                _ini.SetSectionComment("RoverHUD", "Screens: power, cargo, drive, systems, cycle, off");
-                Me.CustomData = _ini.ToString();
-                return;
-            }
-
-            _cockpitName = _ini.Get("RoverHUD", "Cockpit").ToString("").Trim();
-            if (!_ini.ContainsKey("RoverHUD", "FontScale"))
-            {
-                // Older config without FontScale - add it so it is visible to tweak.
-                _ini.Set("RoverHUD", "FontScale", DefaultFontScale);
-                Me.CustomData = _ini.ToString();
-            }
-            _fontScale = MathHelper.Clamp(_ini.Get("RoverHUD", "FontScale").ToSingle(DefaultFontScale), 0.2f, 10f);
+            // Missing keys (first run, or a config from an older version) are
+            // written back with defaults so every knob is visible to tweak.
+            // SetSectionComment throws on a missing section - comment only after
+            // the first key has created it.
+            _iniDirty = false;
+            bool newHud = !_ini.ContainsSection("RoverHUD");
+            bool newTune = !_ini.ContainsSection("Tune");
+            _cockpitName = IniString("RoverHUD", "Cockpit", "");
+            _fontScale = (float)MathHelper.Clamp(IniDouble("RoverHUD", "FontScale", DefaultFontScale), 0.2, 10.0);
             for (int i = 0; i < _screenConfig.Length; i++)
-                _screenConfig[i] = _ini.Get("RoverHUD", "Screen" + i).ToString(_screenConfig[i]).Trim().ToLowerInvariant();
+                _screenConfig[i] = IniString("RoverHUD", "Screen" + i, _screenConfig[i]).ToLowerInvariant();
+
+            // Defaults differ per grid size (large wheels/gyros carry far more).
+            bool large = Me.CubeGrid.GridSizeEnum == MyCubeSize.Large;
+            _autoSuspension = IniBool("Tune", "AutoSuspension", true);
+            _autoSpeed = IniBool("Tune", "AutoSpeed", true);
+            _autoGyro = IniBool("Tune", "AutoGyro", true);
+            // v1 config (sqrt strength, old speed default) -> migrate once: keep
+            // the user's strength constant, bump the untouched old speed default.
+            bool legacy = _ini.ContainsKey("Tune", "StrengthPerSqrtTon");
+            double legacyK = _ini.Get("Tune", "StrengthPerSqrtTon").ToDouble(large ? 10 : 25);
+            if (legacy)
+            {
+                _ini.Delete("Tune", "StrengthPerSqrtTon");
+                if (!_ini.ContainsKey("Tune", "StrengthK")) _ini.Set("Tune", "StrengthK", legacyK);
+                if (_ini.Get("Tune", "SpeedAt1g").ToDouble(0) == (large ? 90 : 110))
+                    _ini.Set("Tune", "SpeedAt1g", large ? 110 : 130);
+                _iniDirty = true;
+            }
+            _strengthK = IniDouble("Tune", "StrengthK", large ? 10 : 25);
+            _strengthExp = MathHelper.Clamp(IniDouble("Tune", "StrengthExponent", 0.35), 0.0, 1.0);
+            _powerPerTon = IniDouble("Tune", "PowerPerTon", large ? 6 : 40);
+            _speedAt1g = IniDouble("Tune", "SpeedAt1g", large ? 110 : 130);
+            _speedGravExp = MathHelper.Clamp(IniDouble("Tune", "SpeedGravityExponent", 0.6), 0.0, 2.0);
+            _gyroTonsPerGyro = Math.Max(0.1, IniDouble("Tune", "GyroTonsPerGyro", large ? 400 : 15));
+
+            if (newHud) _ini.SetSectionComment("RoverHUD", "Screens: power, cargo, drive, systems, cycle, off");
+            if (newTune) _ini.SetSectionComment("Tune", "Auto-tuning. Tune by hand after 'tune off', then run 'calibrate'.");
+            if (_iniDirty) Me.CustomData = _ini.ToString();
+        }
+
+        bool _iniDirty;
+
+        string IniString(string section, string key, string def)
+        {
+            if (!_ini.ContainsKey(section, key)) { _ini.Set(section, key, def); _iniDirty = true; }
+            return _ini.Get(section, key).ToString(def).Trim();
+        }
+
+        double IniDouble(string section, string key, double def)
+        {
+            if (!_ini.ContainsKey(section, key)) { _ini.Set(section, key, def); _iniDirty = true; }
+            return _ini.Get(section, key).ToDouble(def);
+        }
+
+        bool IniBool(string section, string key, bool def)
+        {
+            if (!_ini.ContainsKey(section, key)) { _ini.Set(section, key, def); _iniDirty = true; }
+            return _ini.Get(section, key).ToBoolean(def);
         }
 
         void AddDisplay(IMyTextSurface surface, Screen kind)
@@ -508,19 +581,14 @@ namespace ScriptingClass
                 var block = _inventoryBlocks[b];
                 if (block == null || block.Closed) continue;
 
-                // Reactors / H2 engines / gas generators hold fuel, not cargo - but
-                // their mass still counts, so only skip them for the fill %.
-                bool countsAsCargo = block is IMyCargoContainer || block is IMyShipController
-                    || block is IMyShipConnector || block is IMyShipDrill || block is IMyShipGrinder
-                    || block is IMyShipWelder || block is IMyCollector;
-
+                // Every inventory counts: containers, cockpit, O2/H2 generator,
+                // survival kit, connector, drills, reactors, H2 engines...
                 for (int s = 0; s < block.InventoryCount; s++)
                 {
                     var inv = block.GetInventory(s);
                     if (inv == null) continue;
 
                     _scanMass += (double)inv.CurrentMass;
-                    if (!countsAsCargo) continue;
 
                     // Ingame inventory volume is in m3.
                     _scanVol += (double)inv.CurrentVolume * 1000.0;
@@ -531,10 +599,25 @@ namespace ScriptingClass
                     for (int k = 0; k < _scratchItems.Count; k++)
                     {
                         var item = _scratchItems[k];
-                        _scanCat[Classify(item.Type.TypeId, item.Type.SubtypeId)] += (double)item.Amount;
+                        _scanCat[Classify(item.Type.TypeId, item.Type.SubtypeId)] += (double)item.Amount * ItemVolumeL(item.Type);
                     }
                 }
             }
+        }
+
+        // Liters per unit (per kg for ore/ingots). Cached - GetItemInfo is a
+        // definition lookup and the same few types repeat every scan.
+        readonly Dictionary<MyItemType, double> _volumeCache = new Dictionary<MyItemType, double>();
+
+        double ItemVolumeL(MyItemType type)
+        {
+            double v;
+            if (!_volumeCache.TryGetValue(type, out v))
+            {
+                v = type.GetItemInfo().Volume * 1000.0;
+                _volumeCache[type] = v;
+            }
+            return v;
         }
 
         static int Classify(string typeId, string subtypeId)
@@ -565,6 +648,8 @@ namespace ScriptingClass
             var mass = c.CalculateShipMass();
             _baseMass = mass.BaseMass;
             _totalMass = mass.TotalMass;
+            // PhysicalMass includes the inventory multiplier - what the wheels feel.
+            _physMass = mass.PhysicalMass;
 
             Vector3D g = c.GetNaturalGravity();
             _hasGravity = g.LengthSquared() > 0.0001;
@@ -590,7 +675,7 @@ namespace ScriptingClass
             _altitude = _hasAltitude ? elev : 0;
 
             _wheelsAttached = 0;
-            double pw = 0, fr = 0;
+            double pw = 0, fr = 0, st = 0, lim = 0;
             int n = 0;
             for (int i = 0; i < _wheels.Count; i++)
             {
@@ -599,10 +684,133 @@ namespace ScriptingClass
                 if (w.IsAttached) _wheelsAttached++;
                 pw += w.Power;
                 fr += w.Friction;
+                st += w.Strength;
+                if (_hasSpeedLimit) lim += w.GetValueFloat(SpeedLimitProp);
                 n++;
             }
             _wheelPower = n > 0 ? pw / n : 0;
             _wheelFriction = n > 0 ? fr / n : 0;
+            _wheelStrength = n > 0 ? st / n : 0;
+            _wheelSpeedLimit = n > 0 ? lim / n : 0;
+
+            double gp = 0;
+            int gn = 0;
+            for (int i = 0; i < _gyros.Count; i++)
+            {
+                if (_gyros[i].Closed) continue;
+                gp += _gyros[i].GyroPower;
+                gn++;
+            }
+            _gyroPower = gn > 0 ? gp / gn : 0;
+        }
+
+        // =====================================================================
+        // Auto-tuning (suspension strength/power, speed limit, gyro power).
+        //
+        // Load per wheel is "kg at 1 g": physical mass * gravity[g] / wheels, so
+        // the same rover is ~4x lighter per wheel on the Moon than on Earth.
+        //  - Strength ~ load^StrengthExponent. Keen squares strength internally,
+        //    so 0.5 would hold ride height constant - but that tested too hard
+        //    on Mars vs the Moon, so the default 0.35 lets heavy loads sag a bit.
+        //    At 1 t per wheel (light rover on the Moon) the exponent cancels out.
+        //  - Power: wheel force = PropulsionForce * Power, traction ~ load, so
+        //    power ~ load stops a light rover in low gravity from wheel-spinning
+        //    and popping wheelies.
+        //  - Speed limit ~ g^SpeedGravityExponent: more gravity = more grip and
+        //    less bouncing, so faster (Moon ~0.43x, Mars ~0.94x of SpeedAt1g),
+        //    trimmed a little when heavily loaded (longer braking).
+        //  - Gyro power ~ mass, so a light rover does not snap around.
+        // Constants are starting points - tune by hand, then run "calibrate".
+        // =====================================================================
+
+        void ApplyTuning()
+        {
+            if (_tunePaused || _cockpit == null || _physMass <= 0) return;
+            double tons = _physMass / 1000.0;
+
+            if (_autoGyro && _gyros.Count > 0)
+            {
+                float target = (float)MathHelper.Clamp(tons / (_gyroTonsPerGyro * _gyros.Count), GyroPowerMin, 1.0);
+                for (int i = 0; i < _gyros.Count; i++)
+                {
+                    var g = _gyros[i];
+                    if (g.Closed || IsIgnored(g)) continue;
+                    if (Math.Abs(g.GyroPower - target) >= 0.02f) g.GyroPower = target;
+                }
+            }
+
+            // Wheels only matter on the ground in gravity.
+            if (!_hasGravity || _wheelsAttached == 0) return;
+
+            double loadT = tons * _gravityG / _wheelsAttached;
+            float strength = (float)MathHelper.Clamp(_strengthK * Math.Pow(loadT, _strengthExp), StrengthMin, 100.0);
+            float power = (float)MathHelper.Clamp(_powerPerTon * loadT, PowerMin, 100.0);
+            float limit = (float)MathHelper.Clamp(_speedAt1g * Math.Pow(_gravityG, _speedGravExp) * LoadSpeedFactor(), SpeedMin, SpeedMax);
+
+            for (int i = 0; i < _wheels.Count; i++)
+            {
+                var w = _wheels[i];
+                if (w.Closed || IsIgnored(w)) continue;
+                if (_autoSuspension)
+                {
+                    if (Math.Abs(w.Strength - strength) >= 1f) w.Strength = strength;
+                    if (Math.Abs(w.Power - power) >= 1f) w.Power = power;
+                }
+                if (_autoSpeed && _hasSpeedLimit && Math.Abs(w.GetValueFloat(SpeedLimitProp) - limit) >= 2f)
+                    w.SetValueFloat(SpeedLimitProp, limit);
+            }
+        }
+
+        // 1.0 when empty, ~0.84 when the cargo equals the dry mass, min 0.75.
+        double LoadSpeedFactor()
+        {
+            if (_physMass <= 0 || _baseMass <= 0) return 1.0;
+            return MathHelper.Clamp(Math.Pow(_baseMass / _physMass, 0.25), 0.75, 1.0);
+        }
+
+        // Reverse of ApplyTuning: take the values currently set on the blocks
+        // (tuned by hand while "tune off") and store the constants that produce
+        // them at the current load + gravity.
+        void Calibrate()
+        {
+            MyIniParseResult result;
+            if (!_ini.TryParse(Me.CustomData, out result))
+            {
+                _status = "Calibrate: CustomData is not INI";
+                return;
+            }
+            double tons = _physMass / 1000.0;
+            var sb = new StringBuilder("Calibrated:");
+
+            if (_hasGravity && _wheelsAttached > 0 && tons > 0)
+            {
+                double loadT = tons * _gravityG / _wheelsAttached;
+                _strengthK = Math.Round(_wheelStrength / Math.Pow(loadT, _strengthExp), 1);
+                _powerPerTon = Math.Round(_wheelPower / loadT, 1);
+                _ini.Set("Tune", "StrengthK", _strengthK);
+                _ini.Set("Tune", "PowerPerTon", _powerPerTon);
+                sb.Append(" str/pwr");
+                if (_hasSpeedLimit)
+                {
+                    _speedAt1g = Math.Round(_wheelSpeedLimit / (Math.Pow(_gravityG, _speedGravExp) * LoadSpeedFactor()));
+                    _ini.Set("Tune", "SpeedAt1g", _speedAt1g);
+                    sb.Append(" speed");
+                }
+            }
+            if (_gyros.Count > 0 && _gyroPower > 0.001 && tons > 0)
+            {
+                _gyroTonsPerGyro = Math.Round(tons / (_gyroPower * _gyros.Count), 1);
+                _ini.Set("Tune", "GyroTonsPerGyro", _gyroTonsPerGyro);
+                sb.Append(" gyro");
+            }
+            Me.CustomData = _ini.ToString();
+            _tunePaused = false;
+            _status = sb.ToString();
+        }
+
+        static bool IsIgnored(IMyTerminalBlock b)
+        {
+            return b.CustomName.Contains("Ignore");
         }
 
         void ScanSystems()
@@ -779,8 +987,7 @@ namespace ScriptingClass
             {
                 if (_cat[c] <= 0) continue;
                 // Ice/ore/ingot amounts are kg, everything else is a piece count.
-                string amount = c <= CatIngot ? FormatMass(_cat[c]) : "x" + FormatCount(_cat[c]);
-                sb.Append(CatNames[c].PadRight(ScreenCols - 7)).Append(amount.PadLeft(7)).Append('\n');
+                sb.Append(CatNames[c].PadRight(ScreenCols - 7)).Append(FormatVolume(_cat[c]).PadLeft(7)).Append('\n');
                 shown++;
             }
             if (shown == 0) sb.Append("EMPTY\n");
@@ -792,8 +999,11 @@ namespace ScriptingClass
             int wheelsLost = _wheels.Count - _wheelsAttached;
             bool alert = _flipped || _tilt >= TiltWarnDeg || wheelsLost > 0;
 
-            Header(sb, "DRIVE", "", alert);
-            sb.Append("SPEED ").Append((_speed * 3.6).ToString("0.0").PadLeft(5)).Append(" km/h\n");
+            bool tuning = !_tunePaused && (_autoSuspension || _autoSpeed || _autoGyro);
+            Header(sb, "DRIVE", (_handBrake ? "BRAKE " : "") + (tuning ? "AUTO" : _tunePaused ? "MAN" : ""), alert);
+            sb.Append("SPD ").Append((_speed * 3.6).ToString("0.0"));
+            if (_hasSpeedLimit && _wheels.Count > 0) sb.Append('/').Append(_wheelSpeedLimit.ToString("0"));
+            sb.Append(" km/h\n");
 
             if (_hasGravity)
             {
@@ -816,10 +1026,12 @@ namespace ScriptingClass
             {
                 sb.Append("WHEELS ").Append(_wheelsAttached).Append('/').Append(_wheels.Count)
                   .Append(wheelsLost > 0 ? " LOST!" : " OK").Append('\n');
-                sb.Append("PWR ").Append(_wheelPower.ToString("0")).Append("% FRIC ").Append(_wheelFriction.ToString("0")).Append("%\n");
+                sb.Append("PWR ").Append(_wheelPower.ToString("0")).Append("% STR ").Append(_wheelStrength.ToString("0")).Append("%\n");
             }
 
-            sb.Append("BRAKE ").Append(_handBrake ? "ON" : "off").Append('\n');
+            sb.Append("FRIC ").Append(_wheelFriction.ToString("0")).Append('%');
+            if (_gyros.Count > 0) sb.Append(" GYRO ").Append((_gyroPower * 100).ToString("0")).Append('%');
+            sb.Append('\n');
             return alert;
         }
 
@@ -909,12 +1121,6 @@ namespace ScriptingClass
         {
             if (liters >= 1000) return (liters / 1000).ToString("0.0") + "kL";
             return liters.ToString("0") + "L";
-        }
-
-        static string FormatCount(double n)
-        {
-            if (n >= 10000) return (n / 1000).ToString("0") + "k";
-            return n.ToString("0");
         }
 
         static string FormatHours(double hours)
